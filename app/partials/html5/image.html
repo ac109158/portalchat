@@ -1,0 +1,38 @@
+<div style="position:relative; height: 90%;width:96%; margin:0px auto; margin-top:5%; background:rgba(255,255,255,.8); overflow-y:auto; overflow-x:hidden;" class="well well-sm well-slim min-scroll">
+	<div>
+		<span class="cm-profile-span-label">Add Image</span>
+		<form ng-submit="addImageMessage(chat)">
+				<div class="cm-directory-label" style="top:-5px;">
+					<div class="cm-directory-label-decal one-edge-shadow">
+						<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">Heading</div>
+					</div>
+				</div>
+				<input class="cm-input" type="text"  ng-model="image.heading" placeholder="Enter a heading if you would like..." focus-me="true"/>
+				<div class="cm-chat-spacer"></div>
+				
+				<div class="cm-directory-label">
+					<div class="cm-directory-label-decal one-edge-shadow">
+						<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">Url</div>
+					</div>
+				</div>
+				<div class="cm-bottom-spacer"></div>
+				<input class="cm-input" type="text"  ng-model="image.url" placeholder="Please enter a url..."  required/>
+				<div class="cm-chat-spacer"></div>
+				
+				<div class="cm-directory-label">
+					<div class="cm-directory-label-decal one-edge-shadow">
+						<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">Message</div>
+					</div>
+				</div>
+				
+				<textarea class="cm-textarea" name="textarea" ng-model="image.message" rows="5" cols="30" placeholder="Please enter a message..."  required></textarea>
+				<div class="cm-chat-spacer"></div>
+				<div style="width:200px; height:200px; margin:0px auto; clear:both;" class="thumbnail">
+					<img ng-if="image.url" ng-src="{{image.url}}" width=200 height=200/>
+				</div>
+				
+				
+				<input style="margin:5px 0px;" type="submit" name="submit" value="submit" />
+		</form>
+	</div>
+</div>

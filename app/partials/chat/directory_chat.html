@@ -1,0 +1,366 @@
+<div id="directory_chat" class="cm-directory-chat-panel-content"  style="position:relative; width:100%; height:{{cm_directory_chat_height - vertical_adjust}}px; background:rgba(69,106,151,0.2);" ng-class="{'chat-slide-enter': directory_chat.index_position == directory_index}">
+	<!-- Upper Chat header --> 
+	<!-- Pop up box for list of participating users in a group chat --> 
+	<div ng-if="directory_chat.isGroupChat == true && directory_chat.showUserList == true && directory_chat.group_count > 0" class="cm-directory-chat-active-users-box min-scroll"> <!-- ng-show should filter out the user form the list --> 
+		<div ng-repeat="user in directory_chat.user_log track by $index | orderBy:'name' ">
+			<div ng-init="logValue(directory_chat.user_details[user.user_id])" ng-if="user.user_id != directory_chat.user_id" class="cm-directory-chat-active-user">
+				<img ng-src="/components/com_callcenter/images/avatars/{{user.avatar}}-90.jpg" style="width:20px; height:20px; margin-right:5px;"/><span style="margin-right:5px;" ng-bind="user.name"></span>
+				<span ng-if="directory_chat.admin == directory_chat.user_id" ng-click="removeActiveUser(directory_chat, user.user_id); clearDirectory(directory_chat);" class="glyphicon glyphicon-remove pull-right" style="margin:0px 5px;"></span>
+			</div>
+		</div>
+	</div><!--end of active user list for group chat  --> 
+<!-- 	<span ng-show="$index < (activeChats.length-1)"ng-click="swapChatPositions($index, $index+1)"  ng-dblclick="moveChatToLast($index)" href="#" class="move-left glyphicon glyphicon-chevron-left "></span> -->
+<!-- 	<span ng-show="$index > 0"ng-click="swapChatPositions($index, $index-1)" ng-dblclick="moveChatToFirst($index)" href="#" class="move-right glyphicon glyphicon-chevron-right "></span> -->
+	
+
+	<div ng-show="directory_chat" class="cm-directory-label one-edge-shadow" style="margin-bottom:2px; background:white; height:{{chat_label_height}}px;">
+		<span ng-show="directory_chat.isGroupChat == false" ng-click="directory_chat.showProfile = false; toggleUserOptions(directory_chat);" class="pull-left cm-pointer" ng-class="{'glyphicon glyphicon-user':directory_chat.reload == false, 'Busy' : directory_chat.to_user_chat_presence.$value != 'Online' && directory_chat.to_user_online.$value == true, 'Online' : directory_chat.to_user_chat_presence.$value == 'Online' && directory_chat.to_user_online.$value == true }"></span>
+		<span><i ng-show="directory_chat.active_typing_user_socket.$value == true" class="fa fa-spinner fa-spin cm-directory-chat-typing-indicator"></i></span> <!-- Activates when someone is typing a message to the user -->  
+		<div class="cm-chat-header-content">
+			<div ng-show="directory_chat.isGroupChat == true" style="float:left: clear:none;">
+				<i ng-if="directory_chat.reload != true" ng-click="directory_chat.showProfile = false; toggleUserOptions(directory_chat);" class="fa fa-comments pull-left"></i>
+				<span ng-if="!directory_chat.isDirectoryChat"ng-click="directory_chat.showUserOptions = false; toggleUserList(directory_chat)" ng-bind="'(' + directory_chat.group_count + ')'"></span>
+			</div>
+			<span style="position:relative; margin:0px; margin-left:2px; float:left; clear:none;"  class="no-select" ng-bind="directory_chat.tag || directory_chat.chat_description || directory_chat.to_user_name" ng-class="{'Busy' : directory_chat.to_user_chat_presence.$value != 'Online' && directory_chat.isGroupChat === false}"> </span><!--Name of the Person the user is Chatting, hover when group chat to display of participating users --> 
+			<span ng-show="directory_chat.to_user_chat_presence.$value != 'Online' && !directory_chat.isDirectoryChat" style="position:relative; margin-left:2px; float:left; clear:none;" class="Busy" ng-bind="'is ' + directory_chat.to_user_chat_presence.$value"></span>
+			<div ng-show="directory_chat.to_user_chat_presence_message.$value && directory_chat.to_user_chat_presence_message_show.$value" style="width:15px; height:15px; font-size:.8em;">
+				<i class="fa fa-info-circle"></i>
+			</div>
+<!-- 			<span ng-bind="directory_chat.isTextFocus"></span> -->
+		</div>
+		 <!-- Show only when User sets chat-presence to busy --> 
+		<div class="pull-right"> <!-- option icons -->
+		<span ng-if="directory_chat.isMorePrev" ng-click="loadMore(directory_chat)" ng-class="{'glyphicon glyphicon-circle-arrow-up cm-pointer pull-left': directory_chat.reload != true , 'fa fa-refresh fa-spin cm-pointer pull-left': directory_chat.reload == true}" style="position:relative; left:-30px;"></span>
+		<span ng-show="directory_chat.isTextFocus == false && directory_chat.unread > 0" class="badge cm-directory-chat-item-unread-count" ng-class="{'chat-new-message': directory_chat.isNewMessage == true}" ng-bind="directory_chat.unread"></span> <!-- Displays the count of any messages received while the chat box was closed --> 
+		<span href="#" class="cm-directory-chat-header-icon pull-left cm-pointer" ng-click="directory_chat.isSound = !directory_chat.isSound"  ng-class="{'glyphicon glyphicon-volume-up' : directory_chat.isSound == true || directory_chat.isSound == 'true', 'glyphicon glyphicon-volume-off' : directory_chat.isSound == false}"></span> <!-- Displays whether sound is enabled for this chat -->
+		<span ng-click="removeChatSession(directory_chat)" class="glyphicon glyphicon-remove cm-pointer pull-right" style="margin:0px 5px;"></span>
+		</div>
+	</div><!-- End of Upper Chat header --> 
+	
+	<!-- Pop up of list of Option for User --> 
+	<div ng-show="directory_chat.showUserOptions == true" class="cm-directory-chat-user-option-wrapper">
+		<div ng-if="!directory_chat.isDirectoryChat">
+		<div ng-if="user_profile.user_id == 113 || user_profile.user_id == 379 || user_profile.user_id == 1006" href="#" class="cm-chat-user-option" ng-click="nudgeUser(directory_chat)">
+			<i class="fa fa-bolt"></i>
+			<span class="cm-pointer">Nudge User</span>
+		</div>
+		</div>
+		
+		
+		<div ng-if="user_profile.user_id == 113"class="cm-chat-user-option"  ng-click="toggleAudio(directory_chat)" > <!-- Option to add topic to chat --> 
+			<span href="#" class="fa fa-play-circle"></span>
+			<span class="option-text">Add Audio</span>
+		</div>
+		
+		<div class="cm-chat-user-option"  ng-click="toggleImage(directory_chat)" > <!-- Option to add topic to chat --> 
+			<span href="#" class="fa fa-camera"></span>
+			<span class="option-text">Add Image</span>
+		</div>
+		
+		<div class="cm-chat-user-option"  ng-click="toggleVideo(directory_chat)" > <!-- Option to add topic to chat --> 
+			<span href="#" class="fa fa-youtube-square"></span>
+			<span class="option-text">Add Video</span>
+		</div>
+		
+<!--
+		<div class="cm-chat-user-option" ng-click="removeChatSession(directory_chat)"> 
+			<span href="#" class="glyphicon glyphicon-remove "></span>
+			<span class="cm-pointer" ng-show="directory_chat.isGroupChat === false">Close Chat</span>
+			<span class="cm-pointer" ng-show="directory_chat.isGroupChat === true">Leave Chat</span>		 
+		</div>
+-->
+		
+<!--
+		<div href="#" class="cm-chat-user-option" ng-click="toggleChatSound(directory_chat)"> 
+			<span href="#" class="no-select" ng-class="{'glyphicon glyphicon-volume-up' : directory_chat.isSound == false || directory_chat.isSound == 'false', 'glyphicon glyphicon-volume-off' : directory_chat.isSound == true || directory_chat.isSound == 'true'}"></span>
+			<span class="cm-pointer" ng-show="directory_chat.isSound == false || directory_chat.isSound == 'false'" >Sound On</span>
+			<span class="cm-pointer" ng-show="directory_chat.isSound == true || directory_chat.isSound == 'true'" href="#">Sound Off</span> 
+		</div>
+-->
+		<div ng-if="!directory_chat.isDirectoryChat">
+		<div href="#" class="cm-chat-user-option" ng-show="directory_chat.isGroupChat || groupChatsAllowed && directory_chat.to_user_online.$value == true &&  directory_chat.to_user_chat_presence.$value != 'Offline'" ng-click="inviteToggle(directory_chat)"> <!-- Option to invite another user to chat --> 
+			<i class="fa fa-users"></i>
+			<span class="cm-pointer">Add User</span>
+		</div>
+		</div>
+		
+		<div ng-if="directory_chat.tag == false && !directory_chat.isDirectoryChat" class="cm-chat-user-option"  ng-click="tagChatOn(directory_chat)" > <!-- Option to tag the name of the chat box --> 
+			<span href="#" class=" glyphicon glyphicon-tag"></span>
+			<span class="cm-pointer">Tag Chat</span>
+		</div>
+		
+		<div ng-if="directory_chat.tag != false && !directory_chat.isDirectoryChat" class="cm-chat-user-option"  ng-click="removeTag(directory_chat)" > <!-- Option to tag the name of the chat box --> 
+			<span href="#" class=" glyphicon glyphicon-tag"></span>
+			<span class="cm-pointer">Remove Tag</span>
+		</div>
+		
+		<div ng-if="directory_chat.topic_location.$value == false && directory_chat.admin == directory_chat.user_id && directory_chat.isGroupChat == true" class="cm-chat-user-option"  ng-click="addTopicOn(directory_chat)" > <!-- Option to add topic to chat --> 
+			<span href="#" class="glyphicon glyphicon-star"></span>
+			<span class="cm-pointer">Add Topic</span>
+		</div>
+		
+		<div ng-if="!directory_chat.viewProfile && !directory_chat.isDirectoryChat"  class="cm-chat-user-option"  ng-click="viewProfile(directory_chat)" > <!-- Option to add topic to chat --> 
+			<span href="#" class="glyphicon glyphicon-star"></span>
+			<span class="cm-pointer">View Profile</span>
+		</div>
+		
+<!--
+		<div ng-if="directory_chat.viewProfile"  class="cm-chat-user-option"  ng-click="closeProfile(directory_chat)" >
+			<span href="#" class="glyphicon glyphicon-star"></span>
+			<span class="cm-pointer">Close Profile</span>
+		</div>
+-->
+		
+		<div class="cm-chat-user-option" ng-click="sendChatReceipt(directory_chat)" > <!-- Option to send chat history to user email --> 
+			<span href="#" class=" glyphicon glyphicon-envelope"></span>
+			<span class="cm-pointer">Chat Receipt</span>			
+		</div>			
+	</div> <!-- end of user option pop up -->
+	
+	<!-- Pop up for adding a user to the chat --> 
+	<div ng-controller="InviteController" ng-show="directory_chat.invite == true" class="cm-chat-invite-box" >
+		<typeahead-users  ng-init="inviteListInstance(directory_chat)" items="directory_chat.invite_list" prompt="Start typing name" title="name" avatar="avatar" subtitle="user_id" model="directory_chat.invited" ng-keydown="updateInviteCloseTimer(directory_chat)" ng-enter-press="selectActiveSelection(directory_chat)" on-select="onItemSelected(directory_chat)" />
+	</div>
+<!-- 	<a href="" ng-show="directory_chat.invite === true" class=" cm-chat-invite-close glyphicon glyphicon-remove" ng-click="closeInvite(directory_chat)"></a> -->
+	<!-- End of Pop up for adding user --> 
+	
+	<!-- Pop up input box for adding a topic to the chat --> 
+	<div ng-if="directory_chat.addTopicOn" class="cm-directory-chat-add-topic-wrapper" ng-submit="addTopic(directory_chat)">
+		<form class="form slim" role="form">
+			<div class="form-group slim">
+				<input  type="text" spellcheck="true"  pattern=".{5,40}" maxlength=35 required title="5 characters minimum"  class="cm-directory-chat-add-input" class="form-control" placeholder="Enter a topic for this chat..." ng-model="directory_chat.topic_description"  focus-me="directory_chat.isTopicFocus">
+			</div>
+			<button type="submit" style="width:0px;" class='hidden' </button> <!-- hidden --> 
+		</form>	
+		<div class="row slim" style="margin-top:3px; height:2px;">
+			<hr style="color:white; background:white; clear:both; ">	
+		</div>	
+	</div>
+	<!-- Pop up input box for adding Tag as name of the chat --> 
+	<div ng-if="directory_chat.showTagOption === true"  class="cm-directory-chat-tag-wrapper" ng-submit="updateTag(directory_chat)">
+		<form class="form slim" role="form">
+			<div class="form-group slim">
+				<input type="text" spellcheck="true"  pattern=".{3,20}" maxlength=20 required title="3 characters minimum" class="cm-chat-tag-input" class="form-control" placeholder="Enter Tag for this chat..." value="{{directory_chat.tag || ''}}" ng-model="directory_chat.tag_description"  focus-me="directory_chat.isTagFocus">
+			</div>
+			<button type="submit" style="width:0px;" class='hidden' </button>
+		</form>		
+	</div>
+	<!-- end of tag input box --> 
+	
+	<div id="{{'topic_' + directory_chat.session_key + '_wrapper'}}" ng-show="directory_chat.allowTopic == true && directory_chat.topic_location.$value != false && directory_chat.topic_location.$value != null " ng-click="clearDirectory(directory_chat)" class="cm-directory-chat-topic-wrapper">
+	<span ng-click="toggleTopic(directory_chat)" class="cm-chat-topic-icon glyphicon glyphicon-pushpin cm-topic-toggle"></span>
+		<div class="cm-directory-chat-topic min-scroll"  ng-class="{'truncated':directory_chat.isTopicTruncated == true}">
+			<span id="{{'topic_' + directory_chat.session_key}}" maxlength=60 ng-enter-press="updateTopic(directory_chat)" contenteditable="{{ directory_chat.admin == directory_chat.user_id}}"  ng-class="{'selectable' : directory_chat.admin == directory_chat.user_id ,'no-select' : directory_chat.admin != directory_chat.user_id}"  ng-bind="directory_chat.topic_location.$value"></span>
+		</div>
+		<span href="#" ng-show="directory_chat.admin == directory_chat.user_id" ng-click="removeTopic(directory_chat)" class="cm-chat-topic-close glyphicon pull-right glyphicon-remove"></span>
+	</div>
+	
+	<!-- Section for displaying Chat messages --> 
+	<div>
+	
+	<div ng-show ="directory_chat.emotions == true;" class="well well-sm slim cm-directory-chat-content-wrapper min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height - (vertical_adjust - directory_chat.topic_height)}}px;">
+		<div ng-repeat="emo in emojis track by $index ">
+			<span ng-click="addEmoji(emo, directory_chat);" style="float:left;" ng-bind-html="emo | emoji" ></span>
+		</div>
+	</div>
+	
+	<div ng-show="directory_chat.showProfile && !directory_chat.isDirectoryChat" class="well well-sm slim cm-directory-chat-content-wrapper min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height - (vertical_adjust - directory_chat.topic_height)}}px;">
+		<span ng-click="closeProfile(directory_chat)" class="glyphicon glyphicon-remove cm-close-profile cm-pointer" style="color:red;"></span>
+		<cm-user-profile name="directory_chat.to_user_name" user="user_profile.user_id" avatar="directory_chat.to_user_avatar" access="user_profile.position" online="directory_chat.to_user_online.$value" data="directory_chat.additional_profile"></cm-user-profile>
+	</div>
+	
+	<div ng-show="directory_chat.addAudio" class="well well-sm slim cm-directory-chat-content-wrapper min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height - (vertical_adjust - sm_group_chat.topic_height)}}px;">
+		<span ng-click="toggleAudio(directory_chat)" class="glyphicon glyphicon-remove cm-close-profile cm-pointer" style="color:red;"></span>
+		<cm-audio ng-init="chat = directory_chat"></cm-audio>
+	</div>
+	
+	<div ng-show="directory_chat.addVideo" class="well well-sm slim cm-directory-chat-content-wrapper min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height - (vertical_adjust - directory_chat.topic_height)}}px;">
+		<span ng-click="toggleVideo(directory_chat)" class="glyphicon glyphicon-remove cm-close-profile cm-pointer" style="color:red;"></span>
+		<cm-video ng-init="chat = directory_chat"></cm-video>
+	</div>
+	
+	<div ng-show="directory_chat.addImage" class="well well-sm slim cm-directory-chat-content-wrapper min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height - (vertical_adjust - directory_chat.topic_height)}}px;">
+		<span ng-click="toggleImage(directory_chat)" class="glyphicon glyphicon-remove cm-close-profile cm-pointer" style="color:red;"></span>
+		<cm-image ng-init="chat = directory_chat"></cm-image>
+	</div>
+	
+	
+	<div scroll-to-bottom="directory_chat.scroll_bottom == true" scroll-to-top="directory_chat.scroll_top == true" id="{{'message_display_' + directory_chat.index_position}}"  ng-click="clearDirectory(directory_chat)" class="cm-directory-chat-message-display min-scroll" style="position:relative; height:{{cm_directory_chat_message_display_height - vertical_adjust}}px;" ng-class="{'chat-fade-out cm-no-scroll': isReloading(directory_chat)}">
+	<div ng-if="chat.isTopSpacer"></div>
+	<div style="height:{{directory_chat.topic_height}}px;"></div>
+		<div class="cm-directory-chat-message-section">
+			<!-- Start of messages for an individual chat  --> 	
+			<div ng-repeat=" message in directory_chat.chats track by $index" ng-class="{'faded' : directory_chat.convert == true}">
+<!-- 				<div ng-init="isMessagePastHour(message, directory_chat.time_reference); isLastMessagePastMinute(message, directory_chat.chats[$index-1].time); isAuthorSameAsLast(message, directory_chat.chat_log[$index-1]); isMessageFromUser(message);"></div> -->
+				<div ng-if="message.author == directory_chat.internal_reference" class="cm-chat-internal-body"> <!-- ng show if this is an internal chat message --> 
+					<p class="cm-directory-chat-internal-message text-muted no-select" style="word-wrap: break-word; margin-bottm:5px;" ng-bind-html="message.text"></p>
+				</div>
+				<div ng-if="message.author != directory_chat.internal_reference">
+					<div ng-init="setChatMessage(message, directory_chat, $index)"></div>
+					<div class="cm-chat-spacer"  ng-if="!(message.from_prev_author)"></div>
+					<div ng-class="{'cm-chat-message-new' : directory_chat.chat_log[$index-1] != message.author || directory_chat.chat_log[$index-1] == message.author && message.time_lapse == true, 'cm-chat-message-extend' : directory_chat.chat_log[$index-1] == message.author && message.time_lapse == false}">	<!-- repeat of all messages stored as an individual Chat--> 
+						<div ng-if="message.author == directory_chat.user_id && !(message.from_prev_author) || message.author == directory_chat.user_id  &&  message.time_lapse == true" class="cm-chat-message-avatar-left" >
+							<center><img class="cm-chat-message-avatar  one-edge-shadow" ng-src="/components/com_callcenter/images/avatars/{{directory_chat.user_avatar}}-90.jpg" alt="..."></center>
+<!-- 							<div class="cm-directory-chat-speek-arrow-left"></div> -->
+						</div>
+						<div ng-if="message.author != directory_chat.user_id && !(message.from_prev_author) || message.time_lapse == true && message.author != directory_chat.user_id" class="cm-chat-message-avatar-right"  >
+							<center><img class="cm-chat-message-avatar  one-edge-shadow" ng-src="/components/com_callcenter/images/avatars/{{directory_chat.to_user_avatar}}-90.jpg" alt="..."></center>
+<!-- 							<div class="cm-directory-chat-speek-arrow-right"></div> -->
+						</div>
+						
+						<div  ng-init="logValue('message shows user presence as ' + user_chat_presence.$value)" ng-if="(!(message.from_prev_author) && message.author_is_self) || message.time_lapse && message.author_is_self" class="no-select cm-chat-message-timestamp cm-chat-message-timestamp-border" ng-class="{'alert-danger' : user_chat_presence.$value == 'Busy' && user_online.$value == true ,'white' : user_online.$value == false || user_chat_presence.$value == 'Offline','alert-success' : user_chat_presence.$value == 'Online' && user_online.$value == true ,'pushLeft' : message.author == directory_chat.user_id }">					
+							<span class="cm-chat-message-name-right" ng-bind="directory_chat.self_name"></span>
+							<div class="cm-chat-message-timestamp-right">
+								<span ng-if="message.past_hour" ng-bind="message.time | date:'MM/dd @ h:mma'"></span>
+								<span ng-if="!(message.past_hour)" ng-bind="message.time | {{directory_chat.time_format}}"></span>								
+							</div>
+						</div>
+						
+						<div ng-if="!(message.from_prev_author) && !(message.author_is_self) || message.time_lapse && !(message.author_is_self)" class="no-select cm-chat-message-timestamp cm-chat-message-timestamp-border" ng-class="{'alert-danger':directory_chat.to_user_chat_presence.$value == 'Busy' && directory_chat.to_user_online.$value == true ,'white' : directory_chat.to_user_online.$value == false || directory_chat.to_user_chat_presence.$value == 'Offline','alert-success' : directory_chat.to_user_chat_presence.$value == 'Online' && directory_chat.to_user_online.$value == true ,'pushLeft' : message.author == directory_chat.user_id }">					
+							<span class="cm-chat-message-name-left" ng-bind="directory_chat.to_user_f_name"></span>
+							<div class="cm-chat-message-timestamp-left">
+								<span ng-if="message.past_hour" ng-bind="message.time | date:'MM/dd @ h:mma'"></span>
+								<span ng-if="!(message.past_hour)" ng-bind="message.time | {{directory_chat.time_format}}"></span>								
+							</div>
+						</div>
+						
+							
+						<div ng-class="{ 'alert-info' : message.author != directory_chat.user_id, 'cm-self' : message.author == directory_chat.user_id, 'alert-offline' : message.offline == true, 'cm-chat-message-new-left no-radius' : message.from_prev_author == false, 'repeat-item cm-chat-message-new-right no-radius' : message.from_prev_author == true, 'chat_extend_left no-radius' : message.from_prev_author == false &&  message.author != directory_chat.user_id ,'chat_extend_right no-radius' : message.from_prev_author == true && message.author == directory_chat.user_id, 'rounded-bottom one-edge-shadow selectable' : $last || directory_chat.chat_log[$index+1] != message.author || message.was_time_lapse == true}">
+							<div ng-class="{'cm-directory-chat-speek-arrow-right':message.author != directory_chat.user_id && !message.from_prev_author || message.author != directory_chat.user_id && message.time_lapse,'cm-directory-chat-speek-arrow-left':message.author == directory_chat.user_id && !message.from_prev_author ||message.author == directory_chat.user_id &&  message.time_lapse}"></div>
+							<div ng-if="message.author_is_self && message.from_prev_author && message.minute_from_last && !(message.time_lapse)" class="no-select cm-chat-extend-timestamp">
+								<span ng-if="message.past_hour" ng-bind="message.time | date:'MM/dd @ h:mma'"></span>
+								<span ng-if="!(message.past_hour)" ng-bind="message.time | {{directory_chat.time_format}}"></span>							
+							</div>
+							<div ng-show="message.author_is_self == false && message.from_prev_author == true  && message.minute_from_last == true && message.time_lapse == false" class="no-select cm-chat-extend-timestamp">
+								<span ng-if="message.past_hour" ng-bind="message.time | date:'MM/dd @ h:mma'"></span>
+								<span ng-if="!(message.past_hour)" ng-bind="message.time | {{directory_chat.time_format}}"></span>							
+							</div>
+							<span ng-if="message.offline" style="font-size:.6em; position:absolute; right: 2px; top:8px;" class="text-danger pull-right glyphicon glyphicon-asterisk"></span>
+							<div ng-if="message.code" ng-init="message.showVideo = false">
+								<div ng-if="message.heading && message.showVideo" style="width:100%; min-height:15px; margin-top:5px; clear:both;">
+									<center><span ng-if="message.showVideo" style="font-weight:bold; text-align:center;" ng-bind="message.heading"></span></center>
+								</div>
+								<cm-youtube ng-if="message.showVideo" style="pointer-events:all;"code="message.code"></cm-youtube>
+							</div>
+							<div ng-if="message.image">
+								<div ng-if="message.heading" style="width:100%; min-height:15px; margin-top:5px; clear:both;">
+									<center><span style="font-weight:bold;" ng-bind="message.heading"></span></center>
+								</div>
+								<img class="thumbnail" ng-if="message.image" ng-src="{{message.image}}" style="height:100%; max-height:100%; width:100%; max-width:100; margin:2px;"/>
+							</div>
+							<div ng-if="message.audio || message.cid" ng-init="message.showAudio = false;">
+								<div ng-if="message.heading && message.showAudio"  style="width:100%; min-height:15px; margin-top:5px; clear:both;">
+									<center><span style="font-weight:bold; text-align:center;" ng-bind="message.heading"></span></center>
+								</div>
+								<div ng-if="message.showAudio && message.audio">
+									<cm-audio-record style="pointer-events:all;"></cm-audio-record>
+								</div>
+							</div>
+							<span ng-if="message.code" ng-click="message.showVideo = !message.showVideo" href="#" class="fa fa-youtube-square cm-pointer" style="position:absolute; right:8px;  bottom:2px; font-size:1.2em;"></span>
+							<span ng-if="message.audio || message.cid" ng-click="initAudio(message)" href="#" class="fa fa fa-play-circle cm-pointer" style="position:absolute; right:8px;  bottom:2px; font-size:1.2em;"></span>
+							<p scroll-on-click="isReferencedMessage(message)"  ng-dblclick="addReferenceMessage(directory_chat, message)" class="cm-chat-message-text" id="{{'ID_' + directory_chat.to_user_id + '_' + message.priority}} " ng-enter-press="updateMessage(directory_chat, message.priority, $index)" ng-blur="updateMessage(directory_chat, message.priority, $index)" ng-model="message.text"  contenteditable="{{ $last && message.key == directory_chat.user_last_chat}}" focus-me="$last && message.key == directory_chat.user_last_chat" spellcheck="false" ng-bind-html="message.text | linky:'_blank' | emoji"></p>
+							<div ng-if="message.reference != undefined ">
+								<div ng-init="setReference(message, directory_chat.first_priority)" class="cm-chat-message-text-ref-link" ng-click="referenceMessage(message.reference, 'ID_' + directory_chat.to_user_id + '_' + message.reference,  'message_display_' + directory_chat.index_position)">
+									<span ng-bind="'@' + message.referenceName"></span>&nbsp;<span ng-bind="'...' + message.referenceText"></span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="chat-spacing"></div>			
+				</div><!-- end of chat format container --> 
+			</div> <!-- end of chat message repeat -->
+			<div class="cm-chat-bottom-spacer" ng-show="directory_chat.isGroupChat == false"></div>  
+		</div>  <!-- end of individual message section --> 
+	
+		<!-- Group Chat message section --> 
+		<div ng-if="directory_chat.isGroupChat" class="cm-directory-chat-message-section">
+			<div ng-show="directory_chat.addTopicOn || directory_chat.topic_location.$value != false" class="med-spacer "></div>
+			<div ng-repeat=" message in directory_chat.group_chats track by $index" >
+				<div class="cm-chat-spacer"  ng-if= "directory_chat.group_chat_log[$index-1] != message.author"></div>
+				<div ng-if="message.author == directory_chat.internal_reference" class="cm-chat-internal-body"> <!-- ng show if this is an internal chat message --> 
+					<p class="cm-directory-chat-internal-message text-muted no-select" style="word-wrap: break-word;" ng-bind-html="message.text | linky:'_blank' | emoji "></p>
+				</div>
+				<div ng-if="message.author != directory_chat.internal_reference"> <!-- ng-repeat of messgaes stored as a group chat --> 
+					<div ng-init="setChatMessage(message, directory_chat, $index)"></div>
+					<div ng-class="{'cm-chat-message-new' : directory_chat.group_chat_log[$index-1] != message.author || directory_chat.group_chat_log[$index-1] == message.author && message.time_lapse == true, 'cm-chat-message-extend' : directory_chat.group_chat_log[$index-1] == message.author && message.time_lapse == false}" > <!-- ng-show if this is not an internal chat message -->  				
+						<div ng-if="message.author == directory_chat.user_id && directory_chat.group_chat_log[$index-1] != message.author || message.author == directory_chat.user_id && message.time_lapse" class="cm-chat-message-avatar-left"  >
+							<center><img ng-src="{{message.avatar}}" class="cm-chat-message-avatar  one-edge-shadow" alt="..."></center>
+<!-- 							<div class="cm-directory-chat-speek-arrow-left"></div> -->
+						</div>
+						<div ng-if="message.author != directory_chat.user_id && !(message.from_prev_author) || message.author != directory_chat.user_id && message.time_lapse" class="cm-chat-message-avatar-right"  >
+							<center><img ng-src="{{message.avatar}}" class="cm-chat-message-avatar  one-edge-shadow" alt="..."></center>
+<!-- 							<div class="cm-directory-chat-speek-arrow-right"></div> -->
+						</div>
+						
+						<div ng-if="directory_chat.group_chat_log[$index-1] != message.author || directory_chat.group_chat_log[$index-1] == message.author &&  message.time_lapse == true" class="no-select cm-chat-message-timestamp cm-chat-message-timestamp-border" ng-class="{'alert-danger' : directory_chat.user_details[message.author].profile_location.$value == false, 'alert-success' : directory_chat.user_details[message.author].profile_location.$value == true, 'white' : directory_chat.user_details[message.author].profile_location.$value == false || directory_chat.user_details[message.author].profile_location.$value == undefined || network == false, 'pushLeft' : message.author == directory_chat.user_id }">
+							<span class="cm-chat-message-name-left"  ng-if="message.author != directory_chat.user_id" ng-bind="message.authorName"></span>
+							<span class="cm-chat-message-name-right" ng-if="message.author == directory_chat.user_id" ng-bind="directory_chat.self_name"></span>
+							<div ng-class="{'cm-chat-message-timestamp-right' : message.author == directory_chat.user_id, 'cm-chat-message-timestamp-left' : message.author != directory_chat.user_id}">
+								<span ng-if="message.past_hour" ng-bind="message.time | date:'MM/dd @ h:mma'"></span>
+								<span ng-if="!(message.past_hour)" ng-bind="message.time | {{directory_chat.time_format}}"></span>								
+							</div>
+						</div>
+						<div ng-class="{'alert-info' : message.author != directory_chat.user_id, 'cm-self' : message.author == directory_chat.user_id ,'cm-chat-message-new-left no-radius' : directory_chat.group_chat_log[$index-1] != message.author, 'repeat-item cm-chat-message-new-right no-radius' : directory_chat.group_chat_log[$index-1] == message.author, 'chat_extend_left no-radius' : directory_chat.group_chat_log[$index-1] != message.author &&  message.author != directory_chat.user_id ,'chat_extend_right no-radius' : directory_chat.group_chat_log[$index-1] == message.author && message.author == directory_chat.user_id,'rounded-bottom one-edge-shadow selectable' : $last || directory_chat.group_chat_log[$index+1] != message.author || message.was_time_lapse == true }">
+							<div ng-show="message.from_prev_author && message.minute_from_last && message.time_lapse == false" class="no-select cm-chat-extend-timestamp">
+								<span ng-if="message.past_hour" ng-bind="message.time | date:'MM/dd @ h:mma'"></span>
+								<span ng-if="!(message.past_hour)" ng-bind="message.time | {{directory_chat.time_format}}"></span>										
+							</div>
+							<p scroll-on-click="isReferencedMessage(message, directory_chat)"  ng-dblclick="addReferenceMessage(directory_chat, message)" class="cm-chat-message-text" id="{{'ID_' + directory_chat.session_key + '_' + message.priority + '_group'}} " ng-enter-press="updateGroupMessage(directory_chat, message.priority, $index)" ng-blur="updateGroupMessage(directory_chat, message.priority, $index)" ng-model="message.text"  contenteditable="{{ $last && message.key == directory_chat.user_last_chat}}" spellcheck="false" ng-bind-html="message.text  | linky:'_blank' | emoji "></p>
+							<div ng-if="message.reference && message.reference < directory_chat.first_priority" class="cm-chat-message-text-ref">
+								<span ng-bind="'@' + message.referenceName"></span>&nbsp;<span ng-bind="'...' + message.referenceText"></span>
+							</div>
+							<div ng-if="message.reference && message.reference >= directory_chat.first_priority" class="cm-chat-message-text-ref-link" ng-click="referenceMessage(message.reference, 'ID_' + directory_chat.session_key + '_' +  message.reference + '_group', 'message_display_' + directory_chat.index_position)">
+								<span ng-bind="'@' + message.referenceName"></span>&nbsp;<span ng-bind-html="'...' + message.referenceText | emoji"></span>
+							</div>
+						</div>
+						<div class="chat-spacing"></div>
+						<div class="cm-chat-bottom-spacer"  ng-show="$last"></div>
+					</div> <!-- End of chat-body --> 
+				</div> <!-- end of  non-internal message-->
+			</div><!-- endof ng-repeat of group chat messages -->
+			<div class="cm-chat-bottom-spacer"></div>
+		</div><!-- end of group chat message section --> 
+<!-- 		<div ng-if="directory_chat.stick_to_bottom" ng-click="directory_chat.stick_to_bottom = false;" class="bottom-spacer" style="background:black; border-radius:5px;"></div> -->
+	</div> <!-- End of message display --> 
+	<div class="cm-directory-chat-info-wrapper">
+		<div ng-if="directory_chat.isGroupChat == true && directory_chat.is_typing_list.length > 0" class="cm-directory-group-typing-wrapper">
+			<i class="fa fa-spinner fa-spin pull-left" style="position:relative; top:3px;"></i>
+			<img ng-repeat="avatar in directory_chat.is_typing_list track by $index" ng-src="/components/com_callcenter/images/avatars/{{avatar}}-90.jpg" class="cm-directory-group-typing-avatar"/>
+		</div>
+		<div ng-if="network == false && !directory_chat.isDirectoryChat" class=" cm-directory-chat-offline-text">You are Offline.</div>		
+		<!-- 		<div ng-if="(directory_chat.isGroupChat == false && directory_chat.to_user_online.$value == false) || (network == true && directory_chat.to_user_chat_presence.$value == 'Offline')"  class="offline-text one-edge-shadow">{{directory_chat.tag || directory_chat.to_user_f_name}} is Offline.</div>	 -->
+		<div ng-if="directory_chat.isGroupChat == true && directory_chat.group_count < 1 && !directory_chat.isDirectoryChat">
+			<div class="cm-directory-chat-offline-text">The Group Chat is Empty.</div>
+		</div>
+		<div ng-show="(directory_chat.isGroupChat == false && directory_chat.to_user_online.$value == false) || (network == true && directory_chat.to_user_chat_presence.$value == 'Offline')"  class="cm-directory-chat-offline-text">{{directory_chat.tag || directory_chat.chat_description || directory_chat.to_user_name}} is Offline.</div>
+		<div ng-show="directory_chat.nudge" class="cm-directory-chat-offline-text" style="background:rgba(69,106,151,0.8);"><i class="fa fa-bolt chat-nudge-icon"></i> You were just nudged by {{directory_chat.to_user_f_name}} <i class="fa fa-bolt chat-nudge-icon"></i></div>
+		
+		<div ng-init="hover = false"; ng-show="directory_chat.to_user_chat_presence_message.$value && directory_chat.to_user_chat_presence_message_post.$value" class="cm-away-banner min-scroll" ng-class="{transparent: hover}" ng-mouseenter="hover = true" ng-mouseleave="hover = false">
+			<span ng-bind="directory_chat.to_user_chat_presence_message.$value"></span>
+		</div>
+	</div>
+	
+	<div style="position:relative; width:100%; margin:0px; padding:1px 0px 0px 0px; height:{{chat_textarea_height}}px;">
+		<div ng-if="directory_chat.isGroupChat == false">
+			<textarea  ng-click="setTextFocus(directory_chat)" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on" placeholder="Enter chat to {{directory_chat.to_user_f_name}}... "  ng-keydown="showAsTyping(directory_chat)" ng-model="directory_chat.chat_text"  ng-enter-press=" addChatMessage(directory_chat)" class="cm-directory-chat-textarea" focus-me="directory_chat.isTextFocus" ng-tab-press="setNexTab()"></textarea>	
+			<i style="position:absolute; top:5px; right:20px; z-index:109;" ng-show="isPinging" class="fa fa-spinner fa-spin fa-2x" ng-class="{'Busy':isPinging}"></i>
+		</div>
+		<!-- Text area that is open when chat is a group chat --> 	
+		<div ng-if="directory_chat.isGroupChat == true">
+			<textarea ng-click="setTextFocus(directory_chat)" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on"  placeholder="Enter chat to the group..." ng-keydown="isGroupTyping(directory_chat)" ng-model="directory_chat.chat_text"  ng-enter-press="addGroupChatMessage(directory_chat)" class="cm-directory-chat-textarea" focus-me="directory_chat.isTextFocus" ng-tab-press="setNexTab()"></textarea>	
+				
+		</div>
+		<div ng-show="isPageComplete && directory_chat"ng-click="toggleEmoji(directory_chat)" class="cm-directory-chat-emoji-toggle">
+			<center><span ng-blur="toggleEmoji(directory_chat)" class="emoji emoji_smiley" style="font-size:5px;"></span></center><!-- Toggle for emoji pop up box --> 
+		</div>
+	</div>	
+	<!-- end of main upp content of chat box --> 
+	
+	<div  class="row" ng-show="directory_chat.reference != null">
+		<div class="cm-directory-chat-reference-text">
+			<span ng-bind="'@' + directory_chat.referenceName"></span>&nbsp;<span ng-bind="'...' + directory_chat.referenceText"></span>
+		</div>
+	</div>
+		
+	<div ng-init="resetTyping(directory_chat);"></div>
+</div><!-- end of chat box open/closed format --> 

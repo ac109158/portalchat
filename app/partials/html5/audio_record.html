@@ -1,0 +1,19 @@
+<div>
+	<div ng-if="message.cid"style="position:relative; width:100%;">				
+		<audio ng-if="browser=='Chrome'" controls style="position:relative; width:100%;">
+			<source src="{{message.audio}}">
+			<object  type="audio/wav" data="{{message.audio}}" width="100%" height="45">
+				<param name="src" value="{{message.audio}}">
+			</object>
+		</audio>
+		<div ng-if="browser!='Chrome'" style='width:100%; font-weight:bold; text-align:center;'>Your Browser does not support this audio format.</div>
+	</div>
+	<div ng-if="!message.cid" style="position:relative; width:100%;">				
+		<audio ng-if="browser=='Chrome'" controls style="position:relative; width:100%;">
+			<source src="{{message.audio}}">
+			<object type="audio/x-wave" data="{{message.audio}}" width="100%" height="45">
+				<param name="src" value="{{message.audio}}">
+			</object>
+		</audio>
+	</div>
+</div>

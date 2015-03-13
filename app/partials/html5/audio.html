@@ -1,0 +1,59 @@
+<div style="position:relative; height: 90%;width:96%; margin:0px auto; margin-top:5%; background:rgba(255,255,255,.8); overflow-y:auto; overflow-x:hidden;" class="well well-sm well-slim min-scroll">
+	<div>
+		<span class="cm-profile-span-label">Add Audio</span>
+		<form ng-submit="addAudioMessage(chat)">
+				<div class="cm-directory-label" style="top:-5px;">
+					<div class="cm-directory-label-decal one-edge-shadow">
+						<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">Heading</div>
+					</div>
+				</div>
+				<input class="cm-input" type="text"  ng-model="audio.heading" placeholder="Enter a heading if you would like..." focus-me="true"/>
+				<div class="cm-chat-spacer"></div>
+				<div ng-if="!audio.cid">
+					<div class="cm-directory-label">
+						<div class="cm-directory-label-decal one-edge-shadow">
+							<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">Url</div>
+						</div>
+					</div>
+					<div class="cm-bottom-spacer"></div>
+					<input class="cm-input" type="text"  ng-model="audio.url" placeholder="Please enter a url..."/>
+					<div class="cm-chat-spacer"></div>
+				</div>
+				
+				<div ng-if="!audio.url && browser == 'Chrome' && user_profile.role == 'PlusOne Admin'">
+					<div class="cm-directory-label">
+						<div class="cm-directory-label-decal one-edge-shadow">
+							<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">CID</div>
+						</div>
+					</div>
+					<div class="cm-bottom-spacer"></div>
+					<input class="cm-input" type="text"  ng-model="audio.cid" placeholder="Please enter a Contact ID..."/>
+					<div class="cm-chat-spacer"></div>
+				</div>
+				
+				<div class="cm-directory-label">
+					<div class="cm-directory-label-decal one-edge-shadow">
+						<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">Message</div>
+					</div>
+				</div>
+				
+				<textarea class="cm-textarea" name="textarea" ng-model="audio.message" rows="5" cols="30" placeholder="Please enter a message..."  required></textarea>
+				<div class="cm-chat-spacer"></div>
+				<div ng-if="audio.url">				
+					<audio controls ng-if="!audio.cid && audio.url">
+						<source src="{{audio.url}}">
+						<object type="audio/x-wave" data="{{audio.url}}" width="100%" height="45">
+							<param name="src" value="{{audio.url}}">
+						</object>
+					</audio>	
+					<audio controls ng-if="audio.cid && audio.url">
+						<source src="{{audio.url}}">
+						<object type="audio/wave" data="{{audio.url}}" width="100%" height="45">
+							<param name="src" value="{{audio.url}}">
+						</object>
+					</audio>
+				</div>			
+				<input style="margin:5px 0px;" type="submit" name="submit" value="submit" />
+		</form>
+	</div>
+</div>
