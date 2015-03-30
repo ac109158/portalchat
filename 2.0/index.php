@@ -8,8 +8,8 @@
      <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 </head>
 <body>
-    <div ng-controller="core.main" ng-init="initApp();">
-        Portal Chat {{test}}
+    <div presence="MOUSE TOUCH KEYBOARD" ng-controller="core.main" ng-init="initUser();">
+        <!-- <chat-module></chat-module> -->
     </div>
 </body>
 </html>
@@ -48,7 +48,7 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
     };
 })();
 (function(){
-    var debug = true;
+    var debug = false;
 
 
     window.onerror = function (errorMsg, url, lineNumber, columnNumber, errorObject) {
@@ -81,7 +81,7 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
 
         './modules/core/components/emoji/core.service.emoji.js',
 
-        './modules/core/components/notifications/core.srv.notifications.js',
+        './modules/core/components/notifications/core.srv.notificationsManager.js',
 
         './modules/core/components/presence/core.fact.presence.js',
 

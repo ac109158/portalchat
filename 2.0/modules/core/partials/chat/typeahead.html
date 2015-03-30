@@ -1,0 +1,8 @@
+<input style="position:relative; padding:0px 2px; height:25px; width:100%; float:left; clear:both;"  type="text" ng-model="model" placeholder="{{prompt}}" ng-keydown="selected=false"  autofocus="autofocus" focus-me="true" />
+<br/>
+<div class="items" ng-hide="!model.length || selected">
+  <div class="cm-invite-list-item" ng-repeat="item in items | filter:model  track by $index" ng-click="handleSelection(item[title])" style="cursor:pointer" ng-class="{'cm-chat-active-selection':isCurrent($index)}" ng-mouseenter="setCurrent($index)">
+  	<img  ng-src="/components/com_callcenter/images/avatars/{{item[avatar]}}-90.jpg" width=20 height=20>
+    <span class="title">{{item[title]}}</span>
+  </div>
+</div>

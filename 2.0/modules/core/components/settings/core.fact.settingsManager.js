@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('SettingsManager', ['$rootScope', '$log', '$window', 'CoreConfig', 'localStorageService', 'NotificationService', function($rootScope, $log, $window, CoreConfig, localStorageService, NotificationService) {
+service('SettingsManager', ['$rootScope', '$log','$timeout','$window', 'CoreConfig', '$firebaseObject', 'localStorageService', 'NotificationManager', function($rootScope, $log, $timeout, $window, CoreConfig, $firebaseObject, localStorageService, NotificationManager) {
     var that = this;
 
     this.settings = {};
@@ -32,14 +32,14 @@ service('SettingsManager', ['$rootScope', '$log', '$window', 'CoreConfig', 'loca
 
     this.setFirebaseLocations = function() {
         if (CoreConfig.user.id) {
-            that.fb.location.settings = new Firebase(FBURL + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/');
+            that.fb.location.settings = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/');
         }
     };
 
     this.setFirebaseTargets = function() {
         if (CoreConfig.user.id) {
-            that.fb.target.is_external_window = $firebase(new Firebase(FBURL + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/is-external-window/'));
-            that.fb.target.is_panel_open = $firebase(new Firebase(FBURL + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/module-open/'));
+            that.fb.target.is_external_window = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/is-external-window/'));
+            that.fb.target.is_panel_open = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/module-open/'));
             return true;
         }
         return false;
@@ -168,7 +168,7 @@ service('SettingsManager', ['$rootScope', '$log', '$window', 'CoreConfig', 'loca
                 that.settings.sound_level = snapshot.val();
             }
             if (that.settings.sound_level) {
-                NotificationService.__updateSoundLevel(that.settings.sound_level);
+                NotificationManager.updateSoundLevel(that.settings.sound_level);
             }
         });
     };
@@ -186,6 +186,14 @@ service('SettingsManager', ['$rootScope', '$log', '$window', 'CoreConfig', 'loca
             return 1;
         } else {
             return 2;
+        }
+    };
+
+    this.updateSoundLevel = function(level) {
+        if (parseInt(level) && level > -1 && level <= 50) {
+            that.fb.location.settings.update({
+                'sound-level': parseInt(level)
+            });
         }
     };
 

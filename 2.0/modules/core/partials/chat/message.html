@@ -1,0 +1,3 @@
+<div ng-repeat="chat_text  in messages">		
+	<p class="new_chat" ng-class="{'pull-right' : message.author == chat.user_id,  'pull-left' : message.author != chat.user_id}" ng-bind-html="to_trusted(chat_text) | linky:'_blank' | emoji "></p>
+</div>

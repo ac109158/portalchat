@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$timeout', 'CoreConfig', 'UserManager', 'NotificationService', function($rootScope, $firebase, $log, $http, $window, $timeout, CoreConfig, UserManager, NotificationService) {
+service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$timeout', 'CoreConfig', 'UserManager', 'NotificationManager', function($rootScope, $firebase, $log, $http, $window, $timeout, CoreConfig, UserManager, NotificationManager) {
     var that = this;
     this.firebase_connection = true;
     this._network = true;
@@ -65,9 +65,9 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
         $log.debug('UtilityService.setFirebaseOnline');
         Firebase.goOnline();         // jshint ignore:line
     };
-    this.__pingTest = function(scope, chat) {
+    this.pingTest = function(network_model) {
         $log.debug('running ping test');
-        scope.isPinging = true;
+        network_model.pinging = true;
         var imageAddr = "/components/com_callcenter/views/training/ng/img/ping_test_5mb" + "?n=" + Math.random();
         var startTime, endTime;
         var downloadSize = 5245329;
@@ -87,10 +87,10 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
             var speedMbps = (speedKbps / 1024).toFixed(2);
             $log.debug(downloadSize + " : " + duration);
             $log.debug("Connection speed is: \n" + speedBps + " bps\n" + speedKbps + " kbps\n" + speedMbps + " Mbps\n");
-            scope.ping = speedMbps;
-            scope.isPinging = false;
+            network_model.ping = speedMbps;
+            network_model.pinging = false;
 
-            that.__sendResponseChat(scope, chat, "Connection Rating is: \n" + Math.ceil(speedMbps / 10) + "/10 \n");
+            // that.__sendResponseChat(scope, chat, "Connection Rating is: \n" + Math.ceil(speedMbps / 10) + "/10 \n");
         }
     };
     this.safeApply = function(fn) //util function
@@ -110,7 +110,8 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
                 UserManager.user_profile_location.update({
                     'online': true,
                     'state': 'Online'
-                }); /* NotificationService.__playSound(NotificationService._update_alert); */
+                });
+                NotificationManager.playSound(NotificationManager.sound.update_alert);
                 that._browser_online = true;
             }, 1000);
         } else if (angular.isDefined(UserManager.user_profile_location) && online === false) {
@@ -129,7 +130,7 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
                     'online': online,
                     'state': 'Idle'
                 });
-                NotificationService.__playSound(NotificationService._money);
+                NotificationManager.playSound(NotificationManager.sound.money);
                 that._network = true;
             }, 1000);
         } else if (angular.isDefined(UserManager.user_profile_location) && online === false) { /*           UtilityService.firebase_connection = online; */
@@ -137,7 +138,7 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
                 'Online': false,
                 'state': 'Offline'
             });
-            NotificationService.__playSound(NotificationService._bash_error);
+            NotificationManager.playSound(NotificationManager.sound.bash_error);
             that._network = false;
         }
     };

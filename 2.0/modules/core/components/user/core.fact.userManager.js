@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$firebaseObject', 'CoreConfig', 'CoreApi', 'BrowserService', 'NotificationService', 'localStorageService', function($rootScope, $log, $http, $timeout, $window, $firebaseObject, CoreConfig, CoreApi, BrowserService, NotificationService, localStorageService) {
+factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$firebaseObject', 'CoreConfig', 'CoreApi', 'BrowserService','localStorageService', function($rootScope, $log, $http, $timeout, $window, $firebaseObject, CoreConfig, CoreApi, BrowserService, localStorageService) {
     // Firebase.enableLogging(true);
     var that = this;
     this.user_init = false;
@@ -35,7 +35,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
             }
         }).finally(function(val) {
             if (that.user.id) {
-                console.log('We now have a user : ', that.user);
+                // console.log('We now have a user : ', that.user);
                 return true;
             } else {
                 $rootScope.broadcast('user-toast', {
@@ -45,6 +45,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
                 return false;
             }
         });
+        return promise;
 
     };
 
@@ -59,6 +60,8 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
             that.manageUserPresence();
             that.manageUserSupervisors();
             that.manageFireBaseConnection();
+            CoreConfig.user = that.user;
+            $rootScope.$broadcast('user-ready');
         }
     };
 
@@ -74,8 +77,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         that.user.supervisors = model.supervisors;
         that.user.ip = model.ip;
         that.user.office = model.office;
-        CoreConfig.user = that.user;
-        $rootScope.$broadcast('user-ready');
     };
 
     this.setUserProfile = function() {
@@ -353,6 +354,72 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         that.fb.location.additional_profile.update({
             'checkInTime': Firebase.ServerValue.TIMESTAMP
         });
+    };
+
+    this.setPresence = function(presence) {
+        if (presence) {
+            that.clearPresenceOptions();
+            that.storeChatPresence(presence);
+            that.fb.location.presence.update({
+                'chat-presence': presence
+            });
+            if (presence == 'Offline') {
+                that.storeUserOnline(false);
+                $timeout(function() {
+                    that.fb.location.online.update({
+                        'online': false
+                    });
+                }, 1000);
+            } else {
+                that.storeUserOnline(true);
+                $timeout(function() {
+                    that.fb.location.online.update({
+                        'online': true
+                    });
+                }, 1000);
+            }
+        }
+    };
+
+
+    this.updatePresenceMessage = function() {
+        if (!that.profile.main.presence.message) {
+            that.profile.main.presence.message_show = false;
+            that.updatePresenceMessageShow();
+            that.profile.main.presence.auto_post = false;
+            that.updatePresenceMessagePost();
+        }
+        that.fb.location.presence.update({
+            message: that.profile.main.presence.message
+        });
+    };
+
+    this.clearPresenceOptions = function() {
+        that.profile.main.presence.message = '';
+        that.updatePresenceMessage();
+        that.profile.main.presence.show_message = false;
+        that.updatePresenceMessageShow();
+        that.profile.main.presence.auto_post = false;
+        that.updatePresenceMessagePost();
+
+    };
+
+    this.updatePresenceMessageShow = function() {
+        $log.debug('updatePresenceMessageShow');
+        if (angular.isDefined(that.profile.main.presence.show_message)) {
+            that.fb.location.presence.update({
+                'show-message': that.profile.main.presence.show_message
+            });
+        }
+    };
+
+    this.updatePresenceMessagePost = function() {
+        $log.debug('updatePresenceMessageShowPost');
+        if (angular.isDefined(that.profile.main.presence.auto_post)) {
+            that.fb.location.presence.update({
+                'auto-post': that.profile.main.presence.auto_post
+            });
+        }
     };
 
 

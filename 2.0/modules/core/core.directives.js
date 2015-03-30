@@ -14,7 +14,7 @@ directive('chatModule', function() {
   return {
     restrict: 'EA',
     replace:true,
-   templateUrl: '/modules/mod_chat/app/partials/chat/chat_module.html',
+   templateUrl: './partials/chat/chat_module.html',
     link: function(scope, elm, attrs) {
     }
   };
@@ -23,7 +23,7 @@ directive('chatModuleExternal', function() {
   return {
     restrict: 'EA',
     replace:true,
-   templateUrl: '/modules/mod_chat/app/partials/chat/chat_module_external.html',
+   templateUrl: './partials/chat/chat_module_external.html',
     link: function(scope, elm, attrs) {
     }
   };
@@ -32,7 +32,7 @@ directive('chat', function() {
   return {
     restrict: 'EA',
     replace:true,
-   templateUrl: '/modules/mod_chat/app/partials/chat/chat.html',
+   templateUrl: './partials/chat/chat.html',
     link: function(scope, elm, attrs) {
     }
   };
@@ -42,7 +42,7 @@ directive('chatbox', function() {
         scope:true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/chatbox.html',
+        templateUrl: './partials/chat/chatbox.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -52,7 +52,7 @@ directive('groupChat', function() {
         scope:true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/group.html',
+        templateUrl: './partials/chat/group.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -62,7 +62,7 @@ directive('techChat', function() {
         scope:true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/tech_chat.html',
+        templateUrl: './partials/chat/tech_chat.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -72,7 +72,7 @@ directive('mcChat', function() {
         scope:true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/mc_chat.html',
+        templateUrl: './partials/chat/mc_chat.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -82,7 +82,7 @@ directive('adminChat', function() {
         scope:true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/admin_chat.html',
+        templateUrl: './partials/chat/admin_chat.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -92,7 +92,7 @@ directive('directoryChat', function() {
         scope:true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/directory_chat.html',
+        templateUrl: './partials/chat/directory_chat.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -102,7 +102,7 @@ directive('contacts', function() {
         scope:true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/contacts.html',
+        templateUrl: './partials/chat/contacts.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -112,7 +112,7 @@ directive('chatModuleNavPanel', function() {
         scope:true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/nav_panel.html',
+        templateUrl: './partials/chat/nav_panel.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -122,7 +122,7 @@ directive('cmDirectoryTrackerPanel', function() {
         scope:true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/chat_tracker.html',
+        templateUrl: './partials/chat/chat_tracker.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -132,7 +132,7 @@ directive('cmAudio', function() {
         scope: true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/html5/audio.html',
+        templateUrl: './partials/html5/audio.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -142,7 +142,7 @@ directive('cmVideo', function() {
         scope: true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/html5/video.html',
+        templateUrl: './partials/html5/video.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -152,7 +152,7 @@ directive('cmImage', function() {
         scope: true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/html5/image.html',
+        templateUrl: './partials/html5/image.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -162,7 +162,7 @@ directive('cmAudioRecord', function() {
         scope: true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/html5/audio_record.html',
+        templateUrl: './partials/html5/audio_record.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -187,7 +187,7 @@ directive('cmProfile', function() {
         scope: true,
         restrict: 'EA',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/user_profile.html',
+        templateUrl: './partials/chat/user_profile.html',
         link: function(scope, elm, attrs) {
         }
     };
@@ -208,7 +208,7 @@ directive('cmUserProfile',['UserManager', function(UserManager) {
         },
         restrict: 'E',
         replace:true,
-        templateUrl: '/modules/mod_chat/app/partials/chat/profile_tracker.html',
+        templateUrl: './partials/chat/profile_tracker.html',
         link: function(scope, elm, attrs) {
             scope.inAdminGroup = function()
             {
@@ -348,7 +348,7 @@ directive('typeaheadUsers', function($timeout) {
         scope.current = index;
       };
     },
-    templateUrl: '/modules/mod_chat/app/partials/chat/typeahead.html'
+    templateUrl: './partials/chat/typeahead.html'
   };
 }).
 directive('chatBarResize', function($window) {

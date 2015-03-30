@@ -1,6 +1,6 @@
 angular.module('portalchat.core').
-factory("ContactsManager", ['$log', '$http', '$timeout', '$window', '$firebaseObject', 'FBURL', 'EXT_LINK', 'ENCRYPT_PASS', 'CoreConfig', 'CoreApi', 'UserManager',
-    function($log, $http, $timeout, $window, $firebaseObject, FBURL, EXT_LINK, ENCRYPT_PASS, CoreConfig, CoreApi, UserManager) {
+factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$firebaseObject', '$firebaseArray', 'CoreConfig', 'CoreApi', 'UserManager',
+    function($rootScope, $log, $http, $timeout, $window, $firebaseObject, $firebaseArray, CoreConfig, CoreApi, UserManager) {
         // Firebase.enableLogging(true);
         var that = this;
 
@@ -12,29 +12,35 @@ factory("ContactsManager", ['$log', '$http', '$timeout', '$window', '$firebaseOb
         this.contacts = {};
         this.contacts.online = {};
         this.contacts.offline = {};
-        this.contatcs.offline_queue = {};
+        this.contacts.offline_queue = {};
         this.contacts.profiles = {};
 
+        this.registerContactOnlineQueue = [];
+        // this.registerContactPresenceQueue = [];
+        this.registerContactStateQueue = [];
+
         this.load = function() {
-            that.setFirebaseLocations();
-            that.setProfiles();
-            that.watchForNewProfiles();
-            that.watchForRemovedProfiles();
-            that.setAdditionalResources();
-            that.page_loaded = true;
+            if (CoreConfig.user.id) {
+                that.setFirebaseLocations();
+                that.setProfiles();
+                that.watchForNewProfiles();
+                that.watchForRemovedProfiles();
+                that.setAdditionalResources();
+                that.page_loaded = true;
+                return true;
+            }
+            return false;
         };
 
 
         this.setFirebaseLocations = function() {
-            that.public_settings_location = new Firebase(FBURL + that.public_settings_reference);
-            that.users_geolocation_location = new Firebase(FBURL + that.users_reference + that.users_geolocation_reference);
-            that.users_profiles_location = new Firebase(FBURL + that.users_reference + that.users_profile_reference);
-            that.users_additional_profiles_location = new Firebase(FBURL + that.users_reference + that.users_additional_profile_reference);
-            that.users_online_location = new Firebase(FBURL + that.users_reference + that.users_online_reference);
-            that.users_geolocation_location = new Firebase(FBURL + that.users_reference + that.users_geolocation_reference);
-            that.users_state_location = new Firebase(FBURL + that.users_reference + that.users_state_reference);
-            that.users_presence_location = new Firebase(FBURL + that.users_reference + that.users_presence_reference);
-            that.user_presence_location = new Firebase(FBURL + that.users_reference + that.users_presence_reference + response.user_id + '/');
+            that.public_settings_location = new Firebase(CoreConfig.fb_url + CoreConfig.public_settings_reference);
+            that.users_geolocation_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_geolocation_reference);
+            that.users_profiles_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_profile_reference);
+            that.users_additional_profiles_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_additional_profile_reference);
+            that.users_online_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_online_reference);
+            that.users_state_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_state_reference);
+            that.users_presence_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_presence_reference);
         };
 
         that.setProfiles = function() {
@@ -58,23 +64,23 @@ factory("ContactsManager", ['$log', '$http', '$timeout', '$window', '$firebaseOb
                 var smod = snapshot.val();
                 if (smod && smod.user) {
                     that.smod = that.contacts.profiles['user_' + smod.user];
-                    scope.$broadcast('smodChange');
+                    $rootScope.$broadcast('smodChange');
                 } else {
                     that.smod = false;
-                    scope.$broadcast('smodChange');
+                    $rootScope.$broadcast('smodChange');
                 }
 
             });
 
             that.public_settings_location.child('tod').on('value', function(snapshot) {
-                /*                          console.log('page refresh value has changed to ' + snapshot.val()); */
+                // console.log('page refresh value has changed to ' + snapshot.val());
                 var tod = snapshot.val();
                 if (tod && tod.user) {
                     that.tod = that.contacts.profiles['user_' + tod.user];
-                    scope.$broadcast('todChange');
+                    $rootScope.$broadcast('todChange');
                 } else {
                     that.tod = false;
-                    scope.$broadcast('todChange');
+                    $rootScope.$broadcast('todChange');
                 }
 
             });
@@ -105,58 +111,99 @@ factory("ContactsManager", ['$log', '$http', '$timeout', '$window', '$firebaseOb
                 if (that.contacts.profiles['user_' + profile.user_id]) {
                     that.watchForAvatarChange(profile.user_id);
                     that.monitorContactOnline(profile.user_id);
-                    that.watchContactState(profile.user_id);
+                    that.monitorContactState(profile.user_id);
                     return true;
                 }
             }
             return false;
         };
 
-        this.monitorContactOnline = function(contact_user) {
+        this.monitorContactOnline = function(contact_id) {
             if (angular.isUndefined(that.users_online_location)) {
                 $log.debug('failure: that.users_online_location is undefined');
                 return false;
             }
-            that.users_online_location.child(contact_user).on('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
-                var contact_id = 'user_' + snapshot.name();
-                var online_status = snapshot.val();
-                if (online_status && online_status.online) {
-                    that.setContactOnline(contact_id);
-
-                } else {
-                    if (that.page_loaded) {
-                        that.storeOfflineQueue(contact_id);
-                        $timeout(function() {
-                            if (that.isOfflineQueued(contact_id)) {
-                                $log.debug('remove check was ' + that.isOfflineQueued(contact_id));
-                                $log.debug('removing ' + contact_id + 'from online list');
-                                that.setContactOffline(contact_id);
-                            }
-                        }, 10000);
-                    } else {
-                        that.setContactOffline(contact_id);
-                    }
-                }
+            that.users_online_location.child(contact_id).on('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
+                that.registerContactOnlineChange('user_' + snapshot.key(), snapshot.val());
             });
         };
 
-        this.setContactOnline = function(contact_id) {
-            if (that.contacts.offline_queue[user_id]) {
-                that.contacts.offline_queue[user_id] = false;
-                delete that.contacts.offline_queue[user_id];
+        this.registerContactOnlineChange = function(contact_tag, online_status) {
+            if (!that.registerContactOnlineQueue[contact_tag]) {
+                that.registerContactOnlineQueue[contact_tag] = true;
+                // console.log('contact_tag:', contact_tag, 'online:', online_status);
+                if (online_status && online_status.online) {
+                    that.setContactOnline(contact_tag);
+
+                } else {
+                    if (that.page_loaded) {
+                        that.storeOfflineQueue(contact_tag);
+                        $timeout(function() {
+                            if (that.isOfflineQueued(contact_tag)) {
+                                // $log.debug('remove check was ' + that.isOfflineQueued(contact_tag));
+                                // $log.debug('removing ' + contact_tag + 'from online list');
+                                that.setContactOffline(contact_tag);
+                            }
+                        }, 10000);
+                    } else {
+                        that.setContactOffline(contact_tag);
+                    }
+                }
             }
-            that.contacts.online[contact_id] = that.contacts.profiles[contact_id];
-            delete that.contacts.offline[contact_id];
         };
 
-        this.setContactOffline = function(contact_id) {
-            if (that.contacts.offline_queue[user_id]) {
-                that.contacts.offline_queue[user_id] = false;
-                delete that.contacts.offline_queue[user_id];
+        this.monitorContactState = function(user) {
+            if (angular.isUndefined(that.users_state_location)) {
+                $log.debug('that.users_state_location is undefined');
+                return false;
             }
-            delete that.contacts.online[contact_id];
-            that.contacts.offline[contact_id] = that.contacts.profiles[contact_id];
-            delete that.contacts.offline[contact_id];
+            that.users_state_location.child(user).on('value', function(snapshot){// snapshot is an encrypted object from firebase, use snapshot.val() to get its value
+                that.registerContactStateChange('user_' + snapshot.key(), snapshot.val());
+            });
+        };
+
+        this.registerContactStateChange = function(contact_tag, contact_state) {
+            if (!that.registerContactStateQueue[contact_tag]) {
+                if (contact_tag && contact_state && contact_state.state) {
+                    that.registerContactStateQueue[contact_tag] = true;
+                    if (that.contacts.profiles[contact_tag]) {
+                        $rootScope.$evalAsync(function() {
+                            that.contacts.profiles[contact_tag].state = contact_state.state;
+                        });
+                    }
+                }
+                $timeout(function(){
+                    delete that.registerContactStateQueue[contact_tag];
+                });
+            }
+        };
+
+        this.setContactOnline = function(contact_tag) {
+            if (that.contacts.offline_queue[contact_tag]) {
+                that.contacts.offline_queue[contact_tag] = false;
+                delete that.contacts.offline_queue[contact_tag];
+            }
+            that.contacts.online[contact_tag] = that.contacts.profiles[contact_tag];
+            delete that.contacts.offline[contact_tag];
+            $timeout(function() {
+                delete that.registerContactOnlineQueue[contact_tag];
+            });
+
+        };
+
+        this.setContactOffline = function(contact_tag) {
+            if (that.contacts.offline_queue[contact_tag]) {
+                that.contacts.offline_queue[contact_tag] = false;
+                delete that.contacts.offline_queue[contact_tag];
+            }
+            that.contacts.offline[contact_tag] = that.contacts.profiles[contact_tag];
+            delete that.contacts.online[contact_tag];
+            $timeout(function() {
+                delete that.registerContactOnlineQueue[contact_tag];
+            });
+
+
+
         };
 
         this.isOfflineQueued = function(user_id) {
@@ -167,7 +214,7 @@ factory("ContactsManager", ['$log', '$http', '$timeout', '$window', '$firebaseOb
         };
 
         this.sortProfile = function(profile, online) {
-            if (angular.isUndefined(profile.user_id) || profile.user_id === that.user_profile.user_id) {
+            if (angular.isUndefined(profile.user_id) || profile.user_id === CoreConfig.user.id) {
                 return false;
             }
             if (online) {
@@ -187,7 +234,7 @@ factory("ContactsManager", ['$log', '$http', '$timeout', '$window', '$firebaseOb
             that.users_profiles_location.child(user).on('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
                 var avatarObj = snapshot.val();
                 if (avatarObj && avatarObj != 'false') {
-                    var user_id = 'user_' + snapshot.name();
+                    var user_id = 'user_' + snapshot.key();
                     if (angular.isUndefined(that.contacts.profiles[user_id])) {
                         $log.debug('that.contacts.profiles is undefined');
                         return false;
@@ -197,30 +244,13 @@ factory("ContactsManager", ['$log', '$http', '$timeout', '$window', '$firebaseOb
             });
         };
 
-        this.watchContactState = function(user) {
-            if (angular.isUndefined(that.users_state_location)) {
-                $log.debug('that.users_state_location is undefined');
-                return false;
-            }
-            that.users_state_location.child(user).on('value', function(snapshot) // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
-                {
-                    var user_state = snapshot.val();
-                    if (user_state && user_state.state) {
-                        var user_id = 'user_' + snapshot.name();
-                        if (that.contacts.profiles[user_id]) {
-                            $rootScope.$evalAsync(function() {
-                                $log.debug(that.contacts.profiles[user_id].name + ' is ' + user_state.state);
-                                that.contacts.profiles[user_id].state = user_state.state;
-                            });
-                        }
-                    }
-                });
-        };
+
 
         this.watchForNewProfiles = function() {
             that.users_profiles_location.startAt().on('child_added', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
                 var profile = snapshot.val();
-                if (angular.isUndefined(profile.user_id) || profile.user_id === that.user_profile.user_id) {
+                // console.log('adding: ', profile);
+                if (angular.isUndefined(profile.user_id) || profile.user_id === CoreConfig.user.id) {
                     return false;
                 }
                 that.setContactProfile(profile);
@@ -230,12 +260,11 @@ factory("ContactsManager", ['$log', '$http', '$timeout', '$window', '$firebaseOb
         this.watchForRemovedProfiles = function() {
             that.users_profiles_location.on('child_removed', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
                 var profile = snapshot.val();
-                scope.safeApply(function() {
-                    $timeout(function() {
-                        delete that.contacts.profiles['user_' + profile.user_id];
-                        delete that.contacts.offline['user_' + profile.user_id];
-                        delete that.contacts.online['user_' + profile.user_id];
-                    });
+                // console.log('removing: ', profile);
+                $timeout(function() {
+                    delete that.contacts.profiles['user_' + profile.user_id];
+                    delete that.contacts.offline['user_' + profile.user_id];
+                    delete that.contacts.online['user_' + profile.user_id];
                 });
             });
         };
