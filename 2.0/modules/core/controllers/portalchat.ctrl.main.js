@@ -14,67 +14,6 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
         $scope.ui.settings.showVolumeMenu = false;
         $scope.ui.settings.requestChat = true;
 
-        $scope.engine = {};
-        $scope.engine.portal = {};
-        $scope.engine.portal.online = true;
-
-        $scope.engine.firebase = {};
-        $scope.engine.firebase.online = true;
-
-        $scope.engine.network = {};
-        $scope.engine.network.pinging = false;
-        $scope.engine.network.ping = undefined;
-
-        $scope.engine.network.online = true;
-
-        var init_scope = function() {
-            $scope.user = CoreManager.returnUser();
-            $scope.contacts = CoreManager.returnContacts();
-
-            if (String($window.location.href).split('?')[1] == CoreConfig.ext_link) {
-                $scope.backdrop = true;
-            } else {
-                $scope.backdrop = false;
-            }
-
-            $scope.$on('network_online', function(event) {
-                $scope.engine.network = true;
-            });
-
-            $scope.$on('network_offline', function(event) {
-                $scope.engine.network = false;
-            });
-
-            $scope.$on('portal_online', function(event) {
-                $scope.engine.portal.online = true;
-            });
-
-            $scope.$on('portal_offline', function(event) {
-                $scope.engine.portal.online = false;
-            });
-
-            $scope.$on('firebase_online', function(event) {
-                $scope.engine.firebase.online = true;
-            });
-
-            $scope.$on('firebase_offline', function(event) {
-                $scope.engine.firebase.online = false;
-            });
-
-            $scope.$on('browser_online', function(event) {
-                $rootScope.browser.online = true;
-            });
-
-            $scope.$on('browser_offline', function(event) {
-                $rootScope.browser.online = false;
-                if ($scope.platform.browser === "Firefox") {
-                    $window.navigator.offline = true;
-                }
-            });
-
-            console.log($scope);
-        };
-
         $scope.initUser = function() {
             CoreManager.initUser();
         };
@@ -83,6 +22,18 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
             CoreManager.initApp();
             init_scope();
         });
+
+        var init_scope = function() {
+            $scope.user = CoreManager.returnUser();
+            $scope.contacts = CoreManager.returnContacts();
+
+            if (String($window.location.href).split('?')[1] == CoreConfig.ext_link) {
+                $scope.ui.settings.backdrop = true;
+            } else {
+                $scope.ui.settings.backdrop = false;
+            }
+            console.log($scope);
+        };
 
         $scope.chat = function(agent) {
             if ($scope.request_chat === true) {
@@ -117,23 +68,9 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
             }
         });
 
-
-        $scope.ui.setFirebaseOffline = function() {
-            $log.debug('setting offline');
-            $scope.engine.firebase.online  = false;
-            UtilityManager.setFirebaseOffline();
-        };
-
-        $scope.ui.setFirebaseOnline = function() {
-            $log.debug('setting Online');
-            $scope.engine.firebase.online  = true;
-            UtilityManager.setFirebaseOnline();
-        };
-
-        $scope.ui.runPingTest = function() {
-            $scope.engine.network.isPing = true;
-            UtilityManager.pingTest($scope.engin.network);
-        };
+        $scope.$on(['system-change'], function(event, notification){
+            CoreManager.observeSystemChange(notification);
+        });
 
         $scope.ui.returnFalse = function() {
             return false;

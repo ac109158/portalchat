@@ -9,7 +9,26 @@
 </head>
 <body>
     <div presence="MOUSE TOUCH KEYBOARD" ng-controller="core.main" ng-init="initUser();">
-        <!-- <chat-module></chat-module> -->
+        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;">
+            <legend>User</legend>
+            <div ng-repeat="(key, value) in user"><label>{{key}}: </label><span ng-bind="value"></span><br></div>
+        </div>
+        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;">
+            <legend>Contacts</legend>
+            <div ng-repeat="(key, value) in contacts"><label>{{key}}: </label><span ng-bind="value"></span><br></div>
+        </div>
+        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;"ng-controller="core.utility">
+            <div class="well well-sm" ng-repeat="(key, value) in utility.engine track by $index">
+                <legend>{{key}}</legend>
+                <label>Online: </label><span ng-bind="value.online || value.onLine"></span>
+            </div>
+            Browser Online: <span ng-bind="utility.isBrowserOffline();"></span><br>
+            <span class="btn btn-sm btn-success" ng-click="utility.setFirebaseOnline();">Online</span><br>
+            <span class="btn btn-sm btn-success" ng-click="utility.setFirebaseOffline();">Offline</span>
+        </div>
+
+
+
     </div>
 </body>
 </html>
@@ -92,6 +111,8 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
         './modules/core/components/user/core.fact.userManager.js',
 
         './modules/core/components/utility/core.fact.utility.js',
+        './modules/core/components/utility/core.ctrl.utility.js',
+
 
         './vendor/howler.min.js',
         './vendor/sjcl.js'
@@ -191,23 +212,10 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
             function($locationProvider, $logProvider, $httpProvider) {
             $locationProvider.html5Mode(true);
                 $locationProvider.hashPrefix('!');
-                $logProvider.debugEnabled(true);
+                $logProvider.debugEnabled(false);
                 $httpProvider.defaults.timeout = 5000;
             }
-        ]).
-        run(function($window, $rootScope) {
-            $rootScope.browser_online = navigator.onLine;
-            $window.addEventListener("offline", function () {
-                $rootScope.$apply(function() {
-                    $rootScope.browser_online= false;
-                });
-            }, false);
-            $window.addEventListener("online", function () {
-                $rootScope.$apply(function() {
-                    $rootScope.browser_online = true;
-                });
-            }, false);
-        });
+        ]);
 
         angular.module(ApplicationConfiguration.applicationModuleName).config(function (localStorageServiceProvider) {
           localStorageServiceProvider.setPrefix(ApplicationConfiguration.applicationModuleName);

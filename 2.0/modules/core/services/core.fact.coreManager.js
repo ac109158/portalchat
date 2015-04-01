@@ -1,4 +1,4 @@
-angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', '$timeout', 'UserManager', 'SettingsManager', 'ContactsManager', 'BrowserService', 'UtilityManager','NotificationManager', 'states', 'localStorageService',
+angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', '$timeout', 'UserManager', 'SettingsManager', 'ContactsManager', 'BrowserService', 'UtilityManager', 'NotificationManager', 'states', 'localStorageService',
     function($rootScope, $log, $timeout, UserManager, SettingsManager, ContactsManager, BrowserService, UtilityManager, NotificationManager, states, localStorageService) {
         var that = this;
 
@@ -9,6 +9,7 @@ angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', 
         this.initApp = function() {
             if (UserManager.user.id) {
                 $timeout(function() {
+                    UtilityManager.load();
                     ContactsManager.load();
                     SettingsManager.load();
                 });
@@ -25,8 +26,12 @@ angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', 
             return user;
         };
 
-        this.returnContacts = function(){
+        this.returnContacts = function() {
             return ContactsManager.contacts;
+        };
+
+        this.returnEngine = function() {
+            return UtilityManager.engine;
         };
 
         this.setPresence = function(presence) {
@@ -41,6 +46,38 @@ angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', 
                     NotificationManager.playSound(NotificationManager.sound.new_chat);
                 });
 
+            }
+        };
+
+        this.observeSystemChange = function(notification){
+            if(notification.system === 'network' || notification.system === 'network'){
+                that.observeNetworkChange(notification.value);
+            } else if(notification.system === 'firebase') {
+
+            } else if(notification.system === 'portal'){
+                that.observePortalChange(notification.value);
+            }
+        };
+
+        this.observeNetworkChange = function(online) {
+            if (online === true) {
+                $timeout(function() {
+                    UserManager.setUserOnline(true);
+                    NotificationManager.playSound(NotificationManager.sound.money);
+                    UtilityManager.setNetworkOnline();
+                });
+            } else {
+                UserManager.setUserOnline(false);
+                NotificationManager.playSound(NotificationManager.sound.bash_error);
+                UtilityManager.setNetworkOffline();
+            }
+        };
+
+        this.observePortalChange = function(online_state) {
+            if (online_state === true) {
+                UtilityManager.setPortalOnline();
+            } else {
+                UtilityManager.setPortalOffline();
             }
         };
 

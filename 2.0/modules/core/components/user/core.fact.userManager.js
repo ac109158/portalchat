@@ -1,11 +1,12 @@
 angular.module('portalchat.core').
-factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$firebaseObject', 'CoreConfig', 'CoreApi', 'BrowserService','localStorageService', function($rootScope, $log, $http, $timeout, $window, $firebaseObject, CoreConfig, CoreApi, BrowserService, localStorageService) {
+factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$firebaseObject', 'CoreConfig', 'CoreApi', 'BrowserService', 'localStorageService', function($rootScope, $log, $http, $timeout, $window, $firebaseObject, CoreConfig, CoreApi, BrowserService, localStorageService) {
     // Firebase.enableLogging(true);
     var that = this;
     this.user_init = false;
     this.page_loaded = false;
 
     this.user = {}; // user domain
+    this.user.group = [];
 
     this.profile = {};
     this.profile.main = {};
@@ -122,18 +123,19 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     this.setUserFirebaseLocations = function() {
         that.fb.location.fb_connection = new Firebase(CoreConfig.fb_url + ".info/connected");
         if (that.user.id) {
-            that.fb.location.profile = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_profile_reference + that.user.id + '/');
-            that.fb.location.additional_profile = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_additional_profile_reference + that.user.id + '/');
-            that.fb.location.settings = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_settings_reference + that.user.id + '/');
-            that.fb.location.online = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_online_reference + that.user.id + '/');
-            that.fb.location.state = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_state_reference + that.user.id + '/');
-            that.fb.location.presence = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_presence_reference + that.user.id + '/');
+            that.fb.location.profile = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.profile_reference + that.user.id + '/');
+            that.fb.location.additional_profile = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.additional_profile_reference + that.user.id + '/');
+            that.fb.location.settings = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.settings_reference + that.user.id + '/');
+            that.fb.location.online = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.online_reference + that.user.id + '/');
+            that.fb.location.state = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.state_reference + that.user.id + '/');
+            that.fb.location.presence = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.presence_reference + that.user.id + '/');
         }
     };
 
     this.setUserFirebaseTargets = function() {
         if (that.user.id) {
-            that.fb.target.presence = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_presence_reference + that.user.id + '/chat-presence'));
+            that.fb.target.presence = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.presence_reference + that.user.id + '/chat-presence'));
+            that.fb.target.online = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.online_reference + that.user.id + '/' + CoreConfig.online_reference));
             return true;
         }
         return false;
@@ -288,32 +290,30 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     };
 
     this.manageUserSupervisors = function() {
+        that.user.group = [];
+        that.user.group.push(that.user.id);
         if (that.user.id && that.user.supervisors) {
             if (that.user.supervisors.pc) {
-                that.fb.locations.pc_online = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + that.users_online_reference + that.user.supervisors.pc.user_id + that.online_reference));
-                that.fb.locations.pc_presence = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + that.user_presence_reference + that.user.supervisors.pc.user_id + '/' + that.chat_presence_reference));
-                that.fb.target.pc_state = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_state_reference + that.user.supervisors.pc.user_id + that.state_reference));
+                that.fb.locations.pc_online = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.online_reference + that.user.supervisors.pc.user_id + CoreConfig.online_reference));
+                that.fb.locations.pc_presence = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + that.user_presence_reference + that.user.supervisors.pc.user_id + '/' + CoreConfig.chat_presence_reference));
+                that.fb.target.pc_state = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.state_reference + that.user.supervisors.pc.user_id + CoreConfig.state_reference));
+                that.user.group.push(CoreConfig.default.user_tag + that.user.supervisors.pc.user_id);
             }
-            that.user.mc = that.user.supervisors.mc;
             if (that.user.supervisors.mc) {
                 if (that.user.supervisors.mc.name.slice(0, 4) != 'Ramp') {
-                    that.fb.locations.mc_online = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + that.users_online_reference + that.user.supervisors.mc.user_id + that.online_reference));
-                    that.fb.locations.mc_presence = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + that.user_presence_reference + that.user.supervisors.mc.user_id + '/' + that.chat_presence_reference));
-                    that.fb.target.mc_state = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_state_reference + that.user.supervisors.mc.user_id + that.state_reference));
+                    that.fb.locations.mc_online = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.online_reference + that.user.supervisors.mc.user_id + CoreConfig.online_reference));
+                    that.fb.locations.mc_presence = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + that.user_presence_reference + that.user.supervisors.mc.user_id + '/' + CoreConfig.chat_presence_reference));
+                    that.fb.target.mc_state = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.state_reference + that.user.supervisors.mc.user_id + CoreConfig.state_reference));
                 }
+                that.user.group.push(CoreConfig.default.user_tag + that.user.supervisors.mc.user_id);
             }
-            that.user.admin = that.user.supervisors.admin;
             if (that.user.supervisors.admin) {
-                that.fb.locations.admin_online = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + that.users_online_reference + that.user.supervisors.admin.user_id + that.online_reference));
-                that.fb.locations.admin_presence = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + that.user_presence_reference + that.user.supervisors.admin.user_id + '/' + that.chat_presence_reference));
-                that.fb.targets.admin_state = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_state_reference + that.user.supervisors.admin.user_id + that.state_reference));
+                that.fb.locations.admin_online = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.online_reference + that.user.supervisors.admin.user_id + CoreConfig.online_reference));
+                that.fb.locations.admin_presence = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + that.user_presence_reference + that.user.supervisors.admin.user_id + '/' + CoreConfig.chat_presence_reference));
+                that.fb.targets.admin_state = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.state_reference + that.user.supervisors.admin.user_id + CoreConfig.state_reference));
+                that.user.group.push(CoreConfig.default.user_tag + that.user.supervisors.admin.user_id);
             }
-            if (that.user.isSupervisor === true) {
-                that.user.isSupervisor = true;
-                that.isSupervisor = true;
-                that.user.teamMargin = 35;
-            } else {
-                that.isSupervisor = false;
+            if (that.user.isSupervisor === true) {} else {
                 that.user.isSupervisor = false;
             }
         }
@@ -434,14 +434,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         }
     };
 
-    this.setChatPresenceforUser = function(user_key) {
-        return $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_presence_reference + user_key + '/' + that.chat_presence_reference + '/'));
-    };
-    this.setProfileOnlineLocationforUser = function(user_key) {
-        return $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + that.users_online_reference + user_key + '/' + that.online_reference));
-    };
-
-
     this.getUserArray = function() {
         that.user_array = Array();
         angular.forEach(that.users_profiles_obj, function(value, key) { // runs through the list of chat session to determine which chat session is tied to the value change
@@ -466,6 +458,27 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     this.getUserField = function(field) {
         if (field && that.user[field]) {
             return that.user[field];
+        }
+        return false;
+    };
+
+    this.isSuperAdminLevel = function() {
+        if (that.user.id === 113) {
+            return true;
+        }
+        return false;
+    };
+
+    this.isAdminLevel = function() {
+        if (that.user.role === CoreConfig.admin_level) {
+            return true;
+        }
+        return false;
+    };
+
+    this.isManagerLevel = function() {
+        if (that.user.role === 'Administrator' || that.user.role === 'Shift Manager') {
+            return true;
         }
         return false;
     };
@@ -567,6 +580,22 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
             store.state = ip.location.region;
         }
 
+    };
+
+
+    this.setUserOnline = function(online_value) {
+        if (online_value) {
+            that.fb.location.profile.update({
+                'online': online,
+                'state': 'Idle'
+            });
+
+        } else {
+            that.fb.location.profile.update({
+                'Online': false,
+                'state': 'Offline'
+            });
+        }
     };
 
     return this;

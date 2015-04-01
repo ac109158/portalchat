@@ -26,6 +26,11 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
                 that.watchForNewProfiles();
                 that.watchForRemovedProfiles();
                 that.setAdditionalResources();
+                if(CoreConfig.monitorContactsBehavior){
+                    angular.forEach(that.contacts.profiles, function(contact_profile){
+                        that.monitorContactBehaviour(contact_profile);
+                    });
+                }
                 that.page_loaded = true;
                 return true;
             }
@@ -35,12 +40,12 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
 
         this.setFirebaseLocations = function() {
             that.public_settings_location = new Firebase(CoreConfig.fb_url + CoreConfig.public_settings_reference);
-            that.users_geolocation_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_geolocation_reference);
-            that.users_profiles_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_profile_reference);
-            that.users_additional_profiles_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_additional_profile_reference);
-            that.users_online_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_online_reference);
-            that.users_state_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_state_reference);
-            that.users_presence_location = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_presence_reference);
+            that.users_geolocation_location = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.geolocation_reference);
+            that.users_profiles_location = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.profile_reference);
+            that.users_additional_profiles_location = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.additional_profile_reference);
+            that.users_online_location = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.online_reference);
+            that.users_state_location = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.state_reference);
+            that.users_presence_location = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.presence_reference);
         };
 
         that.setProfiles = function() {
@@ -95,7 +100,7 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
         };
 
 
-        that.setContactProfile = function(profile) {
+        this.setContactProfile = function(profile) {
             if (profile) {
                 // profile.name = profile.name;
                 if (angular.isUndefined(profile.user_id) || profile.user_id === UserManager.user.id) {
@@ -108,14 +113,17 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
                 if (profile.avatar === false) {
                     that.contacts.profiles['user_' + profile.user_id].avatar = 'no-photo';
                 }
-                if (that.contacts.profiles['user_' + profile.user_id]) {
-                    that.watchForAvatarChange(profile.user_id);
-                    that.monitorContactOnline(profile.user_id);
-                    that.monitorContactState(profile.user_id);
-                    return true;
-                }
             }
             return false;
+        };
+
+        this.monitorContactBehaviour = function(contact_profile) {
+            if (that.contacts.profiles['user_' + contact_profile.user_id]) {
+                that.watchForAvatarChange(contact_profile.user_id);
+                that.monitorContactOnline(contact_profile.user_id);
+                that.monitorContactState(contact_profile.user_id);
+                return true;
+            }
         };
 
         this.monitorContactOnline = function(contact_id) {
@@ -157,7 +165,7 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
                 $log.debug('that.users_state_location is undefined');
                 return false;
             }
-            that.users_state_location.child(user).on('value', function(snapshot){// snapshot is an encrypted object from firebase, use snapshot.val() to get its value
+            that.users_state_location.child(user).on('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
                 that.registerContactStateChange('user_' + snapshot.key(), snapshot.val());
             });
         };
@@ -172,7 +180,7 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
                         });
                     }
                 }
-                $timeout(function(){
+                $timeout(function() {
                     delete that.registerContactStateQueue[contact_tag];
                 });
             }
@@ -254,6 +262,9 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
                     return false;
                 }
                 that.setContactProfile(profile);
+                if(CoreConfig.monitorContactsBehavior){
+                    that.monitorContactBehaviour(profile);
+                }
             });
         };
 

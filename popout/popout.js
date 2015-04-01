@@ -27,11 +27,11 @@ popOutChatModule.openExternalWindow = function(){
 				}
 				clearTimeout(resize);
 			}
-			
+
 		}, 2000)
 	}
-	
-	function closedetected() { 
+
+	function closedetected() {
 		console.log('Close detected');
 		popOutChatModule.externalWindowObject = null;
 		popOutChatModule.isExternalWindow = false;
