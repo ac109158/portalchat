@@ -39,13 +39,13 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
         $window.addEventListener("online", function() {
             console.log('online');
             $rootScope.$apply(function() {
-                that.isPortalReachable();
-                that.isGoogleReachable();
+                that.pingPortal();
+                that.pingGoogle();
             });
         }, false);
     };
 
-    this.isPortalReachable = function() {
+    this.pingPortal = function() {
         that.engine.portal.online = false;
         var imageAddr = "//chat.app/2.0/favicon.ico?rand=" + new Date().getTime();
         var download = new Image(); // jshint ignore:line
@@ -57,7 +57,7 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
         download.src = imageAddr;
     };
 
-    this.isGoogleReachable = function() {
+    this.pingGoogle = function() {
         that.engine.network.online = false;
         var imageAddr = "//www.google.com/favicon.ico?rand=" + new Date().getTime();
         var download = new Image(); // jshint ignore:line

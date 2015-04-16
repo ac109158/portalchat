@@ -11,6 +11,8 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log',
         this.fb_url = 'https://portalchattest.firebaseio.com/';
         this.ext_link = 'index.php?option=com_content&view=article&id=100&Itemid=1111';
 
+        this.admin_level = 'PlusOne Admin';
+
         //Defaults
 
         this.user = {};
@@ -45,7 +47,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log',
         this.chat = {};
         this.chat.internal_reference = "internal_chat";
         this.chat.root_reference = "Chat-System/Users" + '/';
-        this.chat.url_root = that.fb_url + that._parent_category_reference;
+        this.chat.url_root = that.fb_url + this.chat.root_reference;
 
         this.chat.presence_states = ['Online', 'Offline', 'Busy', 'Invisible']; // optional chat stattes
         this.chat.active_session_reference = "Active-Sessions" + '/'; // folder reference to look monitoring users active chats
@@ -60,6 +62,9 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log',
         this.session.parent_session_reference = 'Chats' + '/';
         this.session.url_root = that.fb_url + that.session.parent_session_reference;
         this.session.root_reference = "Active-Sessions" + '/'; // folder reference
+
+        //online
+        this.online_check_reference = "Online-Check-In" + "/";
 
 
 

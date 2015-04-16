@@ -27,6 +27,12 @@
             <span class="btn btn-sm btn-success" ng-click="utility.setFirebaseOffline();">Offline</span>
         </div>
 
+        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;" ng-controller="core.ui">
+                <legend>UI</legend>
+                {{test}}
+        </div>
+
+
 
 
     </div>
@@ -94,6 +100,7 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
 
         './modules/core/components/chats/core.ctrl.chats.js',
         './modules/core/components/chats/core.fact.chatManager.js',
+        './modules/core/components/chats/core.fact.builder.js',
         './modules/core/components/chats/core.service.directoryChat.js',
 
         './modules/core/components/contacts/core.fact.contactsManager.js',
@@ -113,6 +120,8 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
         './modules/core/components/utility/core.fact.utility.js',
         './modules/core/components/utility/core.ctrl.utility.js',
 
+        './modules/core/components/ui/core.fact.uiManager.js',
+        './modules/core/components/ui/core.ctrl.ui.js',
 
         './vendor/howler.min.js',
         './vendor/sjcl.js'
