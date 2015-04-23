@@ -1,20 +1,22 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('ChatBuilder', ['$rootScope', '$log', '$http', '$window', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', function($rootScope, $log, $http, $window, $timeout, $firebaseObject, CoreConfig, UserManager) {
+service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ChatStorage', 'SessionsManager', function($rootScope, $log, $http, $document, $timeout, $firebaseObject, CoreConfig, UserManager, ChatStorage, SessionsManager) {
     var that = this;
 
     this.setDefaultChatSettings = function(chat) {
+
+        chat.session_key = '';
 
         chat.fb = {};
         chat.fb.location = {};
         chat.fb.target = {};
 
-        chat.contact = {};
-        chat.contact.active_list = [];
-        chat.contact.active_list_map = [];
-        chat.contact.participated_list = [];
-        chat.contact.details = [];
-        chat.contact.detailsMap = {};
+        chat.contacts = {};
+        chat.contacts.active_list = [];
+        chat.contacts.active_list_map = [];
+        chat.contacts.participated_list = [];
+        chat.contacts.details = [];
+        chat.contacts.detailsMap = {};
 
         chat.message = {};
         chat.message.text = '';
@@ -26,25 +28,24 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$window', '$timeout', '$
 
         // topic values
         chat.topic = {};
-
-        chat.topic.focus = false;
         chat.topic.description = '';
         chat.topic.height = 0;
         chat.topic.truncated = false;
+        chat.topic.set = '';
         //tagging
 
         chat.tag = {};
         chat.tag.description = '';
-        chat.tag.active = false;
+        chat.tag.set = '';
         // on the bubble
-        chat.is_header = true;
+
         //scroll control
         chat.scroll = {};
         chat.scroll.to_bottom = true;
         chat.scroll.to_top = false;
         //chat refernencing
         chat.reference = {};
-        chat.reference.active= false;
+        chat.reference.active = false;
         chat.reference.author = null;
         chat.reference.name = null;
         chat.reference.text = null;
@@ -56,20 +57,24 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$window', '$timeout', '$
         //adding another user
 
         chat.invite = {};
-        chat.invite.show = false; // this is used to toggle ability to invite user into the chat
         chat.invite.contact = ''; // this is used the track the name of the user that is to be invited into the group chat. .ie a string such as "Andy Cook";
         chat.invite.set_contact = false; // this flag is used to determine that the host user has selected  a name to invite into the chat and that name has been verified to exist within the invite_list
         //states
 
-        chat.state = {};
-        chat.state.new_message = false;
-        chat.state.reload = false;
-        chat.state.reloaded = false;
-        chat.state.is_previous_messages = true;
-        chat.state.is_converted = false;
-        chat.state.is_text_focus = false;
-        chat.state.is_tag_focus = false;
-        chat.state.is_topic_focus = false;
+        chat.attr = {};
+        chat.attr.is_converted = false;
+        chat.attr.is_directory_chat = false;
+        chat.attr.is_group_chat = false;
+        chat.attr.is_new_message = false;
+        chat.attr.is_open = true;
+        chat.attr.is_previous_messages = true;
+        chat.attr.is_reloading = false;
+        chat.attr.is_reloaded = false;
+        chat.attr.is_sound = true;
+        chat.attr.is_tag_focus = false;
+        chat.attr.is_text_focus = false;
+        chat.attr.is_topic_focus = false;
+        chat.attr.is_top_spacer = false;
         // priority/indexing
 
         chat.priority = {};
@@ -77,36 +82,201 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$window', '$timeout', '$
         chat.priority.next = 1;
 
 
-        //display flags
-        chat.attr = {};
-        chat.attr.is_top_spacer = false;
-        chat.attr.is_open = true;
-        chat.attr.is_sound = true;
-        chat.attr.is_directory_chat = false;
-        chat.attr.is_group_chat = false;
-        chat.attr.show_user_list = false;
-        chat.attr.show_user_options = false;
-        chat.attr.show_emoticons = false; // toggle flag tht determines if the emotion dox should be displayed to the user
-        // internal values
-        chat.attr.add_video = false;
-        chat.attr.add_image = false;
-        chat.attr.add_audio = false;
-        chat.attr.add_media = undefined;
-        chat.attr.nudge = false;
-        chat.attr.header_color = that._header_color;
-        chat.attr.time_reference = new Date().getTime();
-        chat.attr.time_format = 'timeago';
-        chat.attr.unread = 0; // this tracks the count of the messages sent to the user while the chat box is closed
-        chat.attr.resize_adjustment = 0;
-        chat.attr.internal_reference = that._internal_reference;
-        chat.attr.header_color = that._header_color; // default color to restore after a alert changes has happened
+
+
+        chat.ux = {};
+        chat.ux.nudge = false;
+        chat.ux.is_header = true;
+        chat.ux.header_color = CoreConfig.chat.ui.header_color;
+        chat.ux.topic_height = 0;
+        chat.ux.time_reference = new Date().getTime();
+        chat.ux.time_format = 'timeago';
+        chat.ux.unread = 0; // this tracks the count of the messages sent to the user while the chat box is closed
+        chat.ux.resize_adjustment = 0;
+        chat.ux.internal_reference = CoreConfig.chat.internal_reference;
+        chat.ux.header_color = that._header_color; // default color to restore after a alert changes has happened
+
+        chat.menu = {};
+        chat.menu.options = false;
+        chat.menu.tag = false;
+        chat.menu.topic = false;
+        chat.menu.emoticons = false; // toggle flag tht determines if the emotion dox should be displayed to the user
+        chat.menu.user_list = false;
+        chat.menu.image = false;
+        chat.menu.audio = false;
+        chat.menu.video = false;
+        chat.menu.media = false;
+        chat.menu.invite = false; // this is used to toggle ability to invite user into the chat
 
         chat.user = {};
         chat.user.avatar = UserManager.user.avatar;
         chat.user.id = UserManager.user.id;
         chat.user.self_name = that._self_reference; // variable for what the chat session should label messages that came from the user/self ex. "Me"
 
+        chat.contact = {};
+        chat.contact.avatar = '';
+        chat.contact.id = false;
+
+        chat.interval = {};
+        chat.interval.invite_menu_close = undefined;
+
         return;
+    };
+
+    this.resetCommonDefaultSettings = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (angular.isDefined(ChatStorage[type].chat.list[session_key].interval.invite_menu_close)) {
+                clearInterval(ChatStorage[type].chat.list[session_key].interval.invite_menu_close);
+            }
+            ChatStorage[type].chat.list[session_key].attr.is_new_message = false;
+            ChatStorage[type].chat.list[session_key].attr.is_text_focus = false;
+            ChatStorage[type].chat.list[session_key].attr.is_tag_focus = false;
+            ChatStorage[type].chat.list[session_key].attr.is_topic_focus = false;
+            ChatStorage[type].chat.list[session_key].attr.is_top_spacer = false;
+
+            ChatStorage[type].chat.list[session_key].menu.tag = false;
+            ChatStorage[type].chat.list[session_key].menu.topic = false;
+            ChatStorage[type].chat.list[session_key].menu.emoticons = false;
+            ChatStorage[type].chat.list[session_key].menu.options = false;
+            ChatStorage[type].chat.list[session_key].menu.profile = false;
+            ChatStorage[type].chat.list[session_key].menu.user_list = false;
+
+            ChatStorage[type].chat.list[session_key].ux.header_color = CoreConfig.chat.ui.header_color;
+            ChatStorage[type].chat.list[session_key].ux.nudge = false;
+            ChatStorage[type].chat.list[session_key].ux.unread = 0;
+
+
+            ChatStorage[type].chat.list[session_key].invite.show = false;
+            ChatStorage[type].chat.list[session_key].invite.contact = '';
+            ChatStorage[type].chat.list[session_key].invite.set_contact = false;
+
+            ChatStorage[type].chat.list[session_key].reference.active = false;
+            ChatStorage[type].chat.list[session_key].reference.author = null;
+            ChatStorage[type].chat.list[session_key].reference.name = null;
+            ChatStorage[type].chat.list[session_key].reference.text = null;
+
+
+            if (angular.isDefined(ChatStorage[type].chat.list[session_key].fb.target.topic)) {
+                if (ChatStorage[type].chat.list[session_key].fb.target.topic) {
+                    ChatStorage[type].chat.list[session_key].attr.topic_height = 0;
+                } else {
+                    ChatStorage[type].chat.list[session_key].attr.topic_height = $document.getElementById('topic_' + session_key + '_wrapper').clientHeight || 0;
+                }
+            }
+        }
+    };
+
+    this.getChatType = function(session_key) {
+        if (parseInt(session_key) > 0) {
+            return 'contact';
+        }
+        return 'directory';
+    };
+    this.isContactChat = function(session_key) {
+        if (parseInt(session_key) > 0) {
+            return true;
+        }
+        return false;
+    };
+
+    this.toggleChatAttr = function(type, session_key, attr, value, fb_sync) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && ChatStorage[type].chat.list[session_key].attr && angular.isDefined(ChatStorage[type].chat.list[session_key].attr[attr]) && angular.isDefined(value)) {
+            ChatStorage[type].chat.list[session_key].attr[attr] = value;
+            if (fb_sync) {
+                SessionsManager.updateSessionDetail(session_key, attr, value);
+            }
+        }
+    };
+
+    this.showContactChatTagInput = function(session_key) {
+        that.resetCommonDefaultSettings('contact', session_key);
+        $timeout(function() {
+            that.toggleChatAttr('contact', session_key, 'is_tag_option', true, false);
+            that.toggleChatAttr('contact', session_key, 'is_tag_focus', true, false);
+            that.toggleChatAttr('contact', session_key, 'is_top_spacer', true, false);
+        });
+    };
+
+    this.updateContactChatTag = function(session_key, fb_sync) {
+        if (ChatStorage.contact.chat.list[session_key]) {
+            if (angular.isDefined(ChatStorage.contact.chat.list[session_key].tag.description) && ChatStorage.contact.chat.list[session_key].tag.description.length > 2 && ChatStorage.contact.chat.list[session_key].tag.description.length <= 20) {
+                that.resetCommonDefaultSettings('contact', session_key);
+                ChatStorage.contact.chat.list[session_key].tag_description = String(ChatStorage.contact.chat.list[session_key].tag_description).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
+                if (ChatStorage.contact.chat.list[session_key].attr.is_group_ChatStorage.contact.chat.list[session_key]) {
+                    ChatStorage.contact.chat.list[session_key].tag.description = 'Group - #' + ChatStorage.contact.chat.list[session_key].tag.description;
+                } else {
+                    ChatStorage.contact.chat.list[session_key].tag.description = '#' + ChatStorage.contact.chat.list[session_key].tag.description;
+                }
+                ChatStorage.contact.chat.list[session_key].tag.active = ChatStorage.contact.chat.list[session_key].tag.description;
+                ChatStorage.contact.chat.list[session_key].tag.description = '';
+                ChatStorage.contact.chat.list[session_key].attr.is_text_focus = true;
+                if (fb_sync) {
+                    SessionsManager.updateSessionDetail(session_key, 'tag', ChatStorage.contact.chat.list[session_key].tag.active);
+                }
+            }
+        }
+        return false;
+    };
+
+    this.toggleChatTopicDisplay = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (ChatStorage[type].chat.list[session_key].fb.target.topic.length > 30) {
+                ChatStorage[type].chat.list[session_key].topic.truncated = !ChatStorage[type].chat.list[session_key].topic.truncated;
+            }
+            $rootScope.evalAsync(function() {
+                that.setChatTopicHeight(type, session_key);
+            });
+        }
+    };
+
+    this.setChatTopicHeight = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (ChatStorage[type].chat.list[session_key].fb.target.topic) {
+                ChatStorage[type].chat.list[session_key].topic.height = $document.getElementById('topic_' + session_key + '_wrapper').clientHeight;
+            } else {
+                ChatStorage[type].chat.list[session_key].topic.height = 0;
+            }
+        }
+    };
+
+    this.addChatTopic = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            /*      console.log('adding topic'); */
+            if (angular.isDefined(ChatStorage[type].chat.list[session_key].topic.description) && ChatStorage[type].chat.list[session_key].topic.description.length > 5 && ChatStorage[type].chat.list[session_key].topic.description.length <= 36) {
+                if (angular.isDefined(ChatStorage[type].chat.list[session_key].fb.location.session)) {
+                    ChatStorage[type].chat.list[session_key].fb.location.session.update({
+                        topic: ChatStorage[type].chat.list[session_key].topic.description
+                    });
+                }
+                that.resetCommonDefaultSettings(type, session_key);
+                that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
+                return true;
+            }
+        }
+        return false;
+    };
+
+    this.removeChatTopic = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (angular.isDefined(ChatStorage[type].chat.list[session_key].fb.location.session)) {
+                ChatStorage[type].chat.list[session_key].fb.location.session.update({
+                    topic: false
+                });
+                ChatStorage[type].chat.list[session_key].topic.description = '';
+                ChatStorage[type].chat.list[session_key].topic.height = 0;
+                ChatStorage[type].chat.list[session_key].topic.set = false;
+                ChatStorage[type].chat.list[session_key].menu.topic = false;
+            }
+        }
+    };
+
+    this.toggleChatMenu = function(type, session_key, menu) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && ChatStorage[type].chat.list[session_key].menu && angular.isDefined(ChatStorage[type].chat.list[session_key].menu[menu])) {
+            if (!ChatStorage[type].chat.list[session_key].attr.is_open) {
+                ChatStorage[type].chat.list[session_key].attr.is_open = true;
+            }
+            ChatStorage[type].chat.list[session_key].menu[menu] = !ChatStorage[type].chat.list[session_key].menu[menu];
+        }
     };
 
     this.buildChatSession = function(session) // this function builds out the details of an individual chat sesssion
@@ -208,7 +378,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$window', '$timeout', '$
                 if (angular.isUndefined(chat_session.session_key)) {
                     chat_session.session_key = scope.new_session_key;
                 }
-                chat_session.messageListQuery = that.__returnMessageListQuery(scope, chat_session.time, chat_session.user_message_location, that._contact._user_id, chat_session.isGroupChat, store_length); // this creates a query of the messages pointed at the from_user storage location , messages must be written in both the user and contact chatbox pointer locations
+                chat_session.messageListQuery = that.__returnMessageListQuery(scope, chat_session.time, chat_session.user_message_location, that._contact._user_id, chat_session.is_group_chat, store_length); // this creates a query of the messages pointed at the from_user storage location , messages must be written in both the user and contact chatbox pointer locations
                 // set pointer to user-group, used to remove the session if no one is longer using it
                 var session_root = that._group_url_root + that._group_active_session_reference + chat_session.session_key + '/';
                 chat_session.firebase_location = new Firebase(session_root);
@@ -237,11 +407,11 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$window', '$timeout', '$
             that.__setDefaultSettings(groupChatSession);
             groupChatSession.session_key = value.session_key;
             groupChatSession.time = value.time;
-            groupChatSession.isGroupChat = true;
+            groupChatSession.is_group_chat = true;
             var session_root = that._group_url_root + that._group_active_session_reference + groupChatSession.session_key + '/';
             groupChatSession.firebase_location = new Firebase(session_root);
             groupChatSession.group_message_location = new Firebase(that._group_url_root + that._group_active_session_reference + groupChatSession.session_key + '/' + that._group_message_location_reference);
-            groupChatSession.messageListQuery = that.__returnMessageListQuery(groupChatSession.time, groupChatSession.group_message_location, groupChatSession.session_key, groupChatSession.isGroupChat, 1); // this creates a query of the messages pointed at the from_user storage location , messages must be written in both the user and contact chatbox pointer locations
+            groupChatSession.messageListQuery = that.__returnMessageListQuery(groupChatSession.time, groupChatSession.group_message_location, groupChatSession.session_key, groupChatSession.is_group_chat, 1); // this creates a query of the messages pointed at the from_user storage location , messages must be written in both the user and contact chatbox pointer locations
             groupChatSession.active_session_location = that.__setActiveSessionLocation(null, groupChatSession.session_key, true);
             groupChatSession.group_active_typing_location = that.__set_active_typing_group_location(groupChatSession.session_key); //point to where the typing-presence values will be stored
             groupChatSession.topic_location = $firebase(groupChatSession.firebase_location.child('topic'));
@@ -254,7 +424,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$window', '$timeout', '$
             } // this flag controls whether the chatbox should be open when it is created. Useful to close page reloads chatSessions so the messages can gracefully load
             //
             if (angular.isDefined(isfocus)) {
-                groupChatSession.isTextFocus = isfocus;
+                groupChatSession.is_text_focus = isfocus;
             }
             if (angular.isDefined(value.isSound)) {
                 groupChatSession.isSound = value.isSound;
@@ -459,7 +629,7 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
             groupChatSession.isopen = chat.isopen;
         } // this flag controls whether the chatbox should be open when it is created. Useful to close page reloads chatSessions so the messages can gracefully load
         if (angular.isDefined(chat.isFocus)) {
-            groupChatSession.isTextFocus = chat.isTextFocus;
+            groupChatSession.is_text_focus = chat.is_text_focus;
         }
         if (angular.isDefined(chat.session_key)) {
             groupChatSession.session_key = chat.session_key;
@@ -517,7 +687,7 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
         // override  defaults
         groupChatSession.internal_reference = that._internal_reference;
         groupChatSession.convert = true;
-        groupChatSession.isGroupChat = true;
+        groupChatSession.is_group_chat = true;
         groupChatSession.contact_role = chat.contact_role;
         groupChatSession.contact_id = chat.session_key;
         groupChatSession.contact_avatar = chat.contact_avatar;
@@ -685,7 +855,7 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
         }
     };
 
-    this.returnMessageListQuery = function(scope, time, refLocation, to_address, isGroupChat, store_length) // this will query the message storage loction for the chat_session and create callbacks for when a child is added or removed, it can  also limit the amount of chat message that can be stored
+    this.returnMessageListQuery = function(scope, time, refLocation, to_address, is_group_chat, store_length) // this will query the message storage loction for the chat_session and create callbacks for when a child is added or removed, it can  also limit the amount of chat message that can be stored
         {
             var query_limit_size, timestamp;
             $log.debug("WARNING: GERNERATING A MESSAGE QUERY FOR " + refLocation.name());
@@ -696,7 +866,7 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
                 return false;
             }
             that._last_query_location = refLocation.name();
-            if (isGroupChat) {
+            if (is_group_chat) {
                 query_limit_size = that._group_query_size;
                 timestamp = time - (Directorythat._store_time * store_length);
             } else {
@@ -751,7 +921,7 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
                         data.session_key = sjcl.decrypt(CoreConfig.encrypt_pass, data.session_key);
                         data.text = sjcl.decrypt(data.session_key, data.text);
                     }
-                    if (isGroupChat === false) {
+                    if (is_group_chat === false) {
                         refLocation.parent().parent().parent().child('Active-Sessions').child(to_address).child('index_position').once('value', function(snapshot) {
                             index = snapshot.val();
                         });
@@ -767,7 +937,7 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
                     }
                     if (index > -1) //check to see if  the user_id  of the other persons is still in the users active sessions
                     {
-                        if (that.active_chats[index] && that.active_chats[index].isGroupChat === false) {
+                        if (that.active_chats[index] && that.active_chats[index].is_group_chat === false) {
                             i = that.active_chats[index].chats.length; //or 10
                             while (i--) {
                                 if (that.active_chats[index].chats[i].key === log[0]) {
@@ -776,7 +946,7 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
                                 }
                             }
                             return;
-                        } else if (that.active_chats[index] && that.active_chats[index].isGroupChat === true) {
+                        } else if (that.active_chats[index] && that.active_chats[index].is_group_chat === true) {
                             i = that.active_chats[index].group_chats.length; //or 10
                             while (i--) {
                                 if (that.active_chats[index].group_chats[i].key === log[0]) {
@@ -793,7 +963,7 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
                 });
             }, 500);
             $timeout(function() {
-                if (isGroupChat === false) {
+                if (is_group_chat === false) {
                     $timeout(function() {
                         messageListQuery.on('child_added', function(snapshot) { // detects a ref_location.push(Json) made to the reference location
                             if (snapshot.name() != that.last_chat_logged) {
@@ -864,7 +1034,7 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
                         });
                         return messageListQuery;
                     }, 1500);
-                } else if (isGroupChat === true) {
+                } else if (is_group_chat === true) {
                     $timeout(function() {
                         messageListQuery.on('child_added', function(snapshot) { // detects a ref_location.push(Json) made to the reference location
                             if (snapshot.name() != that.last_chat_logged) {

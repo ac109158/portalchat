@@ -1,56 +1,56 @@
 angular.module('portalchat.core').
-service('DirectoryChatService', ['$log', '$timeout', 'ChatManager', 'UserManager', 'UtilityManager', 'NotificationService', "FBURL", '$firebase', function($log, $timeout, ChatManager, UserManager, UtilityManager, NotificationService, FBURL, $firebase) {
+service('DirectoryChatManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', 'ChatBuilder', 'UtilityManager', 'NotificationManager', '$firebaseObject', function($log, $timeout, CoreConfig, UserManager, ChatBuilder, UtilityManager, NotificationManager, $firebaseObject) {
     var that = this;
-    this._parent_category_reference = "Chat-System/Group-Chats" + '/'; // parent folder name variable
-    this._is_typing_reference = 'is-typing';
-    this._group_message_reference = "stored-messages" + '/'; // parent folder reference to store chat messages
-    this._group_active_users_reference = 'active-users/';
-    this._topic_reference = 'topic/';
-    this._store_time = 86400000; // 24 hours
-    this._message_load_size = 20;
-    this._message_fetch_size = 50;
+    this.parent_category_reference = "Chat-System/Group-Chats" + '/'; // parent folder name variable
+    this.is_typing_reference = 'is-typing';
+    this.group_message_reference = "stored-messages" + '/'; // parent folder reference to store chat messages
+    this.group_active_users_reference = 'active-users/';
+    this.topic_reference = 'topic/';
+    this.store_time = 86400000; // 24 hours
+    this.message_load_size = 20;
+    this.message_fetch_size = 50;
 
-    this.__setDirectoryChatReference = function(chat_reference) {
+    this.setDirectoryChatReference = function(chat_reference) {
         that._directory_chat_reference = chat_reference + '/';
     };
-    this.__setUrlRootReference = function() {
-        that._url_root = FBURL + that._parent_category_reference + that._directory_chat_reference.split('_')[0] + '/' + that._directory_chat_reference; // combine with global url variable
+    this.setUrlRootReference = function() {
+        that._url_root = CoreConfig.fb_url + that._parent_category_reference + that._directory_chat_reference.split('_')[0] + '/' + that._directory_chat_reference; // combine with global url variable
     };
-    this.__setIsTypingLoction = function() {
+    this.setIsTypingLoction = function() {
         that._is_typing_location = that._url_root + ChatService._is_typing_reference;
     };
-    this.__setGroupActiveUsersLoction = function() {
+    this.setGroupActiveUsersLoction = function() {
         that._group_user_location = that._url_root + that._active_users_reference;
     };
-    this.__buildNewDirectoryChat = function(scope, chat_reference, chat_description, admin, mandatory, watch_users, store_length) // this function builds out the details of an individual chat sesssion
+    this.buildNewDirectoryChat = function(config) // this function builds out the details of an individual chat sesssion
     {
         var newDirectoryChat = {};
         that._directory_chat_reference = '';
         that._url_root = '';
         that._is_typing_location = '';
         that._group_user_location = '';
-        ChatManager.__setDefaultSettings(newDirectoryChat);
-        that.__setDirectoryChatReference(chat_reference);
+        ChatBuilder.setDefaultChatSettings(newDirectoryChat);
+        that.__setDirectoryChatReference(config.chat_reference);
         that.__setUrlRootReference();
         that.__setIsTypingLoction();
         that.__setGroupActiveUsersLoction();
         newDirectoryChat.user_chat_presence = UserManager.__setChatPresenceforUser(UserManager._user_profile.user_id);
-        newDirectoryChat.session_key = chat_reference;
-        newDirectoryChat.isMandatory = mandatory;
+        newDirectoryChat.session_key = config.chat_reference;
+        newDirectoryChat.isMandatory = config.mandatory;
         newDirectoryChat.monitor = false;
         newDirectoryChat.isGroupChat = true;
         newDirectoryChat.isDirectoryChat = true;
-        newDirectoryChat.admin = admin;
+        newDirectoryChat.admin = config.admin;
         newDirectoryChat.time = 0;
         newDirectoryChat.firebase_location = new Firebase(that._url_root);
         newDirectoryChat.group_message_location = new Firebase(that._url_root + that._group_message_reference);
         newDirectoryChat.topic_location = $firebase(new Firebase(that._url_root + that._topic_reference));
         newDirectoryChat.smod = "SM on Duty";
-        newDirectoryChat.isSound = false;
-        newDirectoryChat.isopen = true;
+        newDirectoryChat.is_sound = false;
+        newDirectoryChat.is_open = true;
         newDirectoryChat.chat_description = chat_description; // used at the top of the chat box
-        newDirectoryChat.messageListQuery = that.__returnMessageListQuery(scope, newDirectoryChat, store_length);
-        if (watch_users) {
+        newDirectoryChat.message_list_query = that.__returnMessageListQuery(scope, newDirectoryChat, store_length);
+        if (config.watch_users) {
             newDirectoryChat.group_user_location = new Firebase(that._url_root + that._group_active_users_reference);
             newDirectoryChat.group_user_location.child(UserManager._user_profile.user_id).update({
                 user_id: UserManager._user_profile.user_id,
@@ -126,18 +126,18 @@ service('DirectoryChatService', ['$log', '$timeout', 'ChatManager', 'UserManager
             if (snapshot.name() == UserManager._user_profile.user_id) {
                 return;
             }
-            scope.safeApply(function() {
+            $timeout(function() {
                 newDirectoryChat.is_typing_list.push(snapshot.val());
             });
         });
         newDirectoryChat.group_typing_location.on('child_removed', function(snapshot) {
-            scope.safeApply(function() {
+            $timeout(function() {
                 newDirectoryChat.is_typing_list.splice(newDirectoryChat.is_typing_list.indexOf(snapshot.val(), 1));
             });
         });
         return newDirectoryChat;
     };
-    this.__returnMessageListQuery = function(scope, directory_chat, store_length) // this will query the message storage loction for the chat_session and create callbacks for when a child is added or removed, it can  also limit the amount of chat message that can be stored
+    this.returnMessageListQuery = function(scope, directory_chat, store_length) // this will query the message storage loction for the chat_session and create callbacks for when a child is added or removed, it can  also limit the amount of chat message that can be stored
     {
         $log.debug("WARNING: GERNERATING A MESSAGE QUERY FOR " + directory_chat.group_message_location.name());
         if (angular.isUndefined(directory_chat.group_message_location)) {
@@ -203,7 +203,7 @@ service('DirectoryChatService', ['$log', '$timeout', 'ChatManager', 'UserManager
                 while (i--) {
                     if (directory_chat.group_chats[i].key == log[0]) {
                         directory_chat.group_chats[i].text = data.text;
-                        scope.$apply();
+                        $rootScope.$apply();
                         break;
                     }
                 }
@@ -290,7 +290,7 @@ service('DirectoryChatService', ['$log', '$timeout', 'ChatManager', 'UserManager
         }, 1000);
         return messageListQuery;
     };
-    this.__fetchMoreMessages = function(scope, directory_chat) {
+    this.fetchMoreMessages = function(scope, directory_chat) {
         var chats, log, location;
         $log.debug('DirectoryChatManager.__fetchMoreMessages');
         $log.debug(directory_chat);

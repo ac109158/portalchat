@@ -1,5 +1,5 @@
-angular.module('portalchat.core').
-service('NotificationManager', function() {
+angular.module('portalchat.core').service('NotificationManager',
+function() {
     var that = this;
 
     this.volume_level = 0.05;
@@ -54,8 +54,16 @@ service('NotificationManager', function() {
         sound.play();
     };
 
-    this.mute = function() {
-        that.isGlobalSound = false;
+    this.mute = function(duration) {
+        if(duration){
+            that.isGlobalSound = false;
+            $timeout(function(){
+                that.isGlobalSound = true;
+            }, duration);
+        } else{
+            that.isGlobalSound = false;
+        }
+
     };
     this.unmute = function() {
         that.isGlobalSound = true;

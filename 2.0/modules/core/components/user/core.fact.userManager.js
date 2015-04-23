@@ -134,7 +134,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
 
     this.setUserFirebaseTargets = function() {
         if (that.user.id) {
-            that.fb.target.presence = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.presence_reference + that.user.id + '/chat-presence'));
+            that.fb.target.presence = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.presence_reference + that.user.id + '/chat_presence'));
             that.fb.target.online = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.online_reference + that.user.id + '/' + CoreConfig.online_reference));
             return true;
         }
@@ -189,7 +189,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
                 });
             } else if (online_value.online === false && that.fb.target.presence.$value === 'Offline') {
                 that.fb.location.presence.update({
-                    'chat-presence': 'Offline'
+                    'chat_presence': 'Offline'
                 });
                 that.user_stored_online = false;
             } else {
@@ -222,18 +222,18 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     };
 
     this.manageUserPresence = function() {
-        that.fb.location.presence.child('chat-presence').once('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
+        that.fb.location.presence.child('chat_presence').once('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
             var presence = snapshot.val(); // store decrypted snap shot object
             if (CoreConfig.force_online) {
                 $rootScope.$broadcast('chat_presence_change', CoreConfig.default.presence);
             } else if (angular.isUndefined(presence) || presence === null || presence === '') {
                 that.fb.location.presence.update({
-                    'chat-presence': CoreConfig.default.presence
+                    'chat_presence': CoreConfig.default.presence
                 });
                 $rootScope.$broadcast('chat_presence_change', CoreConfig.default.presence);
             } else {
                 that.fb.location.presence.update({
-                    'chat-presence': presence
+                    'chat_presence': presence
                 });
                 $rootScope.$broadcast('chat_presence_change', presence);
             }
@@ -246,21 +246,21 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
             }
         });
 
-        that.fb.location.presence.child('show-message').once('value', function(snapshot) {
+        that.fb.location.presence.child('show_message').once('value', function(snapshot) {
             var bool = snapshot.val();
             if (angular.isDefined(bool)) {
                 that.profile.main.presence.show_message = bool;
             }
         });
 
-        that.fb.location.presence.child('auto-post').once('value', function(snapshot) {
+        that.fb.location.presence.child('auto_post').once('value', function(snapshot) {
             var bool = snapshot.val();
             if (angular.isDefined(bool)) {
                 that.profile.main.presence.auto_post = bool;
             }
         });
 
-        that.fb.location.presence.child('chat-presence').on('value', function(snapshot) {
+        that.fb.location.presence.child('chat_presence').on('value', function(snapshot) {
             var presence = snapshot.val();
 
             if (presence !== 'Offline') {
@@ -274,7 +274,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
             if (presence === 'Offline' && that.stored.presence != 'Offline') {
                 // console.log('Hey, I still have chat presence, you');
                 that.fb.location.presence.update({
-                    'chat-presence': that.stored.presence
+                    'chat_presence': that.stored.presence
                 });
             } else if (presence === 'Offline' && that.stored.presence === 'Offline') {
                 that.fb.location.online.update({
@@ -361,7 +361,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
             that.clearPresenceOptions();
             that.storeChatPresence(presence);
             that.fb.location.presence.update({
-                'chat-presence': presence
+                'chat_presence': presence
             });
             if (presence == 'Offline') {
                 that.storeUserOnline(false);
@@ -408,7 +408,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         $log.debug('updatePresenceMessageShow');
         if (angular.isDefined(that.profile.main.presence.show_message)) {
             that.fb.location.presence.update({
-                'show-message': that.profile.main.presence.show_message
+                'show_message': that.profile.main.presence.show_message
             });
         }
     };
@@ -417,7 +417,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         $log.debug('updatePresenceMessageShowPost');
         if (angular.isDefined(that.profile.main.presence.auto_post)) {
             that.fb.location.presence.update({
-                'auto-post': that.profile.main.presence.auto_post
+                'auto_post': that.profile.main.presence.auto_post
             });
         }
     };

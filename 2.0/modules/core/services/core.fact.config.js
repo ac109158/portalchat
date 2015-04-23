@@ -54,24 +54,8 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log',
         this.chat.is_typing_reference = 'is-typing';
         this.chat.message_storage_reference = "Stored-Messages/Users" + '/'; // parent folder reference to store chat messages
 
-        ////////////////////////////////////////////////////////////
-        //Session Method
+                // chat ui
 
-
-        this.session = {};
-        this.session.parent_session_reference = 'Chats' + '/';
-        this.session.url_root = that.fb_url + that.session.parent_session_reference;
-        this.session.root_reference = "Active-Sessions" + '/'; // folder reference
-
-        //online
-        this.online_check_reference = "Online-Check-In" + "/";
-
-
-
-
-        // chat ui
-
-        this.chat = {};
         this.chat.ui = {};
         this.chat.ui.header_color = "#00335B"; // default color of the chat header
         this.chat.ui.closed_header_alert_color = '#ce6000'; // alternate color of the chat header
@@ -87,6 +71,23 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log',
         this.chat.setting.group_query_size = 5000;
         // this.chat.setting.store_time = 172800000; // 48 hours how long to store  messages in each users query
         this.chat.setting.store_time = 1209600000; // 2 weeks how long to store  messages in each users query
+
+        ////////////////////////////////////////////////////////////
+        //Session Method
+
+
+        this.session = {};
+        this.session.parent_session_reference = 'Chats' + '/';
+        this.session.url_root = that.fb_url + that.session.parent_session_reference;
+        this.session.root_reference = "Active-Sessions" + '/'; // folder reference
+
+        //online
+        this.online_check_reference = "Online-Check-In" + "/";
+
+
+
+
+
 
         this.group_chat = {};
         this.group_chat.parent_category_reference = "Chat-System/Group-Chats" + '/'; // parent folder name variable

@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$timeout', 'CoreConfig', 'UserManager', 'NotificationManager', function($rootScope, $firebase, $log, $http, $window, $timeout, CoreConfig, UserManager, NotificationManager) {
+service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$timeout', '$interval', 'CoreConfig', 'UserManager', 'NotificationManager', function($rootScope, $firebase, $log, $http, $window, $interval, $timeout, CoreConfig, UserManager, NotificationManager) {
     var that = this;
 
 
@@ -15,9 +15,11 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
 
     this.engine.network = {};
     this.engine.network.title = "Network";
-    this.engine.network.pinging = false;
+    this.engine.network.is_pinging = false;
     this.engine.network.ping = undefined;
     this.engine.network.online = true;
+
+    this.interval = {};
 
 
 
@@ -122,7 +124,7 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
 
     this.pingTest = function() {
         $log.debug('running ping test');
-        that.engine.network.pinging = true;
+        that.engine.network.is_pinging = true;
         var imageAddr = "/components/com_callcenter/views/training/ng/img/ping_test_5mb" + "?n=" + Math.random();
         var startTime, endTime;
         var downloadSize = 5245329;
@@ -144,7 +146,7 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
             $log.debug("Connection speed is: \n" + speedBps + " bps\n" + speedKbps + " kbps\n" + speedMbps + " Mbps\n");
             that.engine.network.ping = speedMbps;
             $timeout(function() {
-                that.engine.network.pinging = false;
+                that.engine.network.is_pinging = false;
             });
 
 
@@ -173,6 +175,55 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
             }
         }, 1000);
     };
+
+    this.pingHost = function() {
+        if (that.engine.network.is_pinging) {
+            return false;
+        }
+        that.is_host_reachable = false;
+        console.log('pinging');
+        that.engine.network.is_pinging = true;
+        var host_ping_promise = $http.get( );
+        host_ping_promise.then(function(response) {
+            console.log(response);
+            if (response.status === 200) {
+                that.is_host_reachable = true;
+                that.engine.network.is_pinging = false;
+                return true;
+            } else {
+                var ping_interval = $timeout(function() {
+                    host_ping_promise = $http.get("./assets/img/favicon.ico?rand=" + new Date().getTime());
+                    host_ping_promise.then(function(response) {
+                        console.log(response);
+                        if (response.status === 200) {
+                            that.engine.portal.online = true;
+                            that.is_host_reachable = true;
+                            that.engine.network.is_pinging = false;
+                            $timeout.cancel(ping_interval);
+                            return true;
+                        } else {
+                            that.engine.portal.online = false;
+                            var google_ping_promise = $http.get("//www.google.com/favicon.ico?rand=" + new Date().getTime());
+                            google_ping_promise.then(function(response) {
+                                console.log(response);
+                                if (response.status === 200) {
+                                    that.engine.network.online = true;
+                                    that.is_host_reachable = true;
+                                    that.engine.network.is_pinging = false;
+                                    return true;
+                                } else {
+                                    that.engine.network.online = false;
+                                }
+                            });
+                        }
+                    });
+                }, 5000);
+            }
+        }); // jshint ignore:line
+
+    };
+
+
 
     this.safeApply = function(fn) { //util function
         var phase = this.$root.$$phase;

@@ -26,5 +26,8 @@ angular.module('portalchat.core').controller('core.utility', ['$rootScope', '$sc
             return $window.navigator.onLine;
         };
 
+        $scope.utility.pingHost= function(){
+            UtilityManager.pingHost();
+        };
     }
 ]);

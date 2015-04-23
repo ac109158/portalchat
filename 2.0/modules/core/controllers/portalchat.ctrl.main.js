@@ -1,18 +1,9 @@
 'use strict';
 /*
  */
-angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope', '$log', '$timeout', '$window', 'CoreConfig', 'CoreManager', 'UtilityManager',
-    function($rootScope, $scope, $log, $timeout, $window, CoreConfig, CoreManager, UtilityManager) {
-        $scope.test = "This is the core controller";
+angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope', '$log', '$timeout', '$window', 'CoreConfig', 'CoreManager', 'UtilityManager', 'localStorageService',
+    function($rootScope, $scope, $log, $timeout, $window, CoreConfig, CoreManager, UtilityManager, localStorageService) {
         $scope.runApp = false;
-
-        $scope.ui = {};
-        $scope.ui.settings = {};
-
-        $scope.ui.settings.showProfileMenu = false;
-        $scope.ui.settings.showPresenceMenu = false;
-        $scope.ui.settings.showVolumeMenu = false;
-        $scope.ui.settings.requestChat = true;
 
         $scope.initUser = function() {
             CoreManager.initUser();
@@ -24,14 +15,9 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
         });
 
         var init_scope = function() {
+            $scope.settings = CoreManager.returnSettings();
             $scope.user = CoreManager.returnUser();
             $scope.contacts = CoreManager.returnContacts();
-
-            if (String($window.location.href).split('?')[1] == CoreConfig.ext_link) {
-                $scope.ui.settings.backdrop = true;
-            } else {
-                $scope.ui.settings.backdrop = false;
-            }
             console.log($scope);
         };
 
@@ -68,51 +54,32 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
             }
         });
 
-        $scope.$on(['system-change'], function(event, notification){
+        $scope.$on('external-window-change', function(event, newStatus) {
+            CoreManager.externalWindowChange(newStatus);
+        });
+
+        $scope.$on(['system-change'], function(event, notification) {
             CoreManager.observeSystemChange(notification);
         });
 
-        $scope.ui.returnFalse = function() {
-            return false;
-        };
+        $scope.$on('tod-change', function(event, to_user) {
+            $scope.$evalAsync(function() {
+                $scope.tod = UserManager._tod;
+            });
+        });
 
-        $scope.ui.broadcastPresenceStatus = function(status) {
-            if (status) {
-                $rootScope.$broadcast('chat_presence_change', status);
-            }
-        };
+        $scope.$on('smod-change', function(event, to_user) {
+            $scope.$evalAsync(function() {
+                $scope.smod = UserManager._smod;
+            });
+        });
 
-        $scope.ui.toggleProfileMenu = function() {
-            $scope.ui.settings.showProfileMenu = !$scope.ui.settings.showProfileMenu;
-        };
-
-        $scope.ui.togglePresenceMenu = function() {
-            $scope.ui.settings.showPresenceMenu = !$scope.ui.settings.showPresenceMenu;
-        };
-        $scope.ui.setPresence = function(presence) {
-            if (presence) {
-                CoreManager.setPresence(presence);
-            }
-        };
-
-        $scope.ui.toggleVolumeMenu = function() {
-            $scope.ui.settings.showVolumeMenu = !$scope.ui.settings.showVolumeMenu;
-        };
-
-        $scope.ui.updateSoundLevel = function(level) {
-            if (parseInt(level) && level > -1 && level <= 50) {
-                CoreManager.updateSoundLevel(level);
-                $scope.sound_level = level;
-            }
-        };
-
-        $scope.activateExternalWindow = function() {
+        $scope.$on('activateExternalWindow', function(event) {
             if ($scope.externalWindowObject) {
-                console.log('activateExternalWindow');
                 $scope.externalWindowObject.focus();
             } else {
-                $scope.$broadcast('activateExternalWindow');
+                $scope.openExternalWindow();
             }
-        };
+        });
     }
 ]);

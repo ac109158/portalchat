@@ -1,16 +1,22 @@
 angular.module('portalchat.core').
-service('SettingsManager', ['$rootScope', '$log','$timeout','$window', 'CoreConfig', '$firebaseObject', 'localStorageService', 'NotificationManager', function($rootScope, $log, $timeout, $window, CoreConfig, $firebaseObject, localStorageService, NotificationManager) {
+service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', 'CoreConfig', '$firebaseObject', 'localStorageService', 'NotificationManager', 'UserManager', function($rootScope, $log, $timeout, $window, CoreConfig, $firebaseObject, localStorageService, NotificationManager, UserManager) {
     var that = this;
 
-    this.settings = {};
-    this.settings.isExternalInstance = undefined;
-    this.settings.layout = undefined;
-    this.settings.font_size = undefined;
-    this.settings.vertical_adjust = undefined;
-    this.settings.vertical_adjust_2 = undefined;
-    this.settings.width_adjust = undefined;
-    this.settings.external_monitor = undefined;
-    this.settings.sound_level = undefined;
+
+    this.module = {};
+    this.module.is_external_window = false;
+    this.module.is_external_window_instance = false;
+    this.module.is_open = false;
+    this.module.layout = 1;
+    this.module.font_size = 12;
+    this.module.panel_vertical_adjust = 0;
+    this.module.panel_vertical_adjust_2 = 0;
+    this.module.panel_width_adjust = 0;
+    this.module.show_external_notifications = false;
+    this.module.sound_level = 2;
+    this.module.last_contact_chat = false;
+    this.module.last_directory_chat = false;
+    this.module.is_window_visible = true;
 
     this.fb = {}; // firebase domain
     this.fb.location = {}; // location of values
@@ -18,28 +24,38 @@ service('SettingsManager', ['$rootScope', '$log','$timeout','$window', 'CoreConf
 
 
     this.load = function() {
-        if (CoreConfig.user.id) {
+        if (UserManager.user.id) {
             that.setFirebaseLocations();
             that.setFirebaseTargets();
             $timeout(function() {
                 that.setExternalWindow();
-                that.manageUserSettings();
+                that.setFirebaseSettings();
+                that.addUnloadListener();
+
             });
+
             return true;
         }
         return false;
     };
 
+    this.addUnloadListener = function() {
+        $window.onbeforeunload = function(e) {
+            that.fb.location.settings.update(that.module);
+        };
+    };
+
     this.setFirebaseLocations = function() {
-        if (CoreConfig.user.id) {
-            that.fb.location.settings = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/');
+        if (UserManager.user.id) {
+            console.log(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.settings_reference + UserManager.user.id + '/');
+            that.fb.location.settings = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.settings_reference + UserManager.user.id + '/');
         }
     };
 
     this.setFirebaseTargets = function() {
-        if (CoreConfig.user.id) {
-            that.fb.target.is_external_window = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/is-external-window/'));
-            that.fb.target.is_panel_open = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/module-open/'));
+        if (UserManager.user.id) {
+            // that.fb.target.is_external_window = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.settings_reference + CoreConfig.user.id + '/is-external-window/'));
+            that.fb.target.is_module_open = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.users.settings_reference + UserManager.user.id + '/module-open/'));
             return true;
         }
         return false;
@@ -47,136 +63,186 @@ service('SettingsManager', ['$rootScope', '$log','$timeout','$window', 'CoreConf
 
     this.setExternalWindow = function() {
         if (String(window.location.href).split('?')[1] === String(CoreConfig.ext_link).split('?')[1]) {
-            that.settings.isExternalWindow = true;
+            that.module.is_external_window_instance = true;
+            that.module.is_open = true;
             that.fb.location.settings.update({
-                'is-external-window': true
+                'is_external_window': true
             });
-            that.settings.isExternalInstance = true;
+            that.module.is_external_window = true;
         } else {
-            that.settings.isExternalInstance = false;
+            that.module.is_external_window = false;
         }
-        that.fb.location.settings.child('/external-window-activate/').once('value', function(snapshot) {
+        that.fb.location.settings.child('/external_window_activate/').once('value', function(snapshot) {
             if (snapshot.val() === null) {
                 that.fb.location.settings.update({
-                    'external-window-activate': false
+                    'external_window_activate': false
                 });
             }
         });
 
-        if (that.settings.isExternalInstance) {
-            localStorageService.add('isExternalWindow', true);
+        that.fb.location.settings.child('is_external_window').on('value', function(snapshot) {
+            if (snapshot.val()) {
+                that.module.is_external_window = true;
+                $rootScope.$broadcast('setting-change', {
+                    is_external_window: true
+                });
+            } else {
+                that.module.is_external_window = false;
+                $rootScope.$broadcast('close-external-window');
+                $rootScope.$broadcast('setting-change', {
+                    is_external_window: false
+                });
+            }
+        });
+
+
+        if (that.module.is_external_window) {
+            localStorageService.add('is_external_window', true);
             that.fb.location.settings.onDisconnect().update({
-                'is-external-window': false
-            });
-            that.fb.location.settings.child('is-external-window').on('value', function(snapshot) {
-                if (snapshot.val()) {} else {
-                    $rootScope.$broadcast('closeExternalWindow');
-                }
+                'is_external_window': false
             });
 
         } else {
             window.onbeforeunload = function() {
-                if (that.session.id === localStorageService.get('isExistingChat')) {
-                    localStorageService.remove('isExistingChat');
+                if (that.session.id === localStorageService.get('is_existing_chat')) {
+                    localStorageService.remove('is_existing_chat');
                 }
-                $rootScope.$broadcast('clear_notifications');
+                $rootScope.$broadcast('clear-notifications');
             };
         }
 
-        that.fb.location.settings.child('/external-window-activate/').on('value', function(snapshot) {
+        that.fb.location.settings.child('/external_window_activate/').on('value', function(snapshot) {
             if (snapshot.val()) {
-                if (that.settings.isExternalWindow === true && that.settings.isExternalInstance === true) {
+                if (that.module.is_external_window === true && that.module.is_external_window_instance === true) {
                     $timeout(function() {
                         self.focus();
                     });
-                    $rootScope.$broadcast('activateExternalWindow');
+                    $rootScope.$broadcast('activate-external-window');
                 }
             }
             $timeout(function() {
                 that.fb.location.settings.update({
-                    'external-window-activate': false
+                    'external_window_activate': false
                 });
             }, 3000);
         });
         $log.debug(String(window.location.href).split('?')[1] + '  : ' + String(CoreConfig.ext_link).split('?')[1]);
     };
 
-    this.manageUserSettings = function() {
-        that.fb.location.settings.child('layout').once('value', function(snapshot) {
-            if (snapshot.val() === null) {
-                that.settings.layout = CoreConfig.default.layout;
+    this.setFirebaseSettings = function() {
+        that.fb.location.settings.child('is_open').once('value', function(snapshot) {
+            var open = snapshot.val();
+            if (open || angular.isUndefined(open)) {
+                that.module.is_open = true;
+                $rootScope.$broadcast('setting-change', {
+                    is_open: true
+                });
             } else {
-                that.settings.layout = snapshot.val();
+                that.module.is_open = false;
+                $rootScope.$broadcast('setting-change', {
+                    is_open: false
+                });
             }
         });
 
-        that.fb.location.settings.child('font-size').once('value', function(snapshot) {
+        that.fb.location.settings.child('layout').once('value', function(snapshot) {
+            var layout = snapshot.val();
+            if (layout) {
+                that.module.layout = layout;
+            } else {
+                that.module.layout = CoreConfig.default.layout;
+            }
+        });
+
+        that.fb.location.settings.child('font_size').once('value', function(snapshot) {
             var font = snapshot.val();
             if (font) {
-                that.settings.font_size = font;
+                that.module.font_size = parseInt(font, 10);
             } else {
-                that.settings.font_size = CoreConfig.default.font_size;
+                that.module.font_size = CoreConfig.default.font_size;
             }
         });
 
-        that.fb.location.settings.child('vertical-adjust').once('value', function(snapshot) {
-            if (snapshot.val() === null) {
-                that.settings.vertical_adjust = 0;
+        that.fb.location.settings.child('panel_vertical_adjust').once('value', function(snapshot) {
+            var panel_vertical_adjust = snapshot.val();
+            if (panel_vertical_adjust) {
+                that.module.panel_vertical_adjust = parseInt(panel_vertical_adjust);
             } else {
-                that.settings.vertical_adjust = parseInt(snapshot.val());
+                that.module.panel_vertical_adjust = 0;
+            }
+        });
+        that.fb.location.settings.child('panel_width_adjust').once('value', function(snapshot) {
+            var panel_width_adjust = snapshot.val();
+            if (panel_width_adjust) {
+                that.module.panel_width_adjust = parseInt(panel_width_adjust, 10);
+            } else {
+                that.module.panel_width_adjust = 0;
             }
         });
 
-        that.fb.location.settings.child('vertical-adjust-2').once('value', function(snapshot) {
-            if (snapshot.val() === null) {
-                that.settings.vertical_adjust_2 = 0;
+        that.fb.location.settings.child('panel_vertical_adjust_2').once('value', function(snapshot) {
+            var panel_vertical_adjust_2 = snapshot.val();
+            if (panel_vertical_adjust_2) {
+                that.module.panel_vertical_adjust_2 = parseInt(panel_vertical_adjust_2, 10);
             } else {
-                that.settings.vertical_adjust_2 = parseInt(snapshot.val());
+                that.module.panel_vertical_adjust_2 = 0;
             }
         });
 
-        that.fb.location.settings.child('width-adjust').once('value', function(snapshot) {
-            if (snapshot.val() === null) {
-                that.settings.width_adjust = 0;
+        that.fb.location.settings.child('show_external_notifications').once('value', function(snapshot) {
+            var show_external_notifications = snapshot.val();
+            if (angular.isDefined(show_external_notifications)) {
+                that.module.show_external_notifications = show_external_notifications;
             } else {
-                that.settings.width_adjust = snapshot.val();
+                that.module.show_external_notifications = false;
+            }
+        });
+        that.fb.location.settings.child('is_external_window').once('value', function(snapshot) {
+            var is_external_window = snapshot.val();
+            if (angular.isDefined(is_external_window)) {
+                that.module.is_external_window = is_external_window;
+
+            } else {
+                that.module.is_external_window = false;
             }
         });
 
-        that.fb.location.settings.child('external-monitor').once('value', function(snapshot) {
-            if (snapshot.val() === null) {
-                that.settings.external_monitor = false;
-            } else {
-                that.settings.external_monitor = snapshot.val();
-            }
+        that.fb.location.settings.child('last_contact_chat').once('value', function(snapshot) {
+            that.module.last_contact_chat = snapshot.val();
         });
-        that.fb.location.settings.child('is-external-window').once('value', function(snapshot) {
-            if (snapshot.val() === null) {
-                that.fb.location.settings.update({
-                    'is-external-window': false
-                });
+
+        that.fb.location.settings.child('last_directory_chat').once('value', function(snapshot) {
+            that.module.last_directory_chat = snapshot.val();
+        });
+
+
+        that.fb.location.settings.child('sound_level').once('value', function(snapshot) {
+            var sound_level = snapshot.val();
+            if (angular.isDefined(sound_level)) {
+                that.module.sound_level = sound_level;
+            } else {
+                that.module.sound_level = CoreConfig.default.sound_level;
+            }
+            if (that.module.sound_level) {
+                NotificationManager.updateSoundLevel(that.module.sound_level);
             }
         });
 
-        that.fb.location.settings.child('/sound-level/').once('value', function(snapshot) {
-            if (snapshot.val() === null) {
-                that.settings.sound_level = CoreConfig.default.sound_level;
-                that.fb.location.settings.update({
-                    'sound-level': parseInt(that.settings.sound_level)
-                });
-            } else {
-                that.settings.sound_level = snapshot.val();
-            }
-            if (that.settings.sound_level) {
-                NotificationManager.updateSoundLevel(that.settings.sound_level);
-            }
-        });
     };
 
     this.activateExternalWindow = function() {
         that.fb.location.settings.update({
-            'external-window-activate': true
+            'external_window_activate': true
         });
+    };
+
+    this.update = function(setting, value, firebase) {
+        if (angular.isDefined(that.module[setting]) && angular.isDefined(value)) {
+            that.module[setting] = value;
+        }
+        if (firebase) {
+            that.fb.location.settings.update(that.module);
+        }
     };
 
     this.detectLayout = function() { /*      console.log('detecting layout'); */
@@ -189,13 +255,8 @@ service('SettingsManager', ['$rootScope', '$log','$timeout','$window', 'CoreConf
         }
     };
 
-    this.updateSoundLevel = function(level) {
-        if (parseInt(level) && level > -1 && level <= 50) {
-            that.fb.location.settings.update({
-                'sound-level': parseInt(level)
-            });
-        }
-    };
+
+
 
     return this;
 }]);

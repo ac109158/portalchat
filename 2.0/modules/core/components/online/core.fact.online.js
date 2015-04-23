@@ -1,4 +1,4 @@
-angular.module('portalchat.core').factory('OnlineManager', ['$root', '$log', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ContactsManager', function($root, $log, $timeout, $firebaseObject, CoreConfig, UserManager, ContactsManager) {
+angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ContactsManager', function($rootScope, $log, $timeout, $firebaseObject, CoreConfig, UserManager, ContactsManager) {
     var that = this;
     this.isTimestamps = false;
 
@@ -11,37 +11,43 @@ angular.module('portalchat.core').factory('OnlineManager', ['$root', '$log', '$t
 
     this.load = function() {
         if (CoreConfig.user && CoreConfig.user.id) {
-            that.setFirebaseLocations();
+            that.setFirebaseLocation();
+            $timeout(function(){
+                that.setOnlineTracking();
+            }, 2000);
             return true;
         }
         return false;
     };
 
-    this.setFirebaseLocations = function() {
-        that.fb.locations.online_check = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.online_check_reference);
-        that.fb.locations.user_check_in = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.online_check_reference + CoreConfig.user.id);
-        that.fb.locations.user_check_in.onDisconnect().remove();
+    this.setFirebaseLocation = function() {
+        that.fb.location.online_check = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.online_check_reference);
+        that.fb.location.user_check_in = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.online_check_reference + CoreConfig.user.id);
+        that.fb.location.user_check_in.onDisconnect().remove();
     };
 
 
     this.setOnlineTracking = function() {
         if (UserManager.fb.target.presence.$value != 'Offline') {
-            that.fb.locations.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
+            that.fb.location.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
+            UserManager.user.timestamp = new Date().getTime();
         }
         that.user_check_in = setInterval(function() {
             if (UserManager.fb.target.presence && UserManager.fb.target.presence.$value !== 'Offline') {
-                that.fb.locations.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
+                that.fb.location.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
+                UserManager.user.timestamp = new Date().getTime();
             }
         }, 30000);
-        that.fb.locations.user_check_in.on('value', function(snapshot) {
+        that.fb.location.user_check_in.on('value', function(snapshot) {
             if (!snapshot.val()) {
                 $timeout(function() {
                     if (UserManager.fb.target.presence && UserManager.fb.target.presence.$value != 'Offline') {
                         $timeout(function() {
-                            that.fb.locations.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
+                            that.fb.location.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
+                            UserManager.user.timestamp = new Date().getTime();
                         }, 1000);
                     } else if (UserManager.fb.target.presence && UserManager.fb.target.presence.$value === 'Offline') {
-                        that.fb.locations.user_check_in.remove();
+                        that.fb.location.user_check_in.remove();
                     }
                 });
             }
@@ -63,16 +69,16 @@ angular.module('portalchat.core').factory('OnlineManager', ['$root', '$log', '$t
     };
 
     this.updateTimestamp = function() {
-        if (UserService._user_chat_presence.$value != 'Offline') {
+        if (UserManager.fb.target.presence != 'Offline') {
             if (UserManager.isManagerLevel()) {
                 that.updateOnlineTimestamps();
             }
-        } else if (UserService._user_chat_presence.$value == 'Offline') {
+        } else if (UserManagerfb.target.presence == 'Offline') {
             that.user_online_check_location.remove();
         }
     };
     this.updateOnlineTimestamps = function() {
-        that.fb.locations.online_check.once('value', function(snapshot) {
+        that.fb.location.online_check.once('value', function(snapshot) {
             $log.debug('getting user stamps');
             var user_timestamps = snapshot.val();
             var i = 1;
@@ -85,11 +91,12 @@ angular.module('portalchat.core').factory('OnlineManager', ['$root', '$log', '$t
                         stamp_index = i;
                     }
                     if (ContactsManager.contacts.profiles[contact_tag] && value > ContactsManager.contacts.profiles[contact_tag].last_check_in) {} else {
-                        UserService.__storeOfflineQueue('user_' + user_id_key);
+                        ContactsManager.storeOfflineQueue('user_' + user_id_key);
                         $timeout(function() {
                             if (ContactsManager.isOfflineQueued(contact_tag)) {
-                                that.fb.locations.online_check.child(user_id_key).remove();
+                                that.fb.location.online_check.child(user_id_key).remove();
                                 ContactsManager.setContactOffline(contact_tag);
+                                console.log('setting offline: ', user_id_key);
                                 ContactsManager.fb.location.online.child(user_id_key).update({
                                     'online': false
                                 });

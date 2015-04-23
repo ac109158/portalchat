@@ -8,7 +8,7 @@
      <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 </head>
 <body>
-    <div presence="MOUSE TOUCH KEYBOARD" ng-controller="core.main" ng-init="initUser();">
+    <div ng-cloak presence="MOUSE TOUCH KEYBOARD" ng-controller="core.main" ng-init="initUser();">
         <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;">
             <legend>User</legend>
             <div ng-repeat="(key, value) in user"><label>{{key}}: </label><span ng-bind="value"></span><br></div>
@@ -26,11 +26,29 @@
             <span class="btn btn-sm btn-success" ng-click="utility.setFirebaseOnline();">Online</span><br>
             <span class="btn btn-sm btn-success" ng-click="utility.setFirebaseOffline();">Offline</span>
         </div>
-
-        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;" ng-controller="core.ui">
-                <legend>UI</legend>
-                {{test}}
+        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;">
+                <legend>Settings</legend>
+                <div ng-repeat="(key, value) in settings track by $index">
+                    <label>{{key}}</label>: {{value}}
+                </div>
         </div>
+
+        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;" ng-controller="core.ui" ng-init="loadUI();">
+                <legend>UI</legend>
+                <label>Font Size</label>
+                <button class="glyphicon glyphicon-chevron-up" ng-click="ui.fx.increaseFontSize()"></button>
+                <button class="glyphicon glyphicon-chevron-down" ng-click="ui.fx.decreaseFontSize()"></button>
+                <br>
+                <label>Open {{settings.is_open}}</label>
+                <button class="btn btn-sm" ng-class="{'btn-default': !settings.is_open, 'btn-success': settings.is_open}" ng-click="ui.fx.openChatModule()">Open</button>
+                <button class="btn btn-sm" ng-class="{'btn-default': settings.is_open, 'btn-danger': !settings.is_open}" ng-click="ui.fx.closeChatModule()">Close</button>
+                <br>
+                {{utility}}
+                <div ng-controller="core.utility" >
+                    <label>Ping Host: </label><div class="btn btn-default" ng-click="utility.pingHost();" >Ping</div>
+                </div>
+        </div>
+
 
 
 
@@ -98,10 +116,13 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
         './modules/core/core.filters.js',
         './modules/core/components/browser/core.srv.browser.js',
 
+        './modules/core/components/chats/core.fact.chatBuilder.js',
         './modules/core/components/chats/core.ctrl.chats.js',
         './modules/core/components/chats/core.fact.chatManager.js',
-        './modules/core/components/chats/core.fact.builder.js',
-        './modules/core/components/chats/core.service.directoryChat.js',
+        './modules/core/components/chats/core.fact.chatModuleManager.js',
+        './modules/core/components/chats/core.fact.chatStorage.js',
+        './modules/core/components/chats/core.fact.directoryChatManager.js',
+        './modules/core/components/chats/core.fact.groupChatManager.js',
 
         './modules/core/components/contacts/core.fact.contactsManager.js',
 
@@ -109,9 +130,11 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
 
         './modules/core/components/notifications/core.srv.notificationsManager.js',
 
+        './modules/core/components/online/core.fact.online.js',
+
         './modules/core/components/presence/core.fact.presence.js',
 
-        './modules/core/components/session/core.fact.sessionManager.js',
+        './modules/core/components/session/core.fact.sessionsManager.js',
 
         './modules/core/components/settings/core.fact.settingsManager.js',
 
