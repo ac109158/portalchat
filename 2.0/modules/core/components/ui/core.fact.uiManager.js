@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$document', '$timeout', 'CoreConfig', 'SettingsManager', 'ChatModuleManager', function($rootScope, $firebase, $log, $http, $window, $document, $timeout, CoreConfig, SettingsManager, ChatModuleManager) {
+service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$document', '$timeout', 'CoreConfig', 'SettingsManager', 'ChatModuleManager', 'ChatManager','PermissionsManager',  function($rootScope, $firebase, $log, $http, $window, $document, $timeout, CoreConfig, SettingsManager, ChatModuleManager, ChatManager, PermissionsManager) {
     var that = this;
     this.fb = {};
     this.fb.location = {};
@@ -84,6 +84,14 @@ service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$d
     this.ux.window.setting.default_window_title = 'Dashboard';
     this.ux.window.attr = {};
     this.ux.window.attr.unread = 0;
+
+    this.ux.fx = {};
+
+    this.ux.fx.hasAdminRights = function() {
+        return PermissionsManager.hasAdminRights();
+    };
+
+
 
     this.ui = {};
     this.ui.settings = {};
@@ -324,6 +332,10 @@ service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$d
                 SettingsManager.update(setting, !SettingsManager.module[setting]);
             }
         }
+    };
+
+    this.ui.fx.clearChatMessageHistory = function(type, session_key) {
+        ChatManager.clearChatMessageHistory(type, session_key);
     };
 
 

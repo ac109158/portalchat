@@ -71,6 +71,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log',
         this.chat.setting.group_query_size = 5000;
         // this.chat.setting.store_time = 172800000; // 48 hours how long to store  messages in each users query
         this.chat.setting.store_time = 1209600000; // 2 weeks how long to store  messages in each users query
+        this.chat.setting.command_key = ';';
 
         ////////////////////////////////////////////////////////////
         //Session Method

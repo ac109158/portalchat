@@ -101,4 +101,8 @@ controller('ChatController', ['$rootScope', '$scope', '$window', '$log', 'CoreCo
         ChatModuleManager.__requestChatSession($scope, to_user, true);
     });
 
+    $scope.$on('set-chat-into-focus', function(event, type, session_key){
+        ChatModuleManager.setChatIntoFocus(type, session_key);
+    });
+
 }]);

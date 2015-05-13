@@ -21,8 +21,8 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
     };
 
     this.setFirebaseLocation = function() {
-        that.fb.location.online_check = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.online_check_reference);
-        that.fb.location.user_check_in = new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.online_check_reference + CoreConfig.user.id);
+        that.fb.location.online_check = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.online_check_reference);
+        that.fb.location.user_check_in = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.online_check_reference + CoreConfig.user.id);
         that.fb.location.user_check_in.onDisconnect().remove();
     };
 

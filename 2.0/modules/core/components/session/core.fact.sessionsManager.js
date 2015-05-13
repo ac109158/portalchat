@@ -490,11 +490,8 @@ var n = Firebase.ServerValue.TIMESTAMP;
             if (contact_chat.is_group_chat) {
                 that.fb.user.location.sessions.child(contact_chat.session_key).setPriority(contact_chat_index);
                 /*              console.log( contact_chat.session_key + ' was set with the priority ' + $scope.active_chats_index); */
-            } else {
-                that.fb.user.location.sessions.child(contact_chat.contact.id).setPriority(contact_chat_index);
-                /*              console.log( contact_chat.to_user_name + ' was set with the priority ' + $scope.active_chats_index); */
             }
-            that.fb.user.location.sessions.child(contact_chat.contact.id || contact_chat.session_key).update({
+            that.fb.user.location.sessions.child(contact_chat.session_key).update({
                 'index_position': contact_chat_index
             });
         });

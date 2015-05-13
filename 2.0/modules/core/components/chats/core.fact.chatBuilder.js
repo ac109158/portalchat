@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ChatStorage', 'SessionsManager', function($rootScope, $log, $http, $document, $timeout, $firebaseObject, CoreConfig, UserManager, ChatStorage, SessionsManager) {
+service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ChatStorage', 'SettingsManager', 'SessionsManager', 'ContactsManager', function($rootScope, $log, $http, $document, $timeout, $firebaseObject, CoreConfig, UserManager, ChatStorage, SettingsManager, SessionsManager, ContactsManager) {
     var that = this;
 
     this.setDefaultChatSettings = function(chat) {
@@ -24,7 +24,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
 
         chat.messages = {};
         chat.messages.list = [];
-        chat.messages.listMap = [];
+        chat.messages.map = {};
 
         // topic values
         chat.topic = {};
@@ -57,6 +57,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         //adding another user
 
         chat.invite = {};
+        chat.invite.contact_list = [];
         chat.invite.contact = ''; // this is used the track the name of the user that is to be invited into the group chat. .ie a string such as "Andy Cook";
         chat.invite.set_contact = false; // this flag is used to determine that the host user has selected  a name to invite into the chat and that name has been verified to exist within the invite_list
         //states
@@ -119,9 +120,75 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
 
         chat.interval = {};
         chat.interval.invite_menu_close = undefined;
+        chat.interval.is_user_typing = undefined;
 
         return;
     };
+
+
+
+    this.showContactThatUserIsTyping = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (!ChatStorage[type].chat.list[session_key].message.text) {
+                return false;
+            }
+            if (angular.isDefined(ChatStorage[type].chat.list[session_key].interval.is_user_typing)) {
+                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
+            }
+            if (ChatStorage[type].chat.list[session_key].fb.contact.location.typing_presence)
+                ChatStorage[type].chat.list[session_key].fb.contact.location.typing_presence.update({
+                    'is_typing': true
+                });
+            ChatStorage[type].chat.list[session_key].interval.is_user_typing = $timeout(function() {
+                ChatStorage[type].chat.list[session_key].fb.contact.location.typing_presence.update({
+                    'is_typing': false
+                });
+                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
+            }, 2000);
+        }
+    };
+
+    this.showGroupthatUserIsTyping = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (!ChatStorage[type].chat.list[session_key].message.text) {
+                return false;
+            }
+            if (angular.isDefined(ChatStorage[type].chat.list[session_key].interval.is_user_typing)) {
+                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
+            }
+            if (ChatStorage[type].chat.list[session_key].fb.location.session) {
+                ChatStorage[type].chat.list[session_key].fb.location.session.child('is_typing/' + UserManager.user.id).set(UserManager.user.avatar);
+
+            }
+            ChatStorage[type].chat.list[session_key].interval.is_user_typing = $timeout(function() {
+                ChatStorage[type].chat.list[session_key].fb.location.session.child('is_typing/' + UserManager._user_profile.user_id).set(null);
+                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
+            }, 2000);
+        }
+    };
+
+    this.toggleChatInviteMenu = function(type, session_key, value) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            that.resetCommonDefaultSettings(type, session_key);
+            if (angular.isDefined(value)) {
+                ChatStorage[type].chat.list[session_key].menu.invite = value;
+            } else {
+                ChatStorage[type].chat.list[session_key].menu.invite = !ChatStorage[type].chat.list[session_key].menu.invite;
+            }
+            if (angular.isDefined(ChatStorage[type].chat.list[session_key].interval.invite_menu_close)) {
+                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.invite_menu_close);
+            }
+            if (ChatStorage[type].chat.list[session_key].menu.invite === true) {
+                that.toggleChatMenu(type, session_key, 'options', false);
+                ChatStorage[type].chat.list[session_key].interval.invite_menu_close = $timeout(function() {
+                    that.resetCommonDefaultSettings(type, session_key);
+                    that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
+                    $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.invite_menu_close);
+                }, 15000);
+            }
+        }
+    };
+
 
     this.resetCommonDefaultSettings = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
@@ -188,6 +255,19 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         }
     };
 
+    this.toggleChatMenu = function(type, session_key, menu, value) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && ChatStorage[type].chat.list[session_key].menu && angular.isDefined(ChatStorage[type].chat.list[session_key].menu[menu])) {
+            if (!ChatStorage[type].chat.list[session_key].attr.is_open) {
+                ChatStorage[type].chat.list[session_key].attr.is_open = true;
+            }
+            if (angular.isDefined(value)) {
+                ChatStorage[type].chat.list[session_key].menu[menu] = value;
+            } else {
+                ChatStorage[type].chat.list[session_key].menu[menu] = !ChatStorage[type].chat.list[session_key].menu[menu];
+            }
+        }
+    };
+
     this.showContactChatTagInput = function(session_key) {
         that.resetCommonDefaultSettings('contact', session_key);
         $timeout(function() {
@@ -243,6 +323,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             /*      console.log('adding topic'); */
             if (angular.isDefined(ChatStorage[type].chat.list[session_key].topic.description) && ChatStorage[type].chat.list[session_key].topic.description.length > 5 && ChatStorage[type].chat.list[session_key].topic.description.length <= 36) {
+                ChatStorage[type].chat.list[session_key].topic.description = ChatStorage[type].chat.list[session_key].topic.description.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
                 if (angular.isDefined(ChatStorage[type].chat.list[session_key].fb.location.session)) {
                     ChatStorage[type].chat.list[session_key].fb.location.session.update({
                         topic: ChatStorage[type].chat.list[session_key].topic.description
@@ -270,12 +351,30 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         }
     };
 
-    this.toggleChatMenu = function(type, session_key, menu) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && ChatStorage[type].chat.list[session_key].menu && angular.isDefined(ChatStorage[type].chat.list[session_key].menu[menu])) {
-            if (!ChatStorage[type].chat.list[session_key].attr.is_open) {
-                ChatStorage[type].chat.list[session_key].attr.is_open = true;
+    this.updateChatTopic = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            var new_chat_topic = String($('#topic_' + session_key).text()).replace(/&/g, '').replace(/</g, '').replace(/>/g, '').replace(/"/g, ''); // sanitze the string
+            if (new_chat_topic === 'null' || new_chat_topic === '' || new_chat_topic.length < 5) {
+                return false;
             }
-            ChatStorage[type].chat.list[session_key].menu[menu] = !ChatStorage[type].chat.list[session_key].menu[menu];
+            ChatStorage[type].chat.list[session_key].topic.set = new_chat_topic;
+            if (ChatStorage[type].chat.list[session_key].fb.location.session) {
+                ChatStorage[type].chat.list[session_key].fb.location.session.update({
+                    topic: new_chat_topic
+                });
+            }
+            that.setChatTopicHeight(type, session_key);
+            that.resetCommonDefaultSettings(type, session_key);
+            that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
+            return true;
+        }
+    };
+
+    this.clearChatMessageHistory = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            ChatStorage[type].chat.list[session_key].messages.list = [];
+            ChatStorage[type].chat.list[session_key].messages.map = {};
+            that.resetCommonDefaultSettings(type, session_key);
         }
     };
 

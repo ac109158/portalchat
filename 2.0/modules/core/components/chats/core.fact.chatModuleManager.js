@@ -1,9 +1,6 @@
 angular.module('portalchat.core').
-service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', 'SettingsManager', 'SessionsManager', 'ChatStorage', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'localStorageService', function($log, $timeout, CoreConfig, UserManager, SettingsManager, SessionsManager, ChatStorage, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, localStorageService) {
+service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', 'SettingsManager', 'SessionsManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'localStorageService', function($log, $timeout, CoreConfig, UserManager, SettingsManager, SessionsManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, localStorageService) {
     var that = this;
-
-
-
     this.fb = {};
     this.fb.chat = {};
     this.fb.chat.location = {};
@@ -52,61 +49,56 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
     this.module.reference.index = undefined;
     this.module.reference.name = '';
 
+    this.module.config = {};
+    this.module.config.directory = {};
+    this.module.config.directory.models = ['chat_reference', 'chat_description', 'admin', 'mandatory', 'watch_users', 'store_length'];
+    this.module.config.directory.default_chats = [];
+
+
     this.module.setting = {};
     this.module.setting.allow_group_chats = true;
     this.module.setting.is_typing_presence = CoreConfig.is_typing_presence;
     this.module.setting.directory_limit = 30;
-    this.module.setting.admin_group = '3424258';
-    this.module.setting.command_key = ';';
 
-    this.module.marker = {};
-    this.module.marker.is_referencing = false;
-    this.module.marker.is_page_loaded = false;
-    this.module.marker.last_unread_index = null;
-    this.module.marker.is_chat_ping = false;
-    this.module.marker.tmp = 1;
-    this.module.marker.tmp_chat = '';
-    this.module.marker.updated_text = '';
-    this.module.marker.lact_active_chat = undefined;
-    this.module.marker.is_child_window = false;
-    this.module.marker.is_child_window_instance = undefined;
+    this.module.attr = {};
+    this.module.attr.is_referencing = false;
+    this.module.attr.is_page_loaded = false;
+    this.module.attr.last_unread_index = null;
+    this.module.attr.is_chat_ping = false;
+    this.module.attr.tmp = 1;
+    this.module.attr.tmp_chat = '';
+    this.module.attr.updated_text = '';
+    this.module.attr.lact_active_chat = undefined;
+    this.module.attr.is_child_window = false;
+    this.module.attr.is_child_window_instance = undefined;
 
-
-    this.directory = {};
-    this.directory.setting = {};
-
-    this.directory.chat = {};
-    this.directory.chat.setting = {};
-    this.directory.chat.setting.allow_host_ping = true;
-
-    this.directory.chat.marker = {};
-    this.directory.chat.marker.index = null;
-    this.directory.chat.marker.stored_index = null;
-    this.directory.chat.marker.default_index = 'contacts';
-    this.directory.chat.marker.session_key = undefined;
+    this.module.current = {};
+    this.module.current.directory = {};
+    this.module.current.directory.chat = {};
+    this.module.current.directory.chat.setting = {};
+    this.module.current.directory.chat.setting.default_index = 'contacts';
+    this.module.current.directory.chat.setting.allow_host_ping = true;
+    this.module.current.directory.chat.index = null;
+    this.module.current.directory.chat.stored_index = null;
+    this.module.current.directory.chat.session_key = undefined;
 
 
-    this.contact = {};
-    this.contact.chat = {};
-    this.contact.chat.setting = {};
-    this.contact.chat.setting.allow_host_ping = true;
-    this.contact.chat.active = undefined;
-    this.contact.chat.priority_queue = Array();
-    this.contact.chat.current_request = '';
-    this.contact.chat.temp = '';
-    this.contact.chat.unactive = {};
-    this.contact.chat.unactive.list = ChatStorage.contact.chat.list.slice(that.contact.chat.max_count).reverse();
-    this.contact.chat.unactive.show = true;
-    this.contact.chat.unactive.count = 0;
-    this.contact.marker = {};
-    this.contact.marker.last_requested_chat = undefined;
-    this.contact.marker.is_invite = undefined;
-    this.contact.marker.session_key = undefined;
-
-    this.default_directory_chats_configuration = [];
-
-
-    this.default_directory_chat_models = ['chat_reference', 'chat_description', 'admin', 'mandatory', 'watch_users', 'store_length'];
+    this.module.current.contact = {};
+    this.module.current.contact.chat = {};
+    this.module.current.contact.chat.setting = {};
+    this.module.current.contact.chat.setting.allow_host_ping = true;
+    this.module.current.contact.chat.active = undefined;
+    this.module.current.contact.chat.priority_queue = [];
+    this.module.current.contact.chat.current_request = '';
+    this.module.current.contact.chat.temp = '';
+    this.module.current.contact.chat.unactive = {};
+    this.module.current.contact.chat.unactive.list = ChatStorage.contact.chat.list.slice(that.contact.chat.max_count).reverse();
+    this.module.current.contact.chat.unactive.show = true;
+    this.module.current.contact.chat.unactive.count = 0;
+    this.module.current.contact.marker = {};
+    this.module.current.contact.marker.last_requested_chat = undefined;
+    this.module.current.contact.marker.is_invite = undefined;
+    this.module.current.contact.marker.session_key = undefined;
 
     this.load = function() {
         that.initSessionVar();
@@ -114,7 +106,6 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
         that.setFirebaseTargets();
         that.establishUserChat();
         // that.setDefaultDirectoryChats();
-
     };
 
     this.initSessionVar = function() {
@@ -145,8 +136,6 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
     this.setFirebaseTargets = function() {
         if (UserManager.user.id) {}
     };
-
-
 
     this.establishUserChat = function() { //  Step 1 this function will initialize the that variables and set the user chat presence.
         if (CoreConfig.user && CoreConfig.user.id) {
@@ -182,7 +171,7 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
                     }
                     return false;
                 } /*            console.log('building as group chat'); */
-                ChatManager.__buildGroupChatSession(session, session.isOpen || true, isfocus, 1); // function(that, value, isopen, isfocus)
+                ChatBuilder.__buildGroupChatSession(session, session.isOpen || true, isfocus, 1); // function(that, value, isopen, isfocus)
                 return true;
             } else {
                 that.last_requested_chat = session.user_id;
@@ -237,7 +226,7 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
     };
 
     this.setDefaultDirectoryChatConfiguration = function() {
-        that.default_directory_chats_configuration.push({
+        that.module.config.directory.default_chats.push({
             chat_reference: 'sm_group_chat',
             chat_description: 'PlusOne - Group Chat',
             admin: 'smod',
@@ -245,7 +234,7 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
             watch_users: false,
             store_length: 1
         });
-        that.default_directory_chats_configuration.push({
+        that.module.config.directory.default_chats.push({
             chat_reference: 'sm_tech_chat',
             chat_description: 'Tech Support - Group Chat',
             admin: 'tod',
@@ -254,7 +243,7 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
             store_length: 2
         });
         if (UserManager.user && UserManager.user.supervisors && UserManager.user.supervisors.mc) {
-            that.default_directory_chats_configuration.push({
+            that.module.config.directory.default_chats.push({
                 chat_reference: ('mc_' + UserManager.user.supervisors.mc.user_id + '_group_chat'),
                 chat_description: UserManager.user.supervisors.mc.name + ' - MC Team Chat',
                 admin: UserManager.user.supervisors.mc.user_id,
@@ -267,8 +256,8 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
 
     this.setDefaultDirectoryChats = function() {
         that.setDefaultDirectoryChatConfiguration();
-        if (that.default_directory_chats_configuration) {
-            angular.forEach(that.default_directory_chats_configuration, function(config) {
+        if (that.module.config.directory.default_chats) {
+            angular.forEach(that.module.config.directory.default_chats, function(config) {
                 if (that.validateDirectoryChatConfiguration(config)) {
                     var new_dc = DirectoryChatManager.buildNewDirectoryChat(config);
                     new_dc.index_position = config.chat_reference;
@@ -284,11 +273,11 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
         var pass = false;
         if (directory_chat_config && angular.isObject(directory_chat_config)) {
             pass = true;
-            var len = that.default_directory_chat_models.length;
+            var len = that.module.config.directory.models.length;
             while (len--) {
-                if (angular.isUndefined(directory_chat_config[that.default_directory_chat_models[len]])) {
+                if (angular.isUndefined(directory_chat_config[that.module.config.directory.models[len]])) {
                     pass = false;
-                    $log.error('validateDirectoryChatConfiguration: Fail : ', that.default_directory_chat_models[len], ' is undefined');
+                    $log.error('validateDirectoryChatConfiguration: Fail : ', that.module.config.directory.models[len], ' is undefined');
                     break;
                 }
             }
@@ -350,7 +339,7 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
         if (SettingsManager.module.layout === 1 && angular.isDefined(SettingsManager.module.last_active_chat)) {
             if (typeof SettingsManager.module.lact_active_chat === 'string') {
                 if (ChatStorage.contact.chat.list.length > 0) {
-                    that.directory.chat.active = ChatManager.contact.chat.list[0];
+                    that.directory.chat.active = ChatStorage.contact.chat.list[0];
                     that.directory.chat.marker.index = 0;
                     that.directory.chat.marker.stored_index = 0;
                 }
@@ -473,25 +462,6 @@ service('ChatModuleManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', '
             contact_chat.unread = 0;
         });
     };
-
-    this.isDirectoryChatAvailable = function(group) {
-        if (group === 'mc') {
-            if ((UserManager.user.supervisors && UserManager.user.supervisors.mc) || UserManager.user.role === 'Mentor Coach') {
-                return true;
-            }
-        } else if (group === 'admin') {
-            if (UserManager.user.role === 'Administrator' || UserManager.user.role === 'Shift Manager') {
-                return true;
-            }
-        }
-        return false;
-    };
-
-
-
-
-
-
 
     return this;
 

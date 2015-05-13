@@ -1,7 +1,10 @@
 angular.module('portalchat.core').
-service('GroupChatManager', ['$log', '$timeout', 'CoreConfig', 'UserManager',
-function($log, $timeout, CoreConfig, UserManager) {
-    var that = this;
+service('GroupChatManager', ['$log', '$timeout', 'CoreConfig', 'UserManager','ChatStorage',
+    function($log, $timeout, CoreConfig, UserManager,ChatStorage) {
+        var that = this;
 
-    return this;
-}]);
+
+
+        return this;
+    }
+]);

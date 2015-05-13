@@ -134,6 +134,8 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
 
         './modules/core/components/presence/core.fact.presence.js',
 
+        './modules/core/components/permissions/core.fact.permissionsManager.js',
+
         './modules/core/components/session/core.fact.sessionsManager.js',
 
         './modules/core/components/settings/core.fact.settingsManager.js',
@@ -252,6 +254,14 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
         angular.module(ApplicationConfiguration.applicationModuleName).config(function (localStorageServiceProvider) {
           localStorageServiceProvider.setPrefix(ApplicationConfiguration.applicationModuleName);
         });
+
+        Object.size = function(obj) {
+            var size = 0, key;
+            for (key in obj) {
+                if (obj.hasOwnProperty(key)) size++;
+            }
+            return size;
+        };
 
         //Then define the init function for starting up the application
 
