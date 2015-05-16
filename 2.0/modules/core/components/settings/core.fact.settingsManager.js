@@ -15,7 +15,7 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', 'CoreCo
     this.module.show_external_notifications = false;
     this.module.sound_level = 2;
     this.module.last_contact_chat = false;
-    this.module.last_directory_chat = false;
+    this.module.last_panel_tab = false;
     this.module.is_window_visible = true;
 
     this.fb = {}; // firebase domain
@@ -211,8 +211,8 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', 'CoreCo
             that.module.last_contact_chat = snapshot.val();
         });
 
-        that.fb.location.settings.child('last_directory_chat').once('value', function(snapshot) {
-            that.module.last_directory_chat = snapshot.val();
+        that.fb.location.settings.child('last_panel_tab').once('value', function(snapshot) {
+            that.module.last_panel_tab = snapshot.val();
         });
 
 

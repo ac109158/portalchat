@@ -25,6 +25,16 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
         }
     };
 
+    this.mapObjectWithKey = function(object, object_key_field) {
+        var map = {};
+        var index = 0;
+        angular.forEach(object, function(value, key) {
+            this[value[object_key_field].toString()] = index;
+            index++;
+        }, map);
+        return map;
+    };
+
     this.setFirebaseLocations = function() {
         if (CoreConfig.user.id) {
             that.fb.user.location.sessions = new Firebase(CoreConfig.chat.url_root + CoreConfig.user.id + '/' + CoreConfig.session.root_reference);
@@ -272,7 +282,7 @@ var n = Firebase.ServerValue.TIMESTAMP;
 
 
 
-    this.updateContactUserActiveSession = function(chat) {
+    this.updateChatContactActiveSession = function(type, session_key) {
         chat.active_session_contact_location.update({
             admin: chat.admin,
             avatar: chat.user_avatar,
@@ -313,186 +323,13 @@ var n = Firebase.ServerValue.TIMESTAMP;
         ////////////////////////////////////////////////////////////
         return $firebase(new Firebase(that._url_root + CoreConfig.user.id + '/' + that._active_session_reference + that._contact._user_id + '/'));
     };
-    this.deactivate_session_from_user_location = function(chat, scope, removeScope, removeLocation) { // this funciton will remove the chatSession/connections and chat box in the view
-        //individula chat connections
-        var delay = 0;
-        $log.debug('deactivating session');
-        $log.debug('removeScope: ' + removeScope);
-        $log.debug('removeLocation: ' + removeLocation);
-        if (angular.equals(that._last_pushed_session, chat.session_key) || angular.equals(that._last_pushed_session, chat.contact_id)) {
-            that._last_pushed_session = null;
-        }
-        if (scope.layout != 2 && that.active_chats.length === 1) {
-            delay = 500;
-            if (scope.layout === 3) {
-                scope.switchLayout(1);
-            }
-            scope.safeApply(function() {
-                $timeout(function() {
-                    document.getElementById(scope.mandatory_index + '_link').click();
-                }, 250);
-            });
-        }
-        $timeout(function() {
-            if (angular.equals(that._last_query_location, chat.session_key) || angular.equals(that._last_query_location, chat.contact_id)) {
-                that._last_query_location = '';
-            }
-            if (angular.equals(scope.requested_chat, chat.session_key) || angular.equals(scope.requested_chat, chat.contact_id)) {
-                scope.requested_chat = '';
-            }
-            if (angular.isDefined(chat.close_invite)) {
-                clearInterval(chat.close_invite);
-            }
-            if (angular.isDefined(that._active_sessions_user_location && angular.isDefined(chat.contact_id))) {
-                that._active_sessions_user_location.child(chat.contact_id || chat.session_key).remove();
-            }
-            if (angular.isDefined(chat.contact_chat_presence)) {
-                chat.contact_chat_presence.$off();
-            }
-            if (angular.isDefined(chat.user_chat_presence)) {
-                chat.user_chat_presence.$off();
-            }
-            if (angular.isDefined(chat.contact_message_location)) {
-                chat.contact_message_location.off();
-            }
-            if (angular.isDefined(chat.user_message_location)) {
-                chat.user_message_location.off();
-            }
-            if (angular.isDefined(chat.active_typing_contact_location)) {
-                chat.active_typing_contact_location.update({
-                    'is-typing': null
-                });
-                chat.active_typing_contact_location.off();
-            }
-            if (angular.isDefined(chat.active_typing_user_location)) {
-                chat.active_typing_user_location.update({
-                    'is-typing': null
-                });
-                chat.active_typing_user_location.off();
-            }
-            if (angular.isDefined(chat.active_typing_user_socket)) {
-                chat.active_typing_user_socket.$off();
-                chat.active_typing_user_socket.$remove();
-            }
-            if (angular.isDefined(chat.contact_session_location)) {
-                chat.contact_session_location.off();
-            } /*        if (angular.isDefined( chat.messageListQuery ) ) { chat.messageListQuery.off(); };       */
-            //group chats connections
-            if (angular.isDefined(chat.group_message_location)) {
-                chat.group_message_location.off();
-            }
-            if (angular.isDefined(chat.active_typing_group_location)) {
-                chat.active_typing_group_location.off();
-            }
-            var remaining_users = null;
-            if (removeLocation && angular.isDefined(chat.group_user_location)) {
-                scope.wasDirectoryChat = chat.isDirectoryChat;
-                chat.group_user_location.child(UserManager._user_profile.user_id).remove();
-                scope.closing_group_user_connection = chat.group_user_location;
-                chat.group_user_location.off();
-                scope.closing_firebase_location = chat.firebase_location;
-                chat.firebase_location.off();
-                chat.group_user_location.transaction(function(current_value) {
-                    return current_value;
-                }, function(error, committed, snapshot) {
-                    scope.remaining_users = snapshot.val();
-                });
-                $timeout(function() {
-                    end_group_session(count, chat, scope);
-                }, 500);
-                var count = 0;
-                var end_group_session = function() {
-                    if (angular.isDefined(scope.remaining_users) && angular.isDefined(scope.wasDirectoryChat)) {
-                        if (scope.remaining_users === null && scope.wasDirectoryChat === false) {
-                            if (angular.isDefined(scope.closing_firebase_location)) {
-                                scope.closing_group_user_connection.off();
-                                scope.closing_firebase_location.remove();
-                            } else {
-                                $log.debug('last user, but failed to remove session because chat was undefined');
-                            }
-                        } else {
-                            if (angular.isDefined(scope.closing_firebase_location)) {
-                                $log.debug('remaining users/directory chat,  turn off listner');
-                                scope.closing_firebase_location.off();
-                            } else {
-                                $log.debug('remaining users,  but failed because chat is not defined');
-                            }
-                        }
-                        delete scope.closing_group_user_connection;
-                        delete scope.closing_firebase_location;
-                        scope.remaining_users = null;
-                        scope.wasDirectoryChat = null;
-                    }
-                };
-            }
-            if (removeScope === true) {
-                var index = null;
-                var session_lookup;
-                if (chat.isGroupChat === true) {
-                    index_lookup = chat.session_key;
-                    session_lookup = chat.session_key;
-                } else {
-                    index_lookup = chat.contact_id;
-                    session_lookup = 'user_' + chat.contact_id;
-                }
-                if (angular.isDefined(chat.index_position)) {
-                    if (chat.isGroupChat === true) {
-                        if (that.active_chats[chat.index_position] && that.active_chats[chat.index_position].session_key === chat.session_key) {
-                            index = chat.index_position;
-                        } /*                        console.log('Used index_position'); */
-                    } else if (angular.isDefined(that.active_chats[chat.index_position]) && that.active_chats[chat.index_position].contact_id === chat.contact_id) {
-                        index = chat.index_position; /*                         console.log('Used index_position'); */
-                    }
-                }
-                if (index === null) // fall back for loop function
-                { /*                    console.log('Used fallback'); */
-                    var log = [];
-                    var index_lookup;
-                    angular.forEach(that.active_chats, function(value, key) {
-                        if (angular.isDefined(value.contact_id)) {
-                            this.push(value.contact_id || value.session_key);
-                        }
-                    }, log);
-                    index = log.indexOf(index_lookup);
-                }
-                $log.debug('index: ' + index);
-                if (index > -1) {
-                    that.active_chats.splice(index, 1);
-                }
-                $log.debug('session_lookup: ' + session_lookup);
-                that.active_sessions[session_lookup] = false;
-                delete that.active_sessions[session_lookup];
-                chat = null;
-                if (!that._is_playing_sound) {
-                    that._is_playing_sound = true;
-                    NotificationService.__playSound(NotificationService._chat_close);
-                    $timeout(function() {
-                        that._is_playing_sound = false;
-                    }, 1000);
-                }
-            } else {
-                chat = null;
-            }
-            if (that.active_chats.length - 1 >= scope.stored_directory_index) {
-                scope.setDirectoryChat(scope.stored_directory_index, false);
-            } else if (that.active_chats.length > 0) {
-                scope.setDirectoryChat(0, false);
-            }
-        }, delay);
-        scope.last_deactivated_chat = '';
-    };
 
-    this.setContactChatsPriority = function() {
-        var contact_chat_index = -1;
-        angular.forEach(ChatStorage.contact.chat.list, function(contact_chat) {
-            ++contact_chat_index;
-            contact_chat.index_position = contact_chat_index;
-            if (contact_chat.is_group_chat) {
-                that.fb.user.location.sessions.child(contact_chat.session_key).setPriority(contact_chat_index);
-                /*              console.log( contact_chat.session_key + ' was set with the priority ' + $scope.active_chats_index); */
-            }
-            that.fb.user.location.sessions.child(contact_chat.session_key).update({
-                'index_position': contact_chat_index
+    this.setContactChatsSessionPriority = function() {
+        angular.forEach(ChatStorage.chat.list, function(contact_chat) {
+            that.fb.user.location.sessions.child(contact_chat.session_key).setPriority(contact_chat.order);
+            val.index_position = $scope.active_chats_index;
+            Cthat.fb.user.location.sessions.child(contact_chat.session_key).update({
+                'index_position': contact_chat.order
             });
         });
     };
@@ -504,6 +341,40 @@ var n = Firebase.ServerValue.TIMESTAMP;
             that.fb.user.location.sessions.child(session_key).update(that.update);
         }
     };
+    this.removeChatSession = function(type, session_key, removeScope, removeLocation) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            $log.debug('deactivating session');
+            $log.debug('removeScope: ' + removeScope);
+            $log.debug('removeLocation: ' + removeLocation);
+            if (angular.isDefined(ChatService._active_sessions_user_location && angular.isDefined(chat.to_user_id))) {
+                ChatService._active_sessions_user_location.child(chat.to_user_id || chat.session_key).remove();
+            }
+            if (angular.isDefined(chat.active_typing_to_user_location)) {
+                chat.active_typing_to_user_location.update({
+                    'is-typing': null
+                });
+                chat.active_typing_to_user_location.off();
+            }
+            if (angular.isDefined(chat.active_typing_user_location)) {
+                chat.active_typing_user_location.update({
+                    'is-typing': null
+                });
+                chat.active_typing_user_location.off();
+            }
+            if (angular.isDefined(chat.active_typing_user_socket)) {
+                chat.active_typing_user_socket.$remove();
+            }
+
+            angular.forEach(ChatStorage[type].chat.list[session_key].fb.contact.location, function() {
+                location.off();
+            });
+            angular.forEach(ChatStorage[type].chat.list[session_key].fb.contact.target, function() {
+                target.$off();
+            });
+        }
+    };
+
+
 
     return this;
 }]);

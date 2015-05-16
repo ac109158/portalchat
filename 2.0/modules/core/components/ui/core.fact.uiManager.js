@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$document', '$timeout', 'CoreConfig', 'SettingsManager', 'ChatModuleManager', 'ChatManager','PermissionsManager',  function($rootScope, $firebase, $log, $http, $window, $document, $timeout, CoreConfig, SettingsManager, ChatModuleManager, ChatManager, PermissionsManager) {
+service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'SettingsManager', 'ChatModuleManager', 'PermissionsManager', 'NotificationManager', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, SettingsManager, ChatModuleManager, PermissionsManager, NotificationManager) {
     var that = this;
     this.fb = {};
     this.fb.location = {};
@@ -10,30 +10,22 @@ service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$d
 
     this.ux.module = {};
     this.ux.module.setting = {};
-    this.ux.module.setting.alert_to_open = false;
     this.ux.module.setting.innerHeight = $window.innerHeight;
-    this.ux.module.setting.is_external_window = undefined;
-    this.ux.module.setting.is_external_window_instance = undefined;
     if (String($window.location.href).split('?')[1] == CoreConfig.ext_link) {
         this.ux.module.setting.backdrop = true;
     } else {
         this.ux.module.setting.backdrop = false;
     }
 
-    this.ux.module.marker = {};
-
-    this.ux.module.marker.is_setting_layout = true;
-    this.ux.module.marker.allow_chat_request = true;
-
-
-    this.ux.module.state = {};
-    this.ux.module.state.is_unactive_listed = false;
-    this.ux.module.state.is_locked = false;
-    this.ux.module.state.is_open = false;
-    this.ux.module.state.is_opening = false;
-    this.ux.module.state.is_closing = false;
-    this.ux.module.state.is_playing_sound = false;
-    this.ux.module.state.is_setting_layout = false;
+    // this.ux.module.state = {};
+    // this.ux.module.state.is_locked = false;
+    // this.ux.module.state.is_open = false;
+    // this.ux.module.state.is_opening = false;
+    // this.ux.module.state.is_closing = false;
+    // this.ux.module.state.is_setting_layout = false;
+    // this.ux.module.state.is_external_window = undefined;
+    // this.ux.module.state.is_external_window_instance = undefined;
+    // this.ux.module.state.allow_chat_request = true;
 
 
     this.ux.queue = {};
@@ -58,7 +50,7 @@ service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$d
     this.ux.panel.menu = {};
     this.ux.panel.menu.profile = false;
     this.ux.panel.menu.presence = false;
-    this.ux.panel.menu.nav = false;
+    this.ux.panel.menu.directory_list = false;
     this.ux.panel.menu.filter = false;
     this.ux.panel.menu.volume = false;
 
@@ -87,8 +79,77 @@ service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$d
 
     this.ux.fx = {};
 
+    this.ux.fx.externalWindowchange = function(status) {
+        if (status === false && that.ux.module.setting.is_external_window_instance === false) {
+            that.ux.module.setting.is_external_window = false;
+            that.setModuleLayout();
+        } else if (status === true && that.ux.module.setting.is_external_window_instance === false) {
+            $timeout(function() {
+                that.ux.module.setting.is_external_window = true;
+            }, 750);
+
+        }
+        if (status && that.ux.module.setting.is_external_window_instance) {
+            that.ui.panel.setting.panel_width = $window.innerWidth;
+        } else {
+            that.ui.panel.setting.panel_width = 250;
+        }
+    };
+
     this.ux.fx.hasAdminRights = function() {
         return PermissionsManager.hasAdminRights();
+    };
+
+    this.ux.fx.to_trusted = function(html_code) {
+        return $sce.trustAsHtml(html_code);
+    };
+
+    this.ux.fx.isReferencedMessage = function(message) {
+        if (message && message.priority) {
+            return ChatModuleManager.isReferencedMessage(message);
+        }
+        return false;
+    };
+
+    this.ux.fx.isChatScrollAtBottom = function(type, session_key){
+        return ChatModuleManager.isChatScrollAtBottom();
+    };
+
+    this.ux.fx.getDirectoryMainPanelHeight = function(chat) {
+        var size;
+        if (angular.isUndefinedOrNull(chat)) {
+            return false;
+        }
+        if (SettingsManager.module.layout === 1) {
+            if (chat.topic_location.$value !== false) {
+
+                return $scope.cm_directory_chat_height - 20;
+            }
+            return $scope.cm_directory_chat_height;
+
+        }
+        if (SettingsManager.module.layout === 3) {
+            if (chat.isMandatory) {
+                if (angular.isDefined(chat) && chat !== null && chat.topic_location.$value !== false) {
+                    size = ($scope.cm_directory_chat_height + $scope.vertical_adjust);
+                    return size;
+                }
+                size = (parseInt($scope.cm_directory_chat_height) + parseInt($scope.vertical_adjust));
+                return size;
+            } else {
+                if (angular.isDefined(chat) && chat !== null && chat.topic_location.$value !== false) {
+                    size = ($scope.cm_directory_chat_height - $scope.vertical_adjust);
+                    return size;
+                }
+                size = ($scope.cm_directory_chat_height - $scope.vertical_adjust);
+                return size;
+            }
+        }
+    };
+
+
+    this.ux.fx.getChatBoxHeight = function(vertical_adjust) {
+        return $scope.cm_chat_message_display_height + parseInt(vertical_adjust) - 75;
     };
 
 
@@ -161,23 +222,6 @@ service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$d
         }
     };
 
-    this.ui.fx.externalWindowchange = function(status) {
-        if (status === false && that.ux.module.setting.is_external_window_instance === false) {
-            that.ux.module.setting.is_external_window = false;
-            that.setModuleLayout();
-        } else if (status === true && that.ux.module.setting.is_external_window_instance === false) {
-            $timeout(function() {
-                that.ux.module.setting.is_external_window = true;
-            }, 750);
-
-        }
-        if (status && that.ux.module.setting.is_external_window_instance) {
-            that.ui.panel.setting.panel_width = $window.innerWidth;
-        } else {
-            that.ui.panel.setting.panel_width = 250;
-        }
-    };
-
     this.ui.fx.increaseFontSize = function() {
         if (SettingsManager.module.font_size < 16) {
             SettingsManager.update('font_size', (SettingsManager.module.font_size + 1));
@@ -225,33 +269,15 @@ service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$d
     };
 
     this.ui.fx.closeChatModule = function() {
-        console.log('close');
-        ChatModuleManager.resetDirectoryChatListMarkers();
-        $rootScope.$evalAsync(function() {
-            that.ux.module.state.is_closing = true;
-        });
-        $timeout(function() {
-            that.ux.module.state.is_open = false;
-            that.ux.module.state.is_closing = false;
-        }, 1000);
-        SettingsManager.update('is_open', false);
+        ChatModuleManager.closeChatModule();
     };
 
     this.ui.fx.openChatModule = function() {
-        that.ux.module.state.is_closing = false;
-        that.ux.module.state.is_locked = true;
-        $rootScope.$evalAsync(function() {
-            that.ux.module.state.is_opening = true;
-            that.ux.module.state.is_open = true;
-        });
-        $timeout(function() {
-            $rootScope.$evalAsync(function() {
-                that.ux.module.state.is_opening = false;
-                that.ui.fx.setModuleLayout();
-            });
-        }, 1000);
-        SettingsManager.update('is_open', true);
-        $rootScope.$broadcast('clear_notifications');
+        ChatModuleManager.openChatModule();
+    };
+
+    this.ui.fx.lookUpChatReference = function(priority, message_id, display_id) {
+        ChatModuleManager.lookUpChatReference(priority, message_id, display_id);
     };
 
     this.ui.fx.toggleChatPanelOpen = function(value) {
@@ -334,8 +360,36 @@ service('UiManager', ['$rootScope', '$firebase', '$log', '$http', '$window', '$d
         }
     };
 
+    this.ui.fx.mute = function(duration) {
+        if (duration && duration > 0) {
+            NotificationManager.mute(duration);
+        } else {
+            NotificationManager.mute(null);
+        }
+    };
+
+    this.ui.fx.unmute = function() {
+        NotificationManager.unmute();
+    };
+
     this.ui.fx.clearChatMessageHistory = function(type, session_key) {
-        ChatManager.clearChatMessageHistory(type, session_key);
+        ChatModuleManager.clearChatMessageHistory(type, session_key);
+    };
+
+    this.ui.fx.removeChat = function(type, session_key) {
+        ChatModuleManager.removeChat(type, session_key);
+    };
+
+    this.ui.fx.loadPreviousChatMessages = function(type, session_key) {
+        ChatModuleManager.loadPreviousChatMessages(type, session_key);
+    };
+
+    this.ui.fx.addReferenceToChatMessage = function(type, session_key, message) {
+        ChatModuleManager.addReferenceToChatMessage(type, session_key, message);
+    };
+
+    this.ui.fx.createDirectoryListChat = function(session_key) {
+        ChatModuleManager.createDirectoryListChat(session_key);
     };
 
 

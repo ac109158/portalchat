@@ -6,10 +6,16 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
     this.setDefaultChatSettings = function(chat) {
 
         chat.session_key = '';
+        chat.order = '';
 
         chat.fb = {};
-        chat.fb.location = {};
-        chat.fb.target = {};
+        chat.fb.user.location = {};
+        chat.fb.contact.location = {};
+        chat.fb.group.location = {};
+
+        chat.fb.user.target = {};
+        chat.fb.contact.target = {};
+        chat.fb.group.target = {};
 
         chat.contacts = {};
         chat.contacts.active_list = [];
@@ -24,7 +30,24 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
 
         chat.messages = {};
         chat.messages.list = [];
-        chat.messages.map = {};
+        chat.messages.map = [];
+
+        chat.video = {};
+        chat.video.code = '';
+        chat.video.url = '';
+        chat.video.message = '';
+        chat.video.heading = '';
+
+        chat.image = {};
+        chat.image.url = '';
+        chat.image.heading = '';
+        chat.image.message = '';
+
+        chat.audio = {};
+        chat.audio.heading = '';
+        chat.audio.message = '';
+        chat.audio.url = '';
+        chat.audio.cid = '';
 
         // topic values
         chat.topic = {};
@@ -45,7 +68,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         chat.scroll.to_top = false;
         //chat refernencing
         chat.reference = {};
-        chat.reference.active = false;
+        chat.reference.key = null;
         chat.reference.author = null;
         chat.reference.name = null;
         chat.reference.text = null;
@@ -63,6 +86,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         //states
 
         chat.attr = {};
+        chat.attr.is_init = false;
         chat.attr.is_converted = false;
         chat.attr.is_directory_chat = false;
         chat.attr.is_group_chat = false;
@@ -76,6 +100,9 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         chat.attr.is_text_focus = false;
         chat.attr.is_topic_focus = false;
         chat.attr.is_top_spacer = false;
+        chat.attr.is_active = false;
+        chat.attr.last_sent_user_message = '';
+        chat.attr.last_sent_contact_message = '';
         // priority/indexing
 
         chat.priority = {};
@@ -88,14 +115,13 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         chat.ux = {};
         chat.ux.nudge = false;
         chat.ux.is_header = true;
-        chat.ux.header_color = CoreConfig.chat.ui.header_color;
         chat.ux.topic_height = 0;
         chat.ux.time_reference = new Date().getTime();
         chat.ux.time_format = 'timeago';
         chat.ux.unread = 0; // this tracks the count of the messages sent to the user while the chat box is closed
         chat.ux.resize_adjustment = 0;
         chat.ux.internal_reference = CoreConfig.chat.internal_reference;
-        chat.ux.header_color = that._header_color; // default color to restore after a alert changes has happened
+        chat.ux.header_color = CoreConfig.chat.ui.header_color; // default color to restore after a alert changes has happened
 
         chat.menu = {};
         chat.menu.options = false;
@@ -112,9 +138,11 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         chat.user = {};
         chat.user.avatar = UserManager.user.avatar;
         chat.user.id = UserManager.user.id;
-        chat.user.self_name = that._self_reference; // variable for what the chat session should label messages that came from the user/self ex. "Me"
+        chat.user.self_name = 'Me'; // variable for what the chat session should label messages that came from the user/self ex. "Me"
 
         chat.contact = {};
+        chat.contact.name = '';
+        chat.contact.first_name = '';
         chat.contact.avatar = '';
         chat.contact.id = false;
 
@@ -125,258 +153,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         return;
     };
 
-
-
-    this.showContactThatUserIsTyping = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (!ChatStorage[type].chat.list[session_key].message.text) {
-                return false;
-            }
-            if (angular.isDefined(ChatStorage[type].chat.list[session_key].interval.is_user_typing)) {
-                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
-            }
-            if (ChatStorage[type].chat.list[session_key].fb.contact.location.typing_presence)
-                ChatStorage[type].chat.list[session_key].fb.contact.location.typing_presence.update({
-                    'is_typing': true
-                });
-            ChatStorage[type].chat.list[session_key].interval.is_user_typing = $timeout(function() {
-                ChatStorage[type].chat.list[session_key].fb.contact.location.typing_presence.update({
-                    'is_typing': false
-                });
-                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
-            }, 2000);
-        }
-    };
-
-    this.showGroupthatUserIsTyping = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (!ChatStorage[type].chat.list[session_key].message.text) {
-                return false;
-            }
-            if (angular.isDefined(ChatStorage[type].chat.list[session_key].interval.is_user_typing)) {
-                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
-            }
-            if (ChatStorage[type].chat.list[session_key].fb.location.session) {
-                ChatStorage[type].chat.list[session_key].fb.location.session.child('is_typing/' + UserManager.user.id).set(UserManager.user.avatar);
-
-            }
-            ChatStorage[type].chat.list[session_key].interval.is_user_typing = $timeout(function() {
-                ChatStorage[type].chat.list[session_key].fb.location.session.child('is_typing/' + UserManager._user_profile.user_id).set(null);
-                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
-            }, 2000);
-        }
-    };
-
-    this.toggleChatInviteMenu = function(type, session_key, value) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            that.resetCommonDefaultSettings(type, session_key);
-            if (angular.isDefined(value)) {
-                ChatStorage[type].chat.list[session_key].menu.invite = value;
-            } else {
-                ChatStorage[type].chat.list[session_key].menu.invite = !ChatStorage[type].chat.list[session_key].menu.invite;
-            }
-            if (angular.isDefined(ChatStorage[type].chat.list[session_key].interval.invite_menu_close)) {
-                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.invite_menu_close);
-            }
-            if (ChatStorage[type].chat.list[session_key].menu.invite === true) {
-                that.toggleChatMenu(type, session_key, 'options', false);
-                ChatStorage[type].chat.list[session_key].interval.invite_menu_close = $timeout(function() {
-                    that.resetCommonDefaultSettings(type, session_key);
-                    that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
-                    $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.invite_menu_close);
-                }, 15000);
-            }
-        }
-    };
-
-
-    this.resetCommonDefaultSettings = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (angular.isDefined(ChatStorage[type].chat.list[session_key].interval.invite_menu_close)) {
-                clearInterval(ChatStorage[type].chat.list[session_key].interval.invite_menu_close);
-            }
-            ChatStorage[type].chat.list[session_key].attr.is_new_message = false;
-            ChatStorage[type].chat.list[session_key].attr.is_text_focus = false;
-            ChatStorage[type].chat.list[session_key].attr.is_tag_focus = false;
-            ChatStorage[type].chat.list[session_key].attr.is_topic_focus = false;
-            ChatStorage[type].chat.list[session_key].attr.is_top_spacer = false;
-
-            ChatStorage[type].chat.list[session_key].menu.tag = false;
-            ChatStorage[type].chat.list[session_key].menu.topic = false;
-            ChatStorage[type].chat.list[session_key].menu.emoticons = false;
-            ChatStorage[type].chat.list[session_key].menu.options = false;
-            ChatStorage[type].chat.list[session_key].menu.profile = false;
-            ChatStorage[type].chat.list[session_key].menu.user_list = false;
-
-            ChatStorage[type].chat.list[session_key].ux.header_color = CoreConfig.chat.ui.header_color;
-            ChatStorage[type].chat.list[session_key].ux.nudge = false;
-            ChatStorage[type].chat.list[session_key].ux.unread = 0;
-
-
-            ChatStorage[type].chat.list[session_key].invite.show = false;
-            ChatStorage[type].chat.list[session_key].invite.contact = '';
-            ChatStorage[type].chat.list[session_key].invite.set_contact = false;
-
-            ChatStorage[type].chat.list[session_key].reference.active = false;
-            ChatStorage[type].chat.list[session_key].reference.author = null;
-            ChatStorage[type].chat.list[session_key].reference.name = null;
-            ChatStorage[type].chat.list[session_key].reference.text = null;
-
-
-            if (angular.isDefined(ChatStorage[type].chat.list[session_key].fb.target.topic)) {
-                if (ChatStorage[type].chat.list[session_key].fb.target.topic) {
-                    ChatStorage[type].chat.list[session_key].attr.topic_height = 0;
-                } else {
-                    ChatStorage[type].chat.list[session_key].attr.topic_height = $document.getElementById('topic_' + session_key + '_wrapper').clientHeight || 0;
-                }
-            }
-        }
-    };
-
-    this.getChatType = function(session_key) {
-        if (parseInt(session_key) > 0) {
-            return 'contact';
-        }
-        return 'directory';
-    };
-    this.isContactChat = function(session_key) {
-        if (parseInt(session_key) > 0) {
-            return true;
-        }
-        return false;
-    };
-
-    this.toggleChatAttr = function(type, session_key, attr, value, fb_sync) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && ChatStorage[type].chat.list[session_key].attr && angular.isDefined(ChatStorage[type].chat.list[session_key].attr[attr]) && angular.isDefined(value)) {
-            ChatStorage[type].chat.list[session_key].attr[attr] = value;
-            if (fb_sync) {
-                SessionsManager.updateSessionDetail(session_key, attr, value);
-            }
-        }
-    };
-
-    this.toggleChatMenu = function(type, session_key, menu, value) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && ChatStorage[type].chat.list[session_key].menu && angular.isDefined(ChatStorage[type].chat.list[session_key].menu[menu])) {
-            if (!ChatStorage[type].chat.list[session_key].attr.is_open) {
-                ChatStorage[type].chat.list[session_key].attr.is_open = true;
-            }
-            if (angular.isDefined(value)) {
-                ChatStorage[type].chat.list[session_key].menu[menu] = value;
-            } else {
-                ChatStorage[type].chat.list[session_key].menu[menu] = !ChatStorage[type].chat.list[session_key].menu[menu];
-            }
-        }
-    };
-
-    this.showContactChatTagInput = function(session_key) {
-        that.resetCommonDefaultSettings('contact', session_key);
-        $timeout(function() {
-            that.toggleChatAttr('contact', session_key, 'is_tag_option', true, false);
-            that.toggleChatAttr('contact', session_key, 'is_tag_focus', true, false);
-            that.toggleChatAttr('contact', session_key, 'is_top_spacer', true, false);
-        });
-    };
-
-    this.updateContactChatTag = function(session_key, fb_sync) {
-        if (ChatStorage.contact.chat.list[session_key]) {
-            if (angular.isDefined(ChatStorage.contact.chat.list[session_key].tag.description) && ChatStorage.contact.chat.list[session_key].tag.description.length > 2 && ChatStorage.contact.chat.list[session_key].tag.description.length <= 20) {
-                that.resetCommonDefaultSettings('contact', session_key);
-                ChatStorage.contact.chat.list[session_key].tag_description = String(ChatStorage.contact.chat.list[session_key].tag_description).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
-                if (ChatStorage.contact.chat.list[session_key].attr.is_group_ChatStorage.contact.chat.list[session_key]) {
-                    ChatStorage.contact.chat.list[session_key].tag.description = 'Group - #' + ChatStorage.contact.chat.list[session_key].tag.description;
-                } else {
-                    ChatStorage.contact.chat.list[session_key].tag.description = '#' + ChatStorage.contact.chat.list[session_key].tag.description;
-                }
-                ChatStorage.contact.chat.list[session_key].tag.active = ChatStorage.contact.chat.list[session_key].tag.description;
-                ChatStorage.contact.chat.list[session_key].tag.description = '';
-                ChatStorage.contact.chat.list[session_key].attr.is_text_focus = true;
-                if (fb_sync) {
-                    SessionsManager.updateSessionDetail(session_key, 'tag', ChatStorage.contact.chat.list[session_key].tag.active);
-                }
-            }
-        }
-        return false;
-    };
-
-    this.toggleChatTopicDisplay = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (ChatStorage[type].chat.list[session_key].fb.target.topic.length > 30) {
-                ChatStorage[type].chat.list[session_key].topic.truncated = !ChatStorage[type].chat.list[session_key].topic.truncated;
-            }
-            $rootScope.evalAsync(function() {
-                that.setChatTopicHeight(type, session_key);
-            });
-        }
-    };
-
-    this.setChatTopicHeight = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (ChatStorage[type].chat.list[session_key].fb.target.topic) {
-                ChatStorage[type].chat.list[session_key].topic.height = $document.getElementById('topic_' + session_key + '_wrapper').clientHeight;
-            } else {
-                ChatStorage[type].chat.list[session_key].topic.height = 0;
-            }
-        }
-    };
-
-    this.addChatTopic = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            /*      console.log('adding topic'); */
-            if (angular.isDefined(ChatStorage[type].chat.list[session_key].topic.description) && ChatStorage[type].chat.list[session_key].topic.description.length > 5 && ChatStorage[type].chat.list[session_key].topic.description.length <= 36) {
-                ChatStorage[type].chat.list[session_key].topic.description = ChatStorage[type].chat.list[session_key].topic.description.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
-                if (angular.isDefined(ChatStorage[type].chat.list[session_key].fb.location.session)) {
-                    ChatStorage[type].chat.list[session_key].fb.location.session.update({
-                        topic: ChatStorage[type].chat.list[session_key].topic.description
-                    });
-                }
-                that.resetCommonDefaultSettings(type, session_key);
-                that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
-                return true;
-            }
-        }
-        return false;
-    };
-
-    this.removeChatTopic = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (angular.isDefined(ChatStorage[type].chat.list[session_key].fb.location.session)) {
-                ChatStorage[type].chat.list[session_key].fb.location.session.update({
-                    topic: false
-                });
-                ChatStorage[type].chat.list[session_key].topic.description = '';
-                ChatStorage[type].chat.list[session_key].topic.height = 0;
-                ChatStorage[type].chat.list[session_key].topic.set = false;
-                ChatStorage[type].chat.list[session_key].menu.topic = false;
-            }
-        }
-    };
-
-    this.updateChatTopic = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            var new_chat_topic = String($('#topic_' + session_key).text()).replace(/&/g, '').replace(/</g, '').replace(/>/g, '').replace(/"/g, ''); // sanitze the string
-            if (new_chat_topic === 'null' || new_chat_topic === '' || new_chat_topic.length < 5) {
-                return false;
-            }
-            ChatStorage[type].chat.list[session_key].topic.set = new_chat_topic;
-            if (ChatStorage[type].chat.list[session_key].fb.location.session) {
-                ChatStorage[type].chat.list[session_key].fb.location.session.update({
-                    topic: new_chat_topic
-                });
-            }
-            that.setChatTopicHeight(type, session_key);
-            that.resetCommonDefaultSettings(type, session_key);
-            that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
-            return true;
-        }
-    };
-
-    this.clearChatMessageHistory = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            ChatStorage[type].chat.list[session_key].messages.list = [];
-            ChatStorage[type].chat.list[session_key].messages.map = {};
-            that.resetCommonDefaultSettings(type, session_key);
-        }
-    };
 
     this.buildChatSession = function(session) // this function builds out the details of an individual chat sesssion
         {

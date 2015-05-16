@@ -116,6 +116,8 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
         './modules/core/core.filters.js',
         './modules/core/components/browser/core.srv.browser.js',
 
+        './modules/core/components/audio/core.srv.audio.js',
+
         './modules/core/components/chats/core.fact.chatBuilder.js',
         './modules/core/components/chats/core.ctrl.chats.js',
         './modules/core/components/chats/core.fact.chatManager.js',
@@ -254,6 +256,9 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
         angular.module(ApplicationConfiguration.applicationModuleName).config(function (localStorageServiceProvider) {
           localStorageServiceProvider.setPrefix(ApplicationConfiguration.applicationModuleName);
         });
+         angular.isUndefinedOrNull = function(val) {
+            return angular.isUndefined(val) || val === null;
+        };
 
         Object.size = function(obj) {
             var size = 0, key;

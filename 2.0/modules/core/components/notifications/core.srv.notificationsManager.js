@@ -1,19 +1,19 @@
 angular.module('portalchat.core').service('NotificationManager',
 function() {
     var that = this;
-
+    this.setting = {};
+    this.state = {};
+    this.state.is_playing_sound = false;
     this.volume_level = 0.05;
     this.isGlobalSound = false;
     this.sound = {};
 
-    this.nudge = new Howl({
+    this.sound.nudge = new Howl({
         urls: ['./assets/sounds/nudge.mp3'],
         volume: 0.5
     });
 
     this.defineSounds = function() {
-        that.sound = {};
-
         that.sound.chat = new Howl({
             urls: ['./assets/sounds/chat.mp3'],
             volume: that.volume_level
@@ -38,20 +38,24 @@ function() {
             urls: ['./assets/sounds/money.mp3'],
             volume: that.volume_level
         });
-        that.sound.chat_close = new Howl({
+        that.sound.close = new Howl({
             urls: ['./assets/sounds/chat_close.mp3'],
             volume: that.volume_level
         });
     };
 
-    this.playSound = function(sound) {
-        if (this.isGlobalSound) {
-            sound.play();
+    this.playSound = function(name) {
+        if (that.isGlobalSound && !that.state.is_playing_sound && that.sound[name]) {
+            that.state.is_playing_sound = true;
+            that.sound[name].play();
+            $timneout(function(){
+                that.state.is_playing_sound = false;
+            },1000);
         }
     };
 
     this.nudge = function(sound) {
-        sound.play();
+        that.sound.nudge.play();
     };
 
     this.mute = function(duration) {
@@ -69,7 +73,7 @@ function() {
         that.isGlobalSound = true;
     };
     this.toggleGlobalSound = function() {
-        that.isGlobalSound = !this.isGlobalSound;
+        that.isGlobalSound = !that.isGlobalSound;
     };
     this.updateSoundLevel = function(level) {
         if (parseInt(level) > -1 && parseInt(level) <= 50) {
