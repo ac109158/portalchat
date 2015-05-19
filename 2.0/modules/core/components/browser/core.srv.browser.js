@@ -4,6 +4,7 @@ angular.module('portalchat.core').
 service('BrowserService', ['$http', '$log', function($http, $log) //this service will enable you to determine the operating system and browser of the user;
 {
     var that = this;
+    this.platform = {};
     (function (window) {
         {
             var unknown = '-';

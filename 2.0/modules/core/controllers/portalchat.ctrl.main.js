@@ -5,6 +5,8 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
     function($rootScope, $scope, $log, $timeout, $window, CoreConfig, CoreManager, UtilityManager, localStorageService) {
         $scope.runApp = false;
 
+
+
         $scope.initUser = function() {
             CoreManager.initUser();
         };
@@ -15,11 +17,20 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
         });
 
         var init_scope = function() {
-            $scope.settings = CoreManager.returnSettings();
-            $scope.user = CoreManager.returnUser();
-            $scope.contacts = CoreManager.returnContacts();
+            $scope.module = CoreManager.returnModule();
+            $scope.ui = CoreManager.returnUi();
+            $scope.ux = CoreManager.returnUx();
             console.log($scope);
         };
+
+        $scope.$on('set-module-layout', function(event, value) {
+            if (value) {
+                UiManager.setModuleLayout(value);
+            }
+        });
+        $scope.$on('clear-notifications', function() {
+            UiManager.ui.fx.clearBrowserNotificationList();
+        });
 
         $scope.chat = function(agent) {
             if ($scope.request_chat === true) {

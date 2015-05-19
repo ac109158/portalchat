@@ -46,8 +46,8 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
 
     this.setFirebaseTargets = function() {
         if (CoreConfig.user.id) {
-            // that.fb.target.is_external_window = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/is_external_window/'));
-            // that.fb.target.is_panel_open = $firebaseObject(new Firebase(CoreConfig.fb_url + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/is_open/'));
+            // that.fb.target.is_external_window = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/is_external_window/'));
+            // that.fb.target.is_panel_open = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/is_open/'));
             return true;
         }
         return false;

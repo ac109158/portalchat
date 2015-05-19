@@ -10,7 +10,7 @@ service('ChatStorage', ['$log', '$timeout','CoreConfig',function($log, $timeout,
 
     this.directory.chat = {};
     this.directory.chat.list = [];
-    this.directory.chat.map = {};
+    this.directory.chat.order_map = {};
 
 
 

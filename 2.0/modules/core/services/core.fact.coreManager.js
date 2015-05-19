@@ -1,5 +1,5 @@
-angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', '$timeout', 'UserManager', 'SettingsManager', 'ContactsManager', 'BrowserService', 'UtilityManager', 'NotificationManager', 'states', 'localStorageService', 'ChatModuleManager', 'UiManager','SessionsManager', 'OnlineManager',
-function($rootScope, $log, $timeout, UserManager, SettingsManager, ContactsManager, BrowserService, UtilityManager, NotificationManager, states, localStorageService, ChatModuleManager, UiManager, SessionsManager, OnlineManager) {
+angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', '$timeout', 'UserManager', 'SettingsManager', 'ContactsManager', 'BrowserService', 'UtilityManager', 'NotificationManager', 'states', 'localStorageService', 'ChatModuleManager', 'UiManager','UxManager','SessionsManager', 'OnlineManager',
+function($rootScope, $log, $timeout, UserManager, SettingsManager, ContactsManager, BrowserService, UtilityManager, NotificationManager, states, localStorageService, ChatModuleManager, UiManager, UxManager, SessionsManager, OnlineManager) {
     var that = this;
 
     this.initUser = function() {
@@ -9,15 +9,13 @@ function($rootScope, $log, $timeout, UserManager, SettingsManager, ContactsManag
     this.initApp = function() {
         if (UserManager.user.id) {
             $timeout(function() {
+                NotificationManager.load();
                 UtilityManager.load();
                 ContactsManager.load();
                 OnlineManager.load();
                 SettingsManager.load();
                 SessionsManager.load();
                 ChatModuleManager.load();
-
-                UiManager.load();
-                NotificationManager.isGlobalSound = true;
             });
         } else{
             console.log('broken');
@@ -27,23 +25,18 @@ function($rootScope, $log, $timeout, UserManager, SettingsManager, ContactsManag
         });
     };
 
-    this.returnUser = function() {
-        var user = UserManager.user;
-        user.platform = BrowserService.platform;
-        user.settings = SettingsManager.settings;
-        return user;
+    this.returnModule = function() {
+        return ChatModuleManager.module;
     };
 
-    this.returnContacts = function() {
-        return ContactsManager.contacts;
+    this.returnUi = function(){
+        return UiManager.ui;
     };
-
-    this.returnSettings = function() {
-        return SettingsManager.module;
+    this.returnUx = function(){
+        return UxManager.ux;
     };
-
-    this.returnEngine = function() {
-        return UtilityManager.engine;
+    this.returnModule = function() {
+        return ChatModuleManager.module;
     };
 
     this.setPresence = function(presence) {

@@ -21,8 +21,8 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
     };
 
     this.setFirebaseLocation = function() {
-        that.fb.location.online_check = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.online_check_reference);
-        that.fb.location.user_check_in = new Firebase(CoreConfig.fb_url + CoreConfig.users.reference + CoreConfig.online_check_reference + CoreConfig.user.id);
+        that.fb.location.online_check = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.online_check_reference);
+        that.fb.location.user_check_in = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.online_check_reference + CoreConfig.user.id);
         that.fb.location.user_check_in.onDisconnect().remove();
     };
 
@@ -84,14 +84,14 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
             var i = 1;
             var stamp_index = 1;
             angular.forEach(user_timestamps, function(value, user_id_key) {
-                var contact_tag = CoreConfig.default.user_tag + user_id_key;
+                var contact_tag = CoreConfig.common.reference.user_prefix + user_id_key;
                 if (that.isTimestamps) {
                     i++;
                     if (user_id_key == CoreConfig.user.id) {
                         stamp_index = i;
                     }
                     if (ContactsManager.contacts.profiles[contact_tag] && value > ContactsManager.contacts.profiles[contact_tag].last_check_in) {} else {
-                        ContactsManager.storeOfflineQueue('user_' + user_id_key);
+                        ContactsManager.storeOfflineQueue(CoreConfig.common.reference.user_prefix + user_id_key);
                         $timeout(function() {
                             if (ContactsManager.isOfflineQueued(contact_tag)) {
                                 that.fb.location.online_check.child(user_id_key).remove();

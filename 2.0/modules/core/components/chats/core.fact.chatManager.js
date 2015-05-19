@@ -342,26 +342,21 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (message.index_position - 1 > -1) {
                 that.isMessageTimeLapse(type, session_key, message);
-                that.isMessagePastHour(type, session_key, message);
-                that.isLastMessagePastMinute(type, session_key, message);
-                that.isAuthorSameAsLast(type, session_key, message);
-                that.isMessageFromUser(message);
-            } else {
-                that.isMessagePastHour(type, session_key, message);
-                that.isLastMessagePastMinute(type, session_key, message);
-                that.isAuthorSameAsLast(type, session_key, message);
-                that.isMessageFromUser(message);
             }
+            that.isMessagePastHour(type, session_key, message);
+            that.isLastMessagePastMinute(type, session_key, message);
+            that.isAuthorSameAsLast(type, session_key, message);
+            that.isMessageFromUser(message);
+            that.setMessageReference(message, ChatStorage[type].chat.list[session_key].priority.first);
         }
     };
-
 
     this.getAuthorAvatar = function(message, user_details) {
         if (message.author === CoreConfig.chat.internal_reference) {
             message.avatar = false;
             return;
-        } else if (angular.isDefined(ContactsManager.contacts.profiles['user_' + message.author])) {
-            message.avatar = '/components/com_callcenter/images/avatars/' + ContactsManager.contacts.profiles['user_' + message.author].avatar + '-90.jpg';
+        } else if (angular.isDefined(ContactsManager.contacts.profiles[CoreConfig.common.reference.user_prefix + message.author])) {
+            message.avatar = '/components/com_callcenter/images/avatars/' + ContactsManager.contacts.profiles[CoreConfig.common.reference.user_prefix + message.author].avatar + '-90.jpg';
             return;
         } else if (angular.isDefined(user_details[message.author])) {
             message.avatar = '/components/com_callcenter/images/avatars/' + user_details[message.author].avatar + '-90.jpg';
@@ -373,6 +368,21 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
         }
         /*      console.log(message); */
 
+    };
+
+    this.setMessageReference = function(message, start) {
+        if (parseInt(message.reference) >= parseInt(start)) {
+            message.is_reference = true;
+            if (message.reference.author === UserManager.user.id) {
+                message.is_self_referenced = true;
+            } else {
+                message.is_self_referenced = false;
+            }
+        } else {
+            message.is_reference = false;
+            message.is_self_referenced = false;
+        }
+        return;
     };
 
 
@@ -444,51 +454,6 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
     this.setChatTimeReference = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             ChatStorage[type].chat.list[session_key].ux.time_reference = new Date().getTime();
-        }
-    };
-
-    this.setNextContactChatIntoFocus = function(session_key, index_position) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (ChatStorage.contact.chat.list[session_key]) {
-                var next_session_index;
-                var next_session_key;
-                ChatStorage.contact.chat.list[session_key].ux.unread = 0;
-                that.toggleChatAttr('contact', session_key, 'is_text_focus', false, false);
-                that.toggleChatAttr('contact', session_key, 'is_new_message', false, false);
-                if (SettingsManager.module.layout != 2) {
-                    if (that.contact.chat.priority_queue.length > 0) {
-                        next_session_key = that.contact.chat.priority_queue.pop();
-                        $log.debug('next_session_key from priority is ' + next_session_key);
-                    } else {
-                        var contact_chat_count = Object.size(ChatStorage.contact.chat.list);
-                        var current_chat_index = ChatStorage.contact.chat.map[ChatStorage.contact.chat.list[session_key].index];
-                        next_session_index = current_chat_index + 1;
-                        if (next_session_index > contact_chat_count - 1) {
-                            next_session_index = 0;
-                        }
-                        next_session_index = ChatStorage.contact.chat.map[next_session_index];
-                    }
-                    $log.debug('next_session_key  is ' + next_session_key);
-                    $timeout(function() {
-                        $scope.directory_index = next_session_key;
-                        $scope.setDirectoryChat(next_session_key, true);
-                        $scope.referenceDirectoryItem();
-                    }, 250);
-                    return;
-                } else if ($scope.layout === 2) {
-                    next_session_key = index - 1;
-                    $scope.activeChats[index].isTextFocus = false;
-                    if (next_session_key < 0) {
-                        next_session_key = $scope.activeChats.length - 1;
-                    }
-                    if (next_session_key >= $scope.max_count) {
-                        next_session_key = $scope.max_count - 1;
-                    }
-                    $scope.activeChats[next_session_key].isopen = true;
-                    $scope.activeChats[next_session_key].isTextFocus = true;
-                    return;
-                }
-            }
         }
     };
 

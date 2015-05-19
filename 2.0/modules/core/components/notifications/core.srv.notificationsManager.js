@@ -1,11 +1,10 @@
-angular.module('portalchat.core').service('NotificationManager',
-function() {
+angular.module('portalchat.core').service('NotificationManager',['$timeout', 'CoreConfig', function($timeout, CoreConfig) {
     var that = this;
-    this.setting = {};
     this.state = {};
     this.state.is_playing_sound = false;
-    this.volume_level = 0.05;
-    this.isGlobalSound = false;
+    this.setting = {};
+    this.setting.volume_level = 0.05;
+    this.setting.is_global_sound = CoreConfig.inital.is_global_sound;
     this.sound = {};
 
     this.sound.nudge = new Howl({
@@ -13,44 +12,50 @@ function() {
         volume: 0.5
     });
 
+    this.load = function(){
+        that.defineSounds();
+    };
+
     this.defineSounds = function() {
         that.sound.chat = new Howl({
             urls: ['./assets/sounds/chat.mp3'],
-            volume: that.volume_level
+            volume: that.setting.volume_level
         });
         that.sound.bash_error = new Howl({
             urls: ['./assets/sounds/bash_error.mp3'],
-            volume: that.volume_level
+            volume: that.setting.volume_level
         });
         that.sound.chat_convert = new Howl({
             urls: ['./assets/sounds/chat_convert.mp3'],
-            volume: that.volume_level
+            volume: that.setting.volume_level
         });
         that.sound.new_chat = new Howl({
             urls: ['./assets/sounds/new_chat.mp3'],
-            volume: that.volume_level
+            volume: that.setting.volume_level
         });
         that.sound.update_alert = new Howl({
             urls: ['./assets/sounds/update_alert.mp3'],
-            volume: that.volume_level
+            volume: that.setting.volume_level
         });
         that.sound.money = new Howl({
             urls: ['./assets/sounds/money.mp3'],
-            volume: that.volume_level
+            volume: that.setting.volume_level
         });
         that.sound.close = new Howl({
             urls: ['./assets/sounds/chat_close.mp3'],
-            volume: that.volume_level
+            volume: that.setting.volume_level
         });
     };
 
     this.playSound = function(name) {
-        if (that.isGlobalSound && !that.state.is_playing_sound && that.sound[name]) {
+        console.log(that.setting.is_global_sound, ':',!that.state.is_playing_sound, ':',that.sound[name]);
+        if (that.setting.is_global_sound && !that.state.is_playing_sound && that.sound[name]) {
+
             that.state.is_playing_sound = true;
             that.sound[name].play();
-            $timneout(function(){
+            $timeout(function(){
                 that.state.is_playing_sound = false;
-            },1000);
+            },500);
         }
     };
 
@@ -60,27 +65,27 @@ function() {
 
     this.mute = function(duration) {
         if(duration){
-            that.isGlobalSound = false;
+            that.setting.is_global_sound = false;
             $timeout(function(){
-                that.isGlobalSound = true;
+                that.setting.is_global_sound = true;
             }, duration);
         } else{
-            that.isGlobalSound = false;
+            that.setting.is_global_sound = false;
         }
 
     };
     this.unmute = function() {
-        that.isGlobalSound = true;
+        that.setting.is_global_sound = true;
     };
     this.toggleGlobalSound = function() {
-        that.isGlobalSound = !that.isGlobalSound;
+        that.setting.is_global_sound = !that.setting.is_global_sound;
     };
     this.updateSoundLevel = function(level) {
         if (parseInt(level) > -1 && parseInt(level) <= 50) {
-            that.volume_level = parseFloat(level / 100);
+            that.setting.volume_level = parseFloat(level / 100);
             that.defineSounds();
         }
     };
 
     return this;
-});
+}]);

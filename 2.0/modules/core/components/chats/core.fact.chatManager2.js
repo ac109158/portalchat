@@ -191,15 +191,15 @@ if (chat_presence === "Offline")
                 clearInterval(check_for_user);
                 that.active_chats = Array();
                 UserManager.user_group = Array();
-                UserManager.user_group.push('user_' + UserManager._user_profile.user_id);
+                UserManager.user_group.push(CoreConfig.common.reference.user_prefix + UserManager._user_profile.user_id);
                 if (UserManager.pc) {
-                    UserManager.user_group.push('user_' + UserManager.pc.user_id);
+                    UserManager.user_group.push(CoreConfig.common.reference.user_prefix + UserManager.pc.user_id);
                 }
                 if (UserManager._user_profile.mc) {
-                    UserManager.user_group.push('user_' + UserManager._user_profile.mc.user_id);
+                    UserManager.user_group.push(CoreConfig.common.reference.user_prefix + UserManager._user_profile.mc.user_id);
                 }
                 if (UserManager._user_profile.admin && UserManager._user_profile.role === 'Mentor Coach') {
-                    UserManager.user_group.push('user_' + UserManager._user_profile.admin.user_id);
+                    UserManager.user_group.push(CoreConfig.common.reference.user_prefix + UserManager._user_profile.admin.user_id);
                 }
 
                 CoreConfig.user.id + '/' = UserManager._user_profile.user_id + '/'; // user_id of user
@@ -209,110 +209,7 @@ if (chat_presence === "Offline")
         $log.debug('Finished that.__establishUserChat');
         return true;
     };
-    this.pushChatSession = function(chatSession, contact, scope) { // nameRef.child('first').set('Fred');
-        if (angular.isUndefined(chatSession.session_key)) {
-            chatSession = null;
-            return false;
-        }
-        if (contact === false) {
-            if (chatSession.isGroupChat === true && that.active_sessions[chatSession.session_key] !== true && !(angular.equals(that._last_pushed_session, chatSession.session_key))) {
-                that._last_pushed_session = chatSession.session_key;
-                that.active_sessions[chatSession.session_key] = true;
-                var group_session_info = {
-                    directoryChat: chatSession.isDirectoryChat,
-                    groupChat: chatSession.isGroupChat,
-                    isOpen: contact.isOpen || true,
-                    isSound: chatSession.isSound,
-                    'session_key': chatSession.session_key,
-                    name: chatSession.chat_description,
-                    admin: chatSession.admin,
-                    'time': chatSession.time
-                };
-                that._active_sessions_user_location.child(chatSession.session_key).update(group_session_info);
-                $timeout(function() {
-                    if (chatSession.isTextFocus && that.active_chats.length >= scope.max_count) {
-                        scope.temp_chat = that.active_chats[scope.max_count - 1];
-                        that.active_chats[scope.max_count - 1] = chatSession;
-                        that.active_sessions[that.active_chats[scope.max_count - 1].session_key] = true;
-                        that.active_chats.push(scope.temp_chat);
-                    } else {
-                        that.active_chats.push(chatSession);
-                        scope.checkForTopic(chatSession);
-                        that.active_sessions[that.active_chats[that.active_chats.length - 1].session_key] = true;
-                    }
-                    $timeout(function() {
-                        if (!(that._is_playing_sound) && (chatSession.time + 5000) > new Date().getTime()) {
-                            if (scope.is_external_window.$value && scope.isExternalInstance === false) { /*                              console.log('Blocked SOund'); */
-                            } else {
-                                NotificationService.__playSound(NotificationService._new_chat);
-                            }
-                            $timeout(function() {
-                                that._last_pushed_session = null;
-                                chatSession.loading = false;
-                            }, 500);
-                        }
-                        chatSession.allowTopic = true;
-                    }, 500);
-                }, 1000);
-            } else {
-                $log.debug("Chat Session is already active / not group chat");
-            }
-            $timeout(function() {
-                scope.resetTyping(chatSession);
-                scope.checkForTopic(chatSession);
-            }, 200);
-        } else {
-            if (that.active_sessions['user_' + contact.user_id] !== true && !(angular.equals(contact.user_id, that._last_pushed_session))) {
-                that._last_pushed_session = contact.user_id; /*              console.log('last_pushed was set as ' + chatSession.contact_id); */
-                var contact_info = {
-                    avatar: contact.avatar,
-                    groupChat: chatSession.isGroupChat,
-                    'session_key': chatSession.session_key,
-                    isOpen: chatSession.isopen || true,
-                    isSound: chatSession.isSound || true,
-                    name: contact.name,
-                    user_id: contact.user_id,
-                    time: chatSession.time
-                };
-                that._active_sessions_user_location.child(contact.user_id).update(contact_info);
-                that.active_sessions['user_' + contact.user_id] = true;
-                if (scope.layout === 2 && chatSession.isopen === false) {
-                    chatSession.isopen = true;
-                    $timeout(function() {
-                        chatSession.isopen = false;
-                        that._active_sessions_user_location.child(contact.user_id).update({
-                            isOpen: false
-                        });
-                    }, 500);
-                }
-                if (scope.layout != 2) {
-                    if (chatSession.isTextFocus) {
-                        that.active_chats.unshift(chatSession); /*                      console.log('inital push'); */
-                        scope.safeApply(function() {
-                            $timeout(function() {
-                                scope.setDirectoryChat(0, true);
-                            }, 50);
-                        });
-                    } else {
-                        that.active_chats.push(chatSession); /*                         document.getElementById('chat-module-queue-content').scrollTo(null,0); */
-                    }
-                } else if (scope.layout === 2 && chatSession.isTextFocus && that.active_chats.length >= scope.max_count) {
-                    scope.temp_chat = that.active_chats[scope.max_count - 1];
-                    that.active_chats[scope.max_count - 1] = chatSession;
-                    that.active_chats.push(scope.temp_chat);
-                    scope.temp_chat = null;
-                } else {
-                    that.active_chats.push(chatSession);
-                }
-                scope.checkForTopic(chatSession);
-                if (!(that._is_playing_sound) && (chatSession.time_reference + 5000) > new Date().getTime()) {
-                    NotificationService.__playSound(NotificationService._new_chat);
-                }
-            } else { /*                 console.log( "Chat Session is already active" ); */
-                $log.debug("Chat Session is already active");
-            }
-        }
-    };
+
     this.setLastPushed = function(session) {
         that._last_pushed_session = session;
         $timeout(function() {

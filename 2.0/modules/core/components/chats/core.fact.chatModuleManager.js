@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'UserManager', 'SettingsManager', 'SessionsManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'BrowserService', 'localStorageService', function($rootScope, $log, $timeout, CoreConfig, UserManager, SettingsManager, SessionsManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, BrowserService, localStorageService) {
+service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'UserManager', 'ContactsManager', 'SettingsManager', 'SessionsManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'BrowserService', 'localStorageService', function($rootScope, $log, $timeout, CoreConfig, UserManager, ContactsManager, SettingsManager, SessionsManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, BrowserService, localStorageService) {
     var that = this;
     this.fb = {};
     this.fb.chat = {};
@@ -11,6 +11,16 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.fb.group_chat.targets = {};
 
     this.module = {};
+    this.module.user = UserManager.user;
+    this.module.contacts = ContactsManager.contacts;
+    this.module.engine = UtilityManager.engine;
+    this.module.platform = BrowserService.platform;
+    this.module.global = SettingsManager.global;
+
+    this.module.asset = {};
+    this.module.asset.external_window_instance = undefined;
+
+
 
     this.module.state = {};
     this.module.state.alert_to_open = false;
@@ -19,11 +29,8 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.state.is_opening = false;
     this.module.state.is_closing = false;
     this.module.state.is_setting_layout = false;
-    this.module.state.is_external_window = undefined;
-    this.module.state.is_external_window_instance = undefined;
     this.module.state.allow_chat_request = true;
-
-
+    this.module.state.allow_chat_request = true;
 
     this.module.contacts = {};
     this.module.contacts.search = {};
@@ -39,11 +46,10 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.priority = {};
     this.module.priority.queue = [];
 
-    this.module.presence = {};
-    this.module.presence.states = CoreConfig.module.presence.states;
-
-    this.module.notification = {};
-    this.module.notification.list = [];
+    this.module.browser = {};
+    this.module.browser.platform = BrowserService.platoform;
+    this.module.browser.notification = {};
+    this.module.browser.notification.list = [];
 
 
     this.module.tab = {};
@@ -71,10 +77,8 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.attr.is_referencing = false;
     this.module.attr.is_page_loaded = false;
     this.module.attr.is_chat_ping = false;
-    this.module.attr.is_child_window = false;
-    this.module.attr.is_child_window_instance = undefined;
     this.module.attr.lact_active_chat = undefined;
-    this.module.attr.last_unread_chat = null;
+    this.module.attr.last_unread_chat = undefined;
     this.module.attr.last_removed_chat = undefined;
     this.module.attr.last_requested_chat = undefined;
     this.module.attr.last_query_location = undefined;
@@ -112,32 +116,17 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
 
 
     this.module.menu = {};
+    this.module.menu.profile = false;
+    this.module.menu.presence = false;
+    this.module.menu.filter = false;
+    this.module.menu.volume = false;
     this.module.menu.directory_chat_list = false;
 
     this.load = function() {
-        that.initSessionVar();
         that.setFirebaseLocations();
         that.setFirebaseTargets();
         that.establishUserChat();
         // that.setDefaultDirectoryChats();
-    };
-
-    this.initSessionVar = function() {
-        if (localStorageService.get('is_existing_chat')) {
-            $log.debug('need to Destroy Chat');
-            // var current = window.open('','_self');
-
-            // $timeout(function(){
-            //     current.close();
-            //     self.close(); 
-            //     window.close();
-            // }, 500)
-
-        } else {
-            localStorageService.add('is_existing_chat', (Math.random() + 1).toString(36).substring(7));
-            that.module.session.id = localStorageService.get('isExistingChat');
-            $log.debug(' that.module.session.id set to ' + that.module.session.id);
-        }
     };
 
     this.setFirebaseLocations = function() {
@@ -161,82 +150,59 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         return true;
     };
 
-    this.registerChatRequest = function(session, isfocus) {
-        if (session && angular.isObject(session)) {
+    this.registerContactChatRequest = function(session, set_focus) {
+        if (session && angular.isObject(session) && session.session_key && session.user_id === UserManager.user.id) {
             var index;
             $log.debug('Requesting chat session');
             if (!(UtilityManager.engine.firebase.online)) {
                 $log.debug('Request Denied: Firebase is Offline');
                 return false;
-            } else if (that.contact.marker.last_requested_chat === session.user_id || that.contact.marker.last_requested_chat === session.session_key) {
+            } else if (that.module.attr.last_requested_chat === session.session_key) {
                 $log.debug('This appears to be a duplicate rquest, return false'); /*           console.log('requested: ' + that.last_requested_chat + ' session.user_id: ' + session.user_id); */
-                that.contact.marker.last_requested_chat = false;
+                that.module.attr.last_requested_chat = false;
                 return false;
             }
-            if (angular.isDefined(session.session_key) && angular.isDefined(session.groupChat) && session.groupChat === true) {
-                that.contact.marker.last_requested_chat = session.session_key;
-                if (angular.isDefined(ChatStorage.contact.chat.map[session.session_key])) {
-                    $log.debug('Chat is already in chat list');
-                    if (SettingsManager.module.layout != 2) {
-                        that.setDirectoryChat(ChatStorage.contact.chat.map[session.session_key], true);
-                    } else {
-                        ChatStorage.contact.chat.list[ChatStorage.contact.chat.map[session.session_key]].is_open = true;
-                        ChatStorage.contact.chat.list[ChatStorage.contact.chat.map[session.session_key]].is_text_focus = true;
-                    }
-                    return false;
-                } /*            console.log('building as group chat'); */
-                ChatBuilder.__buildGroupChatSession(session, session.isOpen || true, isfocus, 1); // function(that, value, isopen, isfocus)
-                return true;
-            } else {
-                that.last_requested_chat = session.user_id;
-                if (angular.isUndefined(session) || session.user_id === UserManager._user_profile.user_id) {
-                    $log.debug('Chat session denied - undefined/self');
-                    return false;
-                } else if (angular.isDefined(session.user_id) && ChatStorage.contact.session.list['user_' + session.user_id] === true) {
-                    $log.debug('This chat shows as registered');
-                    var chat_log = [];
-                    angular.forEach(that.active_chats, function(value, key) { // runs through the list of chat session to determine which chat session is tied to the value change
-                        if (angular.isDefined(value.session_id)) {
-                            this.push(value.session_id);
-                        } else {
-                            this.push(value.session_key);
-                        }
-                    }, chat_log);
-                    index = chat_log.indexOf(session.user_id);
-                    if (angular.isDefined(that.active_chats[index]) && that.active_chats[index].session_id === session.user_id) {
-                        $log.debug('Chat is already in the list of active chats');
-                        $log.debug(angular.toJson(chat_log));
-                        if (SettingsManager.settings.layout != 2) {
-                            that.safeApply(function() {
-                                $timeout(function() {
-                                    that.setDirectoryChat(index, true);
-                                }, 50);
-                            });
-                        } else if (SettingsManager.settings.layout === 2 && that.active_chats[index].index_position >= that.max_count) {
-                            that.swapChatPositions(that.active_chats[index].index_position, that.max_count - 1);
-                            that.__setLastPushed(that.active_chats[that.max_count - 1].session_id);
-                            that.active_chats[that.max_count - 1].isopen = true;
-                            that.active_chats[that.max_count - 1].isTextFocus = true;
-                        } else {
-                            that.active_chats[index].isopen = true;
-                            that.active_chats[index].isTextFocus = true;
-                            that.__setLastPushed(that.active_chats[index].session_id);
-                        }
-                        $timeout(function() {
-                            if (!(that._is_playing_sound)) {
-                                NotificationService.playSound(NotificationService.sound.new_chat);
-                            }
-                        }, 250);
-                        return true;
-                    }
-                    return false;
+            that.module.attr.last_requested_chat = session.session_key;
+            if (ChatStorage.contact.chat.list[session.session_key]) {
+                if (set_focus) {
+                    that.setChatAsCurrent('contact', session.session_key);
                 }
-                $log.debug('all checks passed, build chat');
-                that.__buildChatSession(that, session, session.isOpen, isfocus, 14); // (that, contact, isopen, isfocus)
-                return true;
+                $log.debug('Chat is already in chat list');
+                return;
             }
+            $timeout(function() {
+                NotificationManager.playSound('new_chat');
+            }, 250);
+            $log.debug('all checks passed, build chat');
+            ChatBuilder.buildChatSession(session, set_focus); // (that, contact, isopen, isfocus)
+            return true;
         }
-        return false;
+    };
+
+    this.registerDirectoryChatRequest = function(session_key, set_focus) {
+        $log.debug('registerDirectoryChatRequest(' + session_key + ')');
+        var type = session_key.split('_')[0];
+        $log.debug('type: ' + type);
+        var id = session_key.split('_')[1];
+        $log.debug('id: ' + id);
+        that.module.menu.directory_chat_list = false;
+        if (ChatStorage.directory.chat.list[session_key]) {
+            $log.debug(session_key + 'already exists');
+            that.setChatAsCurrent('directory', session_key);
+            return;
+        } else {
+            if (type === 'mc') {
+                ChatManager.__pushChatSession(DirectoryChatManager.__buildNewDirectoryChat($scope, (chat_name), UserManager._users_profiles_obj[CoreConfig.common.reference.user_prefix + id].name + ' - MC Team Chat', id, false, false, 3), false, $scope); //scope, chat_reference, chat_description, admin, watch_users
+            } else if (session_key === 'admin_group_chat') {
+                ChatManager.__pushChatSession(DirectoryChatManager.__buildNewDirectoryChat($scope, ('admin_group_chat'), 'Admin - Group Chat', UserManager._user_profile.user_id, false, true, 3), false, $scope);
+            } else {
+                return false;
+            }
+            $timeout(function() {
+                that.setChatAsCurrent('directory', session_key);
+            }, 1000);
+            return;
+        }
     };
 
     this.setDefaultDirectoryChatConfiguration = function() {
@@ -283,31 +249,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         }
     };
 
-    this.createDirectoryListChat = function(session_key) {
-        $log.debug('getDirectoryChat(' + chat_name + ')');
-        var type = chat_name.split('_')[0];
-        $log.debug('type: ' + type);
-        var id = chat_name.split('_')[1];
-        $log.debug('id: ' + id);
-        that.module.menu.directory_chat_list = false;
-        if (ChatStorage.directory.chat.list[session_key]) {
-            $log.debug(session_key + 'already exists');
-            that.setChatAsCurrent('directory', session_key);
-            return;
-        } else {
-            if (type === 'mc') {
-                ChatManager.__pushChatSession(DirectoryChatManager.__buildNewDirectoryChat($scope, (chat_name), UserManager._users_profiles_obj['user_' + id].name + ' - MC Team Chat', id, false, false, 3), false, $scope); //scope, chat_reference, chat_description, admin, watch_users
-            } else if (chat_name === 'admin_group_chat') {
-                ChatManager.__pushChatSession(DirectoryChatManager.__buildNewDirectoryChat($scope, ('admin_group_chat'), 'Admin - Group Chat', UserManager._user_profile.user_id, false, true, 3), false, $scope);
-            } else {
-                return false;
-            }
-            $timeout(function() {
-                that.setChatAsCurrent('directory', session_key);
-            }, 1000);
-            return;
-        }
-    };
+
 
     this.validateDirectoryChatConfiguration = function(directory_chat_config) {
         var pass = false;
@@ -347,55 +289,57 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         });
     };
 
-    this.externalWindowchange = function(status) {
-        if (status === false && that.ui.module.setting.is_external_window_instance === false) {
-            if (that.externalWindowObject) {
-                that.externalWindowlistener = null;
-                that.externalWindowObject = null;
-                that.module.marker.is_child_window = false;
-                that.module.marker.is_child_window_instance = false;
+    this.externalWindowChange = function(status) {
+        if (status === false && CoreConfig.module.setting.is_external_window_instance === false) {
+            if (that.module.asset.external_window_instance) {
+                that.module.asset.external_window_listener = null;
+                that.module.asset.external_window_instance = null;
             }
         }
+        that.evaluateModuleLayout();
+    };
 
-        that.__setLastPushed('empty');
-        angular.forEach(ChatStorage.contact.chat.list, function(val, key) {
-            val.is_text_focus = false;
-            that.resetTyping(val);
-        });
+    this.focusExternalWindowInstance = function() {
+        if (that.module.asset.external_window_instance) {
+            that.module.asset.external_window_instance.focus();
+        } else {
+            NotificationManager.mute(10000);
+            that.openChatModuleInExternalWindow();
+        }
     };
 
 
     this.establishChatLayout = function() {
         $log.debug('calling this.establishLayout()');
-        if (SettingsManager.module.is_external_window === true && SettingsManager.module.is_external_window_instance === false) {
+        if (SettingsManager.global.is_external_window === true && CoreConfig.module.setting.is_external_window_instance === false) {
             return;
         }
 
-        if (SettingsManager.module.is_external_window && SettingsManager.module.is_external_window_instance) {
+        if (SettingsManager.global.is_external_window && CoreConfig.module.setting.is_external_window_instance) {
             $document.documentElement.style.overflow = 'hidden'; // firefox, chrome
             $document.body.scroll = "no"; // ie only
         }
         var init_tab = 'contacts';
 
-        if (SettingsManager.module.layout === 1 && angular.isDefined(SettingsManager.module.last_active_chat)) {
-            if (typeof SettingsManager.module.lact_active_chat === 'string') {
+        if (SettingsManager.global.layout === 1 && angular.isDefined(SettingsManager.global.last_active_chat)) {
+            if (typeof SettingsManager.global.lact_active_chat === 'string') {
                 if (ChatStorage.contact.chat.list.length > 0) {
                     that.directory.chat.active = ChatStorage.contact.chat.list[0];
                     that.directory.chat.marker.index = 0;
                     that.directory.chat.marker.stored_index = 0;
                 }
-                init_tab = SettingsManager.module.lact_active_chat + '_link';
+                init_tab = SettingsManager.global.lact_active_chat + '_link';
 
             } else {
                 init_tab = 'contacts_link';
             }
             that.module.marker.is_page_loaded = true;
 
-            if (SettingsManager.module.is_open) {
-                if (angular.isDefined(SettingsManager.module.last_mandatory_chat) && typeof SettingsManager.module.last_mandatory_chat === 'string') {
-                    that.setMandatoryFocus(SettingsManager.module.last_mandatory_chat);
-                } else if (angular.isDefined(SettingsManager.module.last_mandatory_chat) && typeof SettingsManager.module.last_active_chat === 'number') {
-                    that.setDirectoryChat(SettingsManager.module.last_active_chat, true);
+            if (SettingsManager.global.is_open) {
+                if (angular.isDefined(SettingsManager.global.last_mandatory_chat) && typeof SettingsManager.global.last_mandatory_chat === 'string') {
+                    that.setMandatoryFocus(SettingsManager.global.last_mandatory_chat);
+                } else if (angular.isDefined(SettingsManager.global.last_mandatory_chat) && typeof SettingsManager.global.last_active_chat === 'number') {
+                    that.setDirectoryChat(SettingsManager.global.last_active_chat, true);
                 } else {
                     if (init_tab) {
                         if (document.getElementById(init_tab)) {
@@ -403,23 +347,23 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                         }
                     }
                 }
-            } else if (SettingsManager.module.layout === 3) {
-                if (angular.isUndefinedOrNull(SettingsManager.module.last_active_chat) || angular.isDefined(SettingsManager.module.last_active_chat) && typeof SettingsManager.module.last_active_chat === 'string') {
+            } else if (SettingsManager.global.layout === 3) {
+                if (angular.isUndefinedOrNull(SettingsManager.global.last_active_chat) || angular.isDefined(SettingsManager.global.last_active_chat) && typeof SettingsManager.global.last_active_chat === 'string') {
                     if (ChatStorage.contact.chat.list.length > 0) {
                         that.directory.chat.active = ChatStorage.contact.chat.list[0];
                         that.directory.chat.stored_index = that.directory.chat.index = 0;
                     }
                 }
-                if (angular.isDefined(SettingsManager.module.last_mandatory_chat) && typeof SettingsManager.module.last_mandatory_chat_index === 'string') {
-                    init_tab = SettingsManager.module.last_mandatory_chat + '_link';
+                if (angular.isDefined(SettingsManager.global.last_mandatory_chat) && typeof SettingsManager.global.last_mandatory_chat_index === 'string') {
+                    init_tab = SettingsManager.global.last_mandatory_chat + '_link';
                 } else {
                     init_tab = 'contacts_link';
                 }
                 if (ChatStorage.contact.chat.list.length > 0) {
-                    if (angular.isDefined(SettingsManager.module.last_active_chat) && typeof SettingsManager.module.last_active_chat === 'number') {
-                        that.setDirectoryChat(ettingsManager.module.last_active_chat, SettingsManager.module.is_open);
+                    if (angular.isDefined(SettingsManager.global.last_active_chat) && typeof SettingsManager.global.last_active_chat === 'number') {
+                        that.setDirectoryChat(ettingsManager.module.last_active_chat, SettingsManager.global.is_open);
                     } else {
-                        $scope.setDirectoryChat(0, SettingsManager.module.is_open);
+                        $scope.setDirectoryChat(0, SettingsManager.global.is_open);
                     }
                 }
             } else {
@@ -428,7 +372,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 } else {
                     init_tab = 'contacts_link';
                 }
-                if (init_tab && SettingsManager.module.is_open) {
+                if (init_tab && SettingsManager.global.is_open) {
                     $timeout(function() {
                         if (document.getElementById(init_tab)) {
                             document.getElementById(init_tab).click();
@@ -477,7 +421,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             that.module.state.is_open = false;
             that.module.state.is_closing = false;
         }, 1000);
-        SettingsManager.update('is_open', false);
+        SettingsManager.updateGlobalSetting('is_open', false, true);
     };
 
     this.openChatModule = function() {
@@ -493,8 +437,21 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 that.setModuleLayout();
             });
         }, 1000);
-        SettingsManager.update('is_open', true);
-        that.clearNotificationList();
+        SettingsManager.updateGlobalSetting('is_open', true, true);
+        that.clearBrowserNotificationList();
+    };
+
+
+    this.setModuleLayout = function(value) {
+        if (SettingsManager.global.is_open) {
+            if (SettingsManager.global.layout === 1 || angular.isUndefined(SettingsManager.global.layout)) {
+
+            } else if (SettingsManager.global.layout === 2) {
+
+            } else if (SettingsManager.global.layout === 3) {
+
+            }
+        }
     };
 
     this.openOverFlowContactChat = function(index, max_count_index) {
@@ -511,7 +468,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     };
     this.setNewChatMessageAlert = function(type, session_key, internal, message) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (SettingsManager.module.is_external_window && !SettingsManager.module.is_external_window_instance) {
+            if (SettingsManager.global.is_external_window && !CoreConfig.module.setting.is_external_window_instance) {
                 return false;
             }
             var el = ChatManager.isChatScrollAtBottom(type, session_key);
@@ -530,32 +487,32 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                     }
                 }
             } else {
-                if (!SettingsManager.module.is_external_window) {
+                if (!SettingsManager.global.is_external_window) {
                     if (ChatStorage[type].chat.list[session_key].attr.is_sound === true) {
                         NotificationManager.playSound('new_chat'); //  this condition should only sound when we are engaged in a chat , and prevents sounds on page reloads
                     }
-                    if (!SettingsManager.module.is_window_visible) {
-                        if (SettingsManager.module.show_external_notifications && message) {
+                    if (!SettingsManager.global.is_window_visible) {
+                        if (SettingsManager.global.show_external_notifications && message) {
                             that.sendChatMessageAsBrowserNotification(type, session, message, null);
                         }
-                        that.module.attr.total_unread_messages++;
-                        document.title = that.module.setting.default_page_title + ' - ' + that.module.attr.total_unread_messages + ' New';
+                        that.module.window.attr.unread++;
+                        document.title = that.module.window.setting.default_window_title + ' - ' + that.module.window.attr.unread + ' New';
 
                     }
-                    if (SettingsManager.module.layout !== 2) {
-                        if (SettingsManager.module.is_open === false) {
+                    if (SettingsManager.global.layout !== 2) {
+                        if (SettingsManager.global.is_open === false) {
                             that.module.state.alert_to_open = true;
                         }
 
                         if (that.module.current.session_key != session_key) {
                             ChatStorage[type].chat.list[session_key].ux.unread++;
                             ChatStorage[type].chat.list[session_key].attr.is_new_message = true;
-                            that.module.atrr.last_unread_chat = session_key;
+                            that.module.attr.last_unread_chat = session_key;
                         }
                         if (that.module.priority.queue.indexOf(index) === -1) {
                             that.module.priority.queue.unshift(index);
                         }
-                    } else if (SettingsManager.module.layout === 2) {
+                    } else if (SettingsManager.global.layout === 2) {
                         if (ChatStorage[type].chat.list[session_key].order >= that.module.current.contact.chat.setting.start_overlow_count || ChatStorage[type].chat.list[session_key].attr.is_open === false || ChatStorage[type].chat.list[session_key].attr.is_text_focus === false) {
                             ChatStorage[type].chat.list[session_key].ux.unread++;
                             if (ChatStorage[type].chat.list[session_key].attr.is_open === false) {
@@ -567,24 +524,24 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                             if (that.module.priority.queue.indexOf(index) === -1) {
                                 that.module.priority.queue.unshift(index);
                             }
-                            that.module.atrr.last_unread_chat = session_key;
+                            that.module.attr.last_unread_chat = session_key;
                         }
                     }
-                } else if (SettingsManager.module.is_external_window && SettingsManager.module.is_external_window_instance) {
+                } else if (SettingsManager.global.is_external_window && CoreConfig.module.setting.is_external_window_instance) {
                     if (ChatStorage[type].chat.list[session_key].attr.is_sound === true) {
                         NotificationManager.playSound('new_chat'); //  this condition should only sound when we are engaged in a chat , and prevents sounds on page reloads
                     }
-                    if (SettingsManager.module.show_external_notifications && message) {
+                    if (SettingsManager.global.show_external_notifications && message) {
                         that.sendChatMessageAsBrowserNotification(type, session, message, null);
                     }
-                    if (SettingsManager.module.layout !== 2) {
-                        if (SettingsManager.module.is_open === false) {
+                    if (SettingsManager.global.layout !== 2) {
+                        if (SettingsManager.global.is_open === false) {
                             that.module.state.alert_to_open = true;
                         }
                         if (that.module.current.session_key != session_key) {
                             ChatStorage[type].chat.list[session_key].ux.unread++;
                             ChatStorage[type].chat.list[session_key].attr.is_new_message = true;
-                            that.module.atrr.last_unread_chat = session_key;
+                            that.module.attr.last_unread_chat = session_key;
                         }
                         if (that.module.priority.queue.indexOf(index) === -1) {
                             that.module.priority.queue.unshift(index);
@@ -597,6 +554,30 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                     }
                 }
 
+                return;
+            }
+        }
+    };
+    this.setNextContactChatIntoFocus = function(session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (ChatStorage.contact.chat.list[session_key]) {
+                var next_session_index;
+                var next_session_key;
+                ChatManager.resetCommonFocusSettings('contact', session_key);
+                if (that.module.priority.queue.length > 0) {
+                    next_session_key = that.module.priority.queue.pop();
+                    $log.debug('next_session_key from priority is ' + next_session_key);
+                } else {
+                    var contact_chat_count = Object.size(ChatStorage.contact.chat.list);
+                    var current_chat_order = ChatStorage.contact.chat.order_map[ChatStorage.contact.chat.list[session_key].order];
+                    next_session_order = current_chat_order + 1;
+                    if (next_session_order > contact_chat_count - 1) {
+                        next_session_order = 0;
+                    }
+                    next_session_key = ChatStorage.contact.chat.order_map[next_session_order];
+                }
+                $log.debug('next_session_key  is ' + next_session_key);
+                that.setChatAsCurrent('contact', next_session_key);
                 return;
             }
         }
@@ -621,7 +602,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 that.module.current.directory.chat.session_key = session_key;
                 that.module.current.directory.chat.stored_session_key = session_key;
                 ChatStorage.directory.chat.list[session_key].attr.is_active = true;
-                SettingsManager.update('last_panel_tab', session_key, true);
+                SettingsManager.updateGlobalSetting('last_panel_tab', session_key, true);
             }
             if (type === 'contact') {
                 if (that.module.current.contact.chat.session_key) {
@@ -630,7 +611,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 that.module.current.contact.chat.session_key = session_key;
                 that.module.current.contact.chat.stored_session_key = session_key;
                 ChatStorage[type].chat.list[session_key].attr.is_active = true;
-                SettingsManager.update('last_contact_chat', session_key, true);
+                SettingsManager.updateGlobalSetting('last_contact_chat', session_key, true);
             }
             ChatManager.resetCommonDefaultSettings(type, session_key);
             $timeout(function() {
@@ -642,7 +623,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
 
     this.setPanelContactListIntoFocus = function() {
         that.resetDirectoryChatListFocusSettings();
-        if (SettingsManager.module.layout != 2) {
+        if (SettingsManager.global.layout != 2) {
             if (that.module.current.contact.chat.session_key) {
                 ChatManager.resetCommonFocusSettings('contact', that.module.current.contact.chat.session_key);
             }
@@ -651,7 +632,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         that.module.current.directory.chat.session_key = undefined;
         that.module.current.contact.chat.session_key = undefined;
 
-        SettingsManager.update('last_panel_tab', 'contacts', true);
+        SettingsManager.updateGlobalSetting('last_panel_tab', 'contacts', true);
 
         $timeout(function() {
             that.module.contacts.is_text_focus = true;
@@ -677,11 +658,11 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         }
         var notification = new Notification(title, {
             tag: message.session_key,
-            icon: '/components/com_callcenter/images/avatars/' + ContactsManager.contacts.profiles['user_' + message.author].avatar + '-90.jpg',
+            icon: '/components/com_callcenter/images/avatars/' + ContactsManager.contacts.profiles[CoreConfig.common.reference.user_prefix + message.author].avatar + '-90.jpg',
             body: message.text
         });
         notification.onclick = function() {
-            if (SettingsManager.module.is_window_visible) {
+            if (SettingsManager.global.is_window_visible) {
                 self.focus();
                 that.setChatAsCurrent(type, session_key);
                 if (that.module.tab.map[session_key]) {
@@ -689,19 +670,19 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 } else {
                     that.setPanelTab(that.module.tab.map.contact);
                 }
-                if (!SettingsManager.module.is_open) {
+                if (!SettingsManager.global.is_open) {
                     that.openChatModule();
                 }
             }
         };
-        that.module.notifications.list.push(notification);
+        that.module.browser.notifications.list.push(notification);
     };
 
-    this.clearNotificationList = function() {
-        angular.forEach(that.module.notifications.list, function(notification) {
+    this.clearBrowserNotificationList = function() {
+        angular.forEach(this.module.browser.notification.list, function(notification) {
             notification.close();
         });
-        that.module.notifications.list = [];
+        that.module.browser.notification.list = [];
     };
 
     this.sendUserBrowserNotification = function(title, tag, icon, body) {
@@ -738,7 +719,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
 
     this.setNextPanelTab = function() {
         var next_tab = that.module.tab.current.order + 1;
-        if (Object.size(ChatStorage.contact.chat.list) > 0 && SettingsManager.module.layout === 1) {
+        if (Object.size(ChatStorage.contact.chat.list) > 0 && SettingsManager.global.layout === 1) {
             if (next_tab >= that.module.tab.list.length - 1) {
                 next_tab = 0;
             }
@@ -884,8 +865,8 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         } else if (scope.activeChats.length > 0) {
             scope.setDirectoryChat(0, false);
         }
-        if (SettingsManager.module.layout != 2 && !(Object.size(ChatStorage[contact].chat.list))) {
-            if (SettingsManager.module.layout == 3) {
+        if (SettingsManager.global.layout != 2 && !(Object.size(ChatStorage[contact].chat.list))) {
+            if (SettingsManager.global.layout == 3) {
                 $rootScope.$broadcast('set-module-layout', 1);
             }
             $timeout(function() {
@@ -924,7 +905,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     };
 
     this.showInGeneralPanelContactList = function(user) { // this function will determine the client has filtered the user out of the general directory user list
-        if (angular.isDefined(UserManager.user.group) && UserManager.user.group.indexOf('user_' + user.user_id) > -1) {
+        if (angular.isDefined(UserManager.user.group) && UserManager.user.group.indexOf(CoreConfig.common.reference.user_prefix + user.user_id) > -1) {
             /*          console.log(user.name + 'is in user_group' + angular.toJson(UserManager.user_group)); */
             return false;
         }
@@ -951,6 +932,58 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         /*      console.log(session + ' : ' + $scope.last_deactivated_chat); */
         /*      console.log(session === $scope.last_deactivated_chat); */
         return session_key === that.module.attr.last_removed_chat;
+    };
+
+    this.openChatModuleInExternalWindow = function() {
+        $scope.switchLayout(1);
+        if (UserManager._user_settings_location) {
+            UserManager._user_settings_location.update({
+                'is-external-window': false
+            });
+        }
+        $timeout(function() {
+            that.module.asset.external_window_instance = window.open(CoreConfig.url.external, "PlusOnePortalChat", "left=1600,resizable=false, scrollbars=no, status=no, location=no,top=0");
+            if (that.module.asset.external_window_instance) {
+                // that.module.asset.external_window_instance.resizeTo(350, window.innerHeight + 50);
+                $timeout(function() {
+                    $rootScope.$evalAsync(function() {
+                        that.module.attr.is_external_window = true;
+                        that.module.attr.isExternalWindow = true;
+                        that.module.asset.external_window_instance.focus();
+                        NotificationManager.mute();
+
+
+                        /*                  UtilityManager.setFirebaseOffline(); */
+
+                        that.module.asset.external_window_listener = $(that.module.asset.external_window_instance).bind("beforeunload", function() {
+                            SettingsManager.updateGlobalSetting('is_external_window', false, true);
+                        });
+
+                        that.module.asset.external_window_listener = $scope.$watch('externalWindowObject.closed', function(newValue) {
+                            if (newValue) {
+                                UserManager._user_settings_location.update({
+                                    'is-external-window': false
+                                });
+                                localStorageService.remove('is_external_window');
+                                $scope.isExternalWindow = false;
+                            }
+                        });
+                        that.module.asset.external_window_instance.addEventListener('DOMContentLoaded', resizeExternalWindowInstance, true);
+
+                        function resizeExternalWindowInstance() {
+                            /*                              console.log('calling resize child'); */
+                            $timeout(function() {
+                                that.module.asset.external_window_instance.document.documentElement.style.overflow = 'hidden'; // firefox, chrome
+                                that.module.asset.external_window_instance.document.body.scroll = "no"; // ie only
+
+                                localStorageService.add('isExternalWindow', true);
+                            }, 2000);
+                        }
+                    });
+                }, 1000);
+            }
+            return false;
+        }, 750);
     };
     return this;
 

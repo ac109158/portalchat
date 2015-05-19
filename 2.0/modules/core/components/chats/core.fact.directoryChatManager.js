@@ -14,7 +14,7 @@ service('DirectoryChatManager', ['$log', '$timeout', 'CoreConfig', 'UserManager'
         that._directory_chat_reference = chat_reference + '/';
     };
     this.setUrlRootReference = function() {
-        that._url_root = CoreConfig.fb_url + that._parent_category_reference + that._directory_chat_reference.split('_')[0] + '/' + that._directory_chat_reference; // combine with global url variable
+        that._url_root = CoreConfig.url.firebase_database + that._parent_category_reference + that._directory_chat_reference.split('_')[0] + '/' + that._directory_chat_reference; // combine with global url variable
     };
     this.setIsTypingLoction = function() {
         that._is_typing_location = that._url_root + ChatService._is_typing_reference;
@@ -71,7 +71,7 @@ service('DirectoryChatManager', ['$log', '$timeout', 'CoreConfig', 'UserManager'
                         User.profile_location = UserManager.__setProfileOnlineLocationforUser(val);
                         User.session_location = ChatManager.__setSessionLocationforGroupInvitee(newDirectoryChat.session_key, val);
                         newDirectoryChat.user_details[val] = User;
-                        newDirectoryChat.participant_log['user_' + User.user_id] = User.name;
+                        newDirectoryChat.participant_log[CoreConfig.common.reference.user_prefix + User.user_id] = User.name;
                         UtilityManager.removeByAttr(newDirectoryChat.invite_list, 'user_id', val);
                         if (User.user_id != UserManager._user_profile.user_id) {
                             newDirectoryChat.group_count++;

@@ -11,41 +11,50 @@
     <div ng-cloak presence="MOUSE TOUCH KEYBOARD" ng-controller="core.main" ng-init="initUser();">
         <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;">
             <legend>User</legend>
-            <div ng-repeat="(key, value) in user"><label>{{key}}: </label><span ng-bind="value"></span><br></div>
+            <div ng-repeat="(key, value) in module.user"><label>{{key}}: </label><span ng-bind="value"></span><br></div>
         </div>
         <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;">
             <legend>Contacts</legend>
-            <div ng-repeat="(key, value) in contacts"><label>{{key}}: </label><span ng-bind="value"></span><br></div>
+            <div ng-repeat="(key, value) in module.contacts"><label>{{key}}: </label><span ng-bind="value"></span><br></div>
         </div>
-        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;"ng-controller="core.utility">
-            <div class="well well-sm" ng-repeat="(key, value) in utility.engine track by $index">
+        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;" >
+            <div class="well well-sm" ng-repeat="(key, value) in module.engine track by $index">
                 <legend>{{key}}</legend>
                 <label>Online: </label><span ng-bind="value.online || value.onLine"></span>
             </div>
-            Browser Online: <span ng-bind="utility.isBrowserOffline();"></span><br>
-            <span class="btn btn-sm btn-success" ng-click="utility.setFirebaseOnline();">Online</span><br>
-            <span class="btn btn-sm btn-success" ng-click="utility.setFirebaseOffline();">Offline</span>
+            Browser Online: <span ng-bind="ux.fx.isBrowserOffline();"></span><br>
+            <span class="btn btn-sm btn-success" ng-click="ui.fx.setFirebaseOnline();">Online</span><br>
+            <span class="btn btn-sm btn-success" ng-click="ui.fx.setFirebaseOffline();">Offline</span>
         </div>
         <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;">
                 <legend>Settings</legend>
-                <div ng-repeat="(key, value) in settings track by $index">
+                <hr>
+                <label>Globals</label>
+                <div ng-repeat="(key, value) in module.global track by $index">
                     <label>{{key}}</label>: {{value}}
+                </div>
+                <hr>
+                <label>Misc</label>
+                <div ng-repeat="(key, value) in module.setting track by $index">
+                        <label>{{key}}</label>: {{value}}
                 </div>
         </div>
 
-        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;" ng-controller="core.ui" ng-init="loadUI();">
+        <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;">
                 <legend>UI</legend>
                 <label>Font Size</label>
                 <button class="glyphicon glyphicon-chevron-up" ng-click="ui.fx.increaseFontSize()"></button>
                 <button class="glyphicon glyphicon-chevron-down" ng-click="ui.fx.decreaseFontSize()"></button>
                 <br>
-                <label>Open {{settings.is_open}}</label>
-                <button class="btn btn-sm" ng-class="{'btn-default': !settings.is_open, 'btn-success': settings.is_open}" ng-click="ui.fx.openChatModule()">Open</button>
-                <button class="btn btn-sm" ng-class="{'btn-default': settings.is_open, 'btn-danger': !settings.is_open}" ng-click="ui.fx.closeChatModule()">Close</button>
+                <label>Open</label>
+                <button class="btn btn-sm" ng-class="{'btn-default': !module.global.is_open, 'btn-success': module.global.is_open}" ng-click="ui.fx.openChatModule()">Open</button>
+                <button class="btn btn-sm" ng-class="{'btn-default': module.global.is_open, 'btn-danger': !module.global.is_open}" ng-click="ui.fx.closeChatModule()">Close</button>
                 <br>
-                {{utility}}
-                <div ng-controller="core.utility" >
-                    <label>Ping Host: </label><div class="btn btn-default" ng-click="utility.pingHost();" >Ping</div>
+                <div>
+                    <label>Ping Host: </label><div class="btn btn-default" ng-click="ui.fx.pingHost();" >Ping</div>
+                </div>
+                <div>
+                    <label>Sound: </label><div class="btn btn-default" ng-click="ui.fx.playSound();" >Play Sound</div>
                 </div>
         </div>
 
@@ -145,10 +154,9 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
         './modules/core/components/user/core.fact.userManager.js',
 
         './modules/core/components/utility/core.fact.utility.js',
-        './modules/core/components/utility/core.ctrl.utility.js',
 
         './modules/core/components/ui/core.fact.uiManager.js',
-        './modules/core/components/ui/core.ctrl.ui.js',
+        './modules/core/components/ui/core.fact.uxManager.js',
 
         './vendor/howler.min.js',
         './vendor/sjcl.js'
