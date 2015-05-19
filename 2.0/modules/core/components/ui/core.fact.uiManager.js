@@ -42,6 +42,10 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         UtilityManager.pingHost();
     };
 
+    this.ui.fx.log = function(){
+        $rootScope.$broadcast('assign-task', {id:'log', param: 'Test'});
+    };
+
 
 
     this.ui.fx.updateSoundLevel = function(level) {

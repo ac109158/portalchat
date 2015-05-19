@@ -23,13 +23,15 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
             console.log($scope);
         };
 
-        $scope.$on('set-module-layout', function(event, value) {
-            if (value) {
-                UiManager.setModuleLayout(value);
+        $scope.$on('assign-task', function(event, task){
+            console.log(task);
+            if(task && task.id){
+                CoreManager.assignTask(task);
             }
         });
-        $scope.$on('clear-notifications', function() {
-            UiManager.ui.fx.clearBrowserNotificationList();
+
+        $scope.$on('clear-browser-notifications', function() {
+            CoreManager.clearBrowserNotificationList();
         });
 
         $scope.chat = function(agent) {
@@ -42,8 +44,9 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
             }
         };
 
-        $scope.$on('closeExternalWindow', function(event) {
-            $log.debug('broadcast closeExternalWindow');
+        $scope.$on('close-external-window-instance', function(event) {
+            $log.debug('close-external-window-instance');
+            CoreManager.closeExternalWindowInstance();
             if ($scope.externalWindowObject) {
                 $scope.externalWindowObject.close();
                 $scope.externalWindowObject = null;

@@ -317,21 +317,15 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
             }
         };
 
-        this.getContactAdditionalProfile = function(contact_id, store_object) {
+        this.getContactAdditionalProfile = function(contact_id) {
             that.contacts_additional_profiles_location.child(contact_id).once('value', function(snapshot) {
                 var additional_profile = snapshot.val();
-                if (additional_profile && store_object) {
-                    store_object.additional_profile = additional_profile;
-                    // console.log('The additonal profile that was fetched was V');
-                    // console.log(store_object.additional_profile);
+                if (additional_profile) {
                     if (additional_profile.platform && PermissionsManager.hasSupervisorRights()) {
                         store_object.additional_profile = additional_profile;
-                    } else {
-                        delete additional_profile.platform.id;
-                        store_object.additional_profile = additional_profile;
                     }
-                    // that.getGeolocation(user, store_object.additional_profile);
                 }
+                return additional_profile;
             });
         };
         return this;

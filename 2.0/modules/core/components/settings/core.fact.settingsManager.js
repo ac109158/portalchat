@@ -121,9 +121,11 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
             } else {
                 that.global.is_window_visible = false;
             }
+            $rootScope.$apply();
             that.fb.location.settings.update({
                 'is_window_visible': that.global.is_window_visible
             });
+            console.log(that.global.is_window_visible);
         }
     };
 
@@ -145,7 +147,7 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
 
     this.setFirebaseSettings = function() {
         that.fb.location.settings.once('value', function(snapshot) {
-            angular.forEach(snapshot.val(), function(value, key){
+            angular.forEach(snapshot.val(), function(value, key) {
                 console.log(key, ":", value);
                 that.global[key] = value;
             });
@@ -177,7 +179,7 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
                 }
             } else {
                 that.global.is_external_window = false;
-                $rootScope.$broadcast('close-external-window');
+                $rootScope.$broadcast('core-task-assignment', {id:'close-external-window-instance', param:null});
                 $rootScope.$broadcast('setting-change', {
                     is_external_window: false
                 });
@@ -240,15 +242,15 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
     };
     this.increasePanelVerticalAdjustment = function() {
         that.ui.state.is_vertical_increase = true;
-        if(that.interval.vertical_adjust){
+        if (that.interval.vertical_adjust) {
             $interval.cancel(that.interval.vertical_adjust);
         }
         that.interval.vertical_adjust = $interval(function() {
             console.log('increase vertical_adjust');
             if (that.ui.state.is_vertical_increase === true && that.global.panel_vertical_adjust < CoreConfig.max.panel_vertical_adjust) {
-                that.global.panel_vertical_adjust+=4;
+                that.global.panel_vertical_adjust += 4;
             }
-            if (that.global.panel_vertical_adjust  >= CoreConfig.max.panel_vertical_adjust) {
+            if (that.global.panel_vertical_adjust >= CoreConfig.max.panel_vertical_adjust) {
                 that.stopVerticalPanelAdjust();
             }
         }, 100);
@@ -256,15 +258,15 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
 
     this.decreasePanelVerticalAdjustment = function() {
         that.ui.state.is_vertical_decrease = true;
-        if(that.interval.vertical_adjust){
+        if (that.interval.vertical_adjust) {
             $interval.cancel(that.interval.vertical_adjust);
         }
         that.interval.vertical_adjust = $interval(function() {
             console.log('decrease vertical_adjust');
             if (that.ui.state.is_vertical_decrease === true && that.global.panel_vertical_adjust > -(CoreConfig.max.panel_vertical_adjust)) {
-                that.global.panel_vertical_adjust-=4;
+                that.global.panel_vertical_adjust -= 4;
             }
-            if (that.global.panel_vertical_adjust  <= -(CoreConfig.max.panel_vertical_adjust)) {
+            if (that.global.panel_vertical_adjust <= -(CoreConfig.max.panel_vertical_adjust)) {
                 that.stopVerticalPanelAdjust();
             }
         }, 100);

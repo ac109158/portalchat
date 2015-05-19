@@ -494,6 +494,25 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             }, 500);
         }
     };
+    this.setChatContactAdditonalProfile = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            ChatStorage[type].chat.list[session_key].contact.additional_profile = ContactsManager.getContactAdditionalProfile(ChatStorage[type].chat.list[session_key].contact.id);
+        }
+    };
+    this.viewChatContactProfile = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (!ChatStorage[type].chat.list[session_key].contact.additional_profile) {
+                ChatStorage[type].chat.list[session_key].contact.additional_profile = ContactsManager.getContactAdditionalProfile(ChatStorage[type].chat.list[session_key].contact.id);
+                $timeout(function() {
+                    ChatStorage[type].chat.list[session_key].menu.options = false;
+                    ChatStorage[type].chat.list[session_key].menu.profile = true;
+                }, 1000);
+            } else {
+                ChatStorage[type].chat.list[session_key].menu.options = false;
+                ChatStorage[type].chat.list[session_key].menu.profile = true;
+            }
+        }
+    };
 
     this.sendChatMessage = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {

@@ -32,13 +32,13 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.state.allow_chat_request = true;
     this.module.state.allow_chat_request = true;
 
-    this.module.contacts = {};
-    this.module.contacts.search = {};
-    this.module.contacts.search_text = '';
-    this.module.contacts.filtered = [];
-    this.module.contacts.is_text_focus = false;
-    this.module.contacts.setting = {};
-    this.module.contacts.setting.show_offline = false;
+    this.module.contact_list = {};
+    this.module.contact_list.search = {};
+    this.module.contact_list.search_text = '';
+    this.module.contact_list.filtered = [];
+    this.module.contact_list.is_text_focus = false;
+    this.module.contact_list.setting = {};
+    this.module.contact_list.setting.show_offline = false;
 
     that.module.session = {};
     that.module.session.id = '';
@@ -287,6 +287,60 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 }
             }
         });
+    };
+    this.openChatModuleInExternalWindow = function() {
+        $scope.switchLayout(1);
+        if (UserManager._user_settings_location) {
+            UserManager._user_settings_location.update({
+                'is-external-window': false
+            });
+        }
+        $timeout(function() {
+            that.module.asset.external_window_instance = window.open(CoreConfig.url.external, "PlusOnePortalChat", "left=1600,resizable=false, scrollbars=no, status=no, location=no,top=0");
+            if (that.module.asset.external_window_instance) {
+                // that.module.asset.external_window_instance.resizeTo(350, window.innerHeight + 50);
+                $timeout(function() {
+                    $rootScope.$evalAsync(function() {
+                        that.module.attr.is_external_window = true;
+                        that.module.attr.isExternalWindow = true;
+                        that.module.asset.external_window_instance.focus();
+                        NotificationManager.mute();
+
+
+                        /*                  UtilityManager.setFirebaseOffline(); */
+
+                        that.module.asset.external_window_listener = $(that.module.asset.external_window_instance).bind("beforeunload", function() {
+                            SettingsManager.updateGlobalSetting('is_external_window', false, true);
+                        });
+
+                        that.module.asset.external_window_listener = $scope.$watch('externalWindowObject.closed', function(newValue) {
+                            if (newValue) {
+                                UserManager._user_settings_location.update({
+                                    'is-external-window': false
+                                });
+                                localStorageService.remove('is_external_window');
+                                $scope.isExternalWindow = false;
+                            }
+                        });
+                        that.module.asset.external_window_instance.addEventListener('DOMContentLoaded', resizeExternalWindowInstance, true);
+
+                        function resizeExternalWindowInstance() {
+                            /*                              console.log('calling resize child'); */
+                            $timeout(function() {
+                                that.module.asset.external_window_instance.document.documentElement.style.overflow = 'hidden'; // firefox, chrome
+                                that.module.asset.external_window_instance.document.body.scroll = "no"; // ie only
+
+                                localStorageService.add('isExternalWindow', true);
+                            }, 2000);
+                        }
+                    });
+                }, 1000);
+            }
+            return false;
+        }, 750);
+    };
+    this.closeExternalWindowInstance = function(){
+
     };
 
     this.externalWindowChange = function(status) {
@@ -904,12 +958,12 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         }
     };
 
-    this.showInGeneralPanelContactList = function(user) { // this function will determine the client has filtered the user out of the general directory user list
-        if (angular.isDefined(UserManager.user.group) && UserManager.user.group.indexOf(CoreConfig.common.reference.user_prefix + user.user_id) > -1) {
+    this.showInGeneralPanelContactList = function(contact) { // this function will determine the client has filtered the user out of the general directory user list
+        if (angular.isDefined(UserManager.user.group) && UserManager.user.group.indexOf(CoreConfig.common.reference.user_prefix + contact.user_id) > -1) {
             /*          console.log(user.name + 'is in user_group' + angular.toJson(UserManager.user_group)); */
             return false;
         }
-        if (user.user_id === ContactsManager.smod.id || user.user_id === ContactsManager.tod.id) {
+        if (contact.user_id === ContactsManager.smod.id || contact.user_id === ContactsManager.tod.id) {
             return false;
         }
         if (!that.module.contacts.setting.show_offline) {
@@ -934,57 +988,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         return session_key === that.module.attr.last_removed_chat;
     };
 
-    this.openChatModuleInExternalWindow = function() {
-        $scope.switchLayout(1);
-        if (UserManager._user_settings_location) {
-            UserManager._user_settings_location.update({
-                'is-external-window': false
-            });
-        }
-        $timeout(function() {
-            that.module.asset.external_window_instance = window.open(CoreConfig.url.external, "PlusOnePortalChat", "left=1600,resizable=false, scrollbars=no, status=no, location=no,top=0");
-            if (that.module.asset.external_window_instance) {
-                // that.module.asset.external_window_instance.resizeTo(350, window.innerHeight + 50);
-                $timeout(function() {
-                    $rootScope.$evalAsync(function() {
-                        that.module.attr.is_external_window = true;
-                        that.module.attr.isExternalWindow = true;
-                        that.module.asset.external_window_instance.focus();
-                        NotificationManager.mute();
 
-
-                        /*                  UtilityManager.setFirebaseOffline(); */
-
-                        that.module.asset.external_window_listener = $(that.module.asset.external_window_instance).bind("beforeunload", function() {
-                            SettingsManager.updateGlobalSetting('is_external_window', false, true);
-                        });
-
-                        that.module.asset.external_window_listener = $scope.$watch('externalWindowObject.closed', function(newValue) {
-                            if (newValue) {
-                                UserManager._user_settings_location.update({
-                                    'is-external-window': false
-                                });
-                                localStorageService.remove('is_external_window');
-                                $scope.isExternalWindow = false;
-                            }
-                        });
-                        that.module.asset.external_window_instance.addEventListener('DOMContentLoaded', resizeExternalWindowInstance, true);
-
-                        function resizeExternalWindowInstance() {
-                            /*                              console.log('calling resize child'); */
-                            $timeout(function() {
-                                that.module.asset.external_window_instance.document.documentElement.style.overflow = 'hidden'; // firefox, chrome
-                                that.module.asset.external_window_instance.document.body.scroll = "no"; // ie only
-
-                                localStorageService.add('isExternalWindow', true);
-                            }, 2000);
-                        }
-                    });
-                }, 1000);
-            }
-            return false;
-        }, 750);
-    };
     return this;
 
 }]);

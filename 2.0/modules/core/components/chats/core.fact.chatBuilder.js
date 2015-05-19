@@ -17,8 +17,8 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         }, 1000);
     };
 
-    this.setDefaultChatSettings = function(chat) {
-
+    this.getDefaultChatTemplate = function() {
+        var chat = {};
         chat.session_key = '';
         chat.order = '';
 
@@ -159,129 +159,159 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         chat.contact.first_name = '';
         chat.contact.avatar = '';
         chat.contact.id = false;
+        chat.contact.additional_profile = null;
 
         chat.interval = {};
         chat.interval.invite_menu_close = undefined;
         chat.interval.is_user_typing = undefined;
 
-        return;
+        return chat;
     };
 
+    // that.retrieveSessionKey = function(contact_id) {
+    //     if (scope.active_sessions['user_' + to_user.user_id] == true) {
+    //         console.log('retrieveSessionKey : ');
+    //         return false;
+    //     }
+    //     var to_user_session_key;
+    //     chatSession.to_user_session_location = new Firebase(ChatService._url_root + to_user.user_id + '/' + ChatService._active_session_reference + ChatService._sub_category_reference + 'session_key/');
+    //     chatSession.to_user_session_location.on('value', function(snapshot) {
+    //         if (angular.isDefined(snapshot.val())) {
+    //             ChatService.updateSessionStatus(scope, snapshot, chatSession.to_user_session_location, chatSession.index_position, chatSession.isGroupChat);
+    //         }
+    //     });
+    //     if (angular.isUndefined(to_user.session_key) || to_user.session_key === null) {
+    //         chatSession.to_user_session_location.once('value', function(snapshot) {
+    //             if (snapshot.val() === null) {
+    //                 var user_id = UserService._user_profile.user_id;
+    //                 var firekey = ChatService._group_active_session_location.push({
+    //                     admin: UserService._user_profile.user_id,
+    //                     topic: false
+    //                 });
+    //                 ChatService._new_session_key = firekey.name();
+    //                 scope.new_session_key = firekey.name();
+    //             } else {
+    //                 scope.new_session_key = snapshot.val();
+    //             }
+    //         });
+    //     } else {
+    //         chatSession.session_key = to_user.session_key;
+    //     }
+    // };
 
-    this.buildChatSession = function(session, set_focus) // this function builds out the details of an individual chat sesssion
+
+    this.buildChatForSession = function(session, set_focus) { // this function builds out the details of an individual chat sesssion
+        if (angular.isUndefined(session)) {
+            ///////////////////////////////////////////////////////////
+            $log.debug('that.__buildChatSession failed. Undefined session');
+            ////////////////////////////////////////////////////////////
+            return false;
+        }
+        var template = that.getDefaultChatTemplate();
+
+
+        that.__retrieveSessionKey(session); // establish a unique session key for this chat
+
+        if (angular.isDefined(session.contact.time)) {
+            template.ux.time_reference = session.contact.time;
+        } else {
+            var d = new Date();
+            chat_session.time = d.getTime();
+            $log.debug('Creating new time stamp:  ' + chat_session.time);
+        }
+        if (angular.isDefined(session.contact.admin)) {
+            $log.debug('Setting session admin. Should be an user_id ' + session.contact.admin);
+            chat_session.admin = session.contact.admin;
+        } else {
+            $log.debug('Setting session admin as self:  ' + UserManager.user.id);
+            chat_session.admin = UserManager.user.id;
+        }
+        if (angular.isDefined(session.is_open)) // this flag controls whether the chatbox should be open when it is created. Useful to close page reloads chat_sessions so the messages can gracefully load
         {
-            if (angular.isUndefined(session)) {
-                ///////////////////////////////////////////////////////////
-                $log.debug('that.__buildChatSession failed. Undefined session');
-                ////////////////////////////////////////////////////////////
-                return false;
-            }
-            var chat_session = {};
-
-
-            that.__setDefaultSettings(chat_session);
-            that.__retrieveSessionKey(chat_session, session.contact); // establish a unique session key for this chat
-            if (angular.isDefined(session.contact.time)) {
-                $log.debug('Setting session time. ' + session.contact.time);
-                chat_session.time = session.contact.time;
-            } else {
-                var d = new Date();
-                chat_session.time = d.getTime();
-                $log.debug('Creating new time stamp:  ' + chat_session.time);
-            }
-            if (angular.isDefined(session.contact.admin)) {
-                $log.debug('Setting session admin. Should be an user_id ' + session.contact.admin);
-                chat_session.admin = session.contact.admin;
-            } else {
-                $log.debug('Setting session admin as self:  ' + UserManager.user.id);
-                chat_session.admin = UserManager.user.id;
-            }
-            if (angular.isDefined(session.is_open)) // this flag controls whether the chatbox should be open when it is created. Useful to close page reloads chat_sessions so the messages can gracefully load
-            {
-                chat_session.isopen = session.is_open;
-            }
-            if (angular.isDefined(session.contact.resize_adjust)) // this flag loads any  previous resize adjustments
-            {
-                chat_session.resize_adjustment = session.contact.resize_adjust;
-            }
-            if (angular.isDefined(session.contact.name)) {
-                chat_session.contact_name = session.contact.name; // used at the top of the chat box
-                var name_split = session.contact.name.match(/\S+/g); // splits the contacts first and last name
-                chat_session.contact_f_name = name_split[0]; // used to display only  the contacts first_name next to the chat message
-            }
-            if (angular.isDefined(session.is_focus)) {
-                chat_session.is_text_focus = session.is_focus; // used at the top of the chat box
-            } else {
-                chat_session.is_text_focus = false;
-            }
-            if (angular.isDefined(session['groupChat'])) { // jshint ignore:line
-                chat_session.is_group_chat = session['groupChat']; // jshint ignore:line
-            }
-            if (angular.isDefined(session.contact.is_sound) && session.contact.is_sound !== null) {
-                chat_session.is_sound = session.contact.is_sound;
-            }
-            if (angular.isDefined(session.contact.tag)) {
-                chat_session.tag = session.contact.tag;
-            }
-            if (angular.isDefined(session.contact.index_position)) {
-                chat_session.index_position = session.contact.index_position;
-            }
-            chat_session.fb.location.session = that.__setActiveSessionLocation(session.contact.user_id, false); // used to see if the chat is turned into a group chat by some adding someone
-            chat_session.fb.target.topic = $firebaseObject(chat_session.fb.location.session.child('topic'));
-            // define to user info and firebase  connections
-            chat_session.user_log[session.contact.user_id] = {
-                avatar: session.contact.avatar,
-                name: session.contact.name,
-                user_id: session.contact.user_id
-            };
-            chat_session.contact_role = session.contact.role;
-            chat_session.contact_id = session.contact.user_id;
-            chat_session.contact_avatar = session.contact.avatar;
-            that.__setToUserChatPresenceLocation(chat_session, session); // also sets the contact info, so must be called firest // fetches the contact chat state .. active, offline, busy, etc
-            /*      chat_session.contact_chat_presence = that.__setToUserChatPresence(contact); // also sets the contact info, so must be called firest // fetches the contact chat state .. active, offline, busy, etc */
-            chat_session.contact_message_location = that.__returnToUserMessageLocation(); // firebase location of the to user, so we know where to write chat message for this chat session.
-            chat_session.active_typing_contact_location = that.__set_active_typing_contact_location(); // firebase folder that is written true whenever the user is typing
-            chat_session.active_typing_contact_location.update({
-                'is-typing': false
-            });
-            chat_session.active_session_contact_location = that.__set_active_session_contact_location(); // firebase folder that the service writes the to users info into , so the the contact knows that there is a chat going on between them
-            chat_session.contact_online = UserManager.__setProfileOnlineLocationforUser(session.contact.user_id);
-            // define user info and firebse connections
-            chat_session.user_id = UserManager.user.id;
-            chat_session.user_avatar = UserManager._user_profile.avatar;
-            chat_session.user_message_location = that.__returnFromUserMessageLocation(); // firebase location of the from_user/self, so we know where to write chat message for this chat session.
-            chat_session.user_online = UserManager.__setProfileOnlineLocationforUser(UserManager.user.id);
-            chat_session.user_chat_presence = UserManager.__setChatPresenceforUser(UserManager.user.id);
-            chat_session.active_typing_user_location = that.__set_active_typing_user_location(); // this is a fireabse folder location where other users write true under their own uid to let the user know that they are typing
-            chat_session.active_typing_user_location.update({
-                'is-typing': false
-            });
-            chat_session.active_typing_user_location.onDisconnect().remove();
-            chat_session.active_typing_user_socket = that.__set_active_typing_user_socket(); // this is a fireabse folder location where other users write true under their own uid to let the user know that they are typing
-            chat_session.user_log[UserManager.user.id] = {
-                avatar: UserManager._user_profile.avatar,
-                name: UserManager._user_profile.name,
-                user_id: UserManager.user.id
-            };
-            $timeout(function() {
-                if (angular.isUndefined(chat_session.session_key)) {
-                    chat_session.session_key = scope.new_session_key;
-                }
-                chat_session.messageListQuery = that.__returnMessageListQuery(scope, chat_session.time, chat_session.user_message_location, that._contact._user_id, chat_session.is_group_chat, store_length); // this creates a query of the messages pointed at the from_user storage location , messages must be written in both the user and contact chatbox pointer locations
-                // set pointer to user-group, used to remove the session if no one is longer using it
-                var session_root = that._group_url_root + that._group_active_session_reference + chat_session.session_key + '/';
-                chat_session.firebase_location = new Firebase(session_root);
-                if (chat_session.topic_location.$value === null) {
-                    chat_session.firebase_location.update({
-                        'topic': false
-                    });
-                }
-                chat_session.group_user_location = chat_session.firebase_location.child(that._group_active_users_reference);
-                $log.debug('session_key is : ' + chat_session.session_key);
-                that.__pushChatSession(chat_session, session); // pushes the chat session into the scope of the view
-                /*          clearInterval(build_delay); */
-            }, 500);
+            chat_session.isopen = session.is_open;
+        }
+        if (angular.isDefined(session.contact.resize_adjust)) // this flag loads any  previous resize adjustments
+        {
+            chat_session.resize_adjustment = session.contact.resize_adjust;
+        }
+        if (angular.isDefined(session.contact.name)) {
+            chat_session.contact_name = session.contact.name; // used at the top of the chat box
+            var name_split = session.contact.name.match(/\S+/g); // splits the contacts first and last name
+            chat_session.contact_f_name = name_split[0]; // used to display only  the contacts first_name next to the chat message
+        }
+        if (angular.isDefined(session.is_focus)) {
+            chat_session.is_text_focus = session.is_focus; // used at the top of the chat box
+        } else {
+            chat_session.is_text_focus = false;
+        }
+        if (angular.isDefined(session['groupChat'])) { // jshint ignore:line
+            chat_session.is_group_chat = session['groupChat']; // jshint ignore:line
+        }
+        if (angular.isDefined(session.contact.is_sound) && session.contact.is_sound !== null) {
+            chat_session.is_sound = session.contact.is_sound;
+        }
+        if (angular.isDefined(session.contact.tag)) {
+            chat_session.tag = session.contact.tag;
+        }
+        if (angular.isDefined(session.contact.index_position)) {
+            chat_session.index_position = session.contact.index_position;
+        }
+        chat_session.fb.location.session = that.__setActiveSessionLocation(session.contact.user_id, false); // used to see if the chat is turned into a group chat by some adding someone
+        chat_session.fb.target.topic = $firebaseObject(chat_session.fb.location.session.child('topic'));
+        // define to user info and firebase  connections
+        chat_session.user_log[session.contact.user_id] = {
+            avatar: session.contact.avatar,
+            name: session.contact.name,
+            user_id: session.contact.user_id
         };
+        chat_session.contact_role = session.contact.role;
+        chat_session.contact_id = session.contact.user_id;
+        chat_session.contact_avatar = session.contact.avatar;
+        that.__setToUserChatPresenceLocation(chat_session, session); // also sets the contact info, so must be called firest // fetches the contact chat state .. active, offline, busy, etc
+        /*      chat_session.contact_chat_presence = that.__setToUserChatPresence(contact); // also sets the contact info, so must be called firest // fetches the contact chat state .. active, offline, busy, etc */
+        chat_session.contact_message_location = that.__returnToUserMessageLocation(); // firebase location of the to user, so we know where to write chat message for this chat session.
+        chat_session.active_typing_contact_location = that.__set_active_typing_contact_location(); // firebase folder that is written true whenever the user is typing
+        chat_session.active_typing_contact_location.update({
+            'is-typing': false
+        });
+        chat_session.active_session_contact_location = that.__set_active_session_contact_location(); // firebase folder that the service writes the to users info into , so the the contact knows that there is a chat going on between them
+        chat_session.contact_online = UserManager.__setProfileOnlineLocationforUser(session.contact.user_id);
+        // define user info and firebse connections
+        chat_session.user_id = UserManager.user.id;
+        chat_session.user_avatar = UserManager._user_profile.avatar;
+        chat_session.user_message_location = that.__returnFromUserMessageLocation(); // firebase location of the from_user/self, so we know where to write chat message for this chat session.
+        chat_session.user_online = UserManager.__setProfileOnlineLocationforUser(UserManager.user.id);
+        chat_session.user_chat_presence = UserManager.__setChatPresenceforUser(UserManager.user.id);
+        chat_session.active_typing_user_location = that.__set_active_typing_user_location(); // this is a fireabse folder location where other users write true under their own uid to let the user know that they are typing
+        chat_session.active_typing_user_location.update({
+            'is-typing': false
+        });
+        chat_session.active_typing_user_location.onDisconnect().remove();
+        chat_session.active_typing_user_socket = that.__set_active_typing_user_socket(); // this is a fireabse folder location where other users write true under their own uid to let the user know that they are typing
+        chat_session.user_log[UserManager.user.id] = {
+            avatar: UserManager._user_profile.avatar,
+            name: UserManager._user_profile.name,
+            user_id: UserManager.user.id
+        };
+        $timeout(function() {
+            if (angular.isUndefined(chat_session.session_key)) {
+                chat_session.session_key = scope.new_session_key;
+            }
+            chat_session.messageListQuery = that.__returnMessageListQuery(scope, chat_session.time, chat_session.user_message_location, that._contact._user_id, chat_session.is_group_chat, store_length); // this creates a query of the messages pointed at the from_user storage location , messages must be written in both the user and contact chatbox pointer locations
+            // set pointer to user-group, used to remove the session if no one is longer using it
+            var session_root = that._group_url_root + that._group_active_session_reference + chat_session.session_key + '/';
+            chat_session.firebase_location = new Firebase(session_root);
+            if (chat_session.topic_location.$value === null) {
+                chat_session.firebase_location.update({
+                    'topic': false
+                });
+            }
+            chat_session.group_user_location = chat_session.firebase_location.child(that._group_active_users_reference);
+            $log.debug('session_key is : ' + chat_session.session_key);
+            that.__pushChatSession(chat_session, session); // pushes the chat session into the scope of the view
+            /*          clearInterval(build_delay); */
+        }, 500);
+    };
 
     this.buildGroupChatSession = function(value, isopen, isfocus, store_length) // this function builds out the details of an individual chat sesssion
         {

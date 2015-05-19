@@ -14,8 +14,115 @@
             <div ng-repeat="(key, value) in module.user"><label>{{key}}: </label><span ng-bind="value"></span><br></div>
         </div>
         <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;">
-            <legend>Contacts</legend>
-            <div ng-repeat="(key, value) in module.contacts"><label>{{key}}: </label><span ng-bind="value"></span><br></div>
+            <div  class="cm-directory-chat-panel-content" style="height:{{cm_directory_chat_height + vertical_adjust}}px; background:rgba(69,106,151,0.3);">
+    <div class="cm-directory-label" style="top:-5px; padding:0px;">
+        <div class="cm-directory-label-decal one-edge-shadow">
+            <div ng-class="{'cm-directory-label-decal-description': module.platform.browser == 'Firefox','cm-directory-label-decal-description-inset': module.platform.browser != 'Firefox'}" style="font-size:1.5em">Plusone Peeps</div>
+              <div ng-click="toggleFilterMenu()" style="position:absolute; top:12px; right:15px; width:20px; height:20px; padding:2px; margin:0px;" class="btn btn-sm">
+                <center><span class="caret"></span><center>
+              </div>
+              <ul ng-if="showFilterMenu" class="cm-filter-menu pull-right" style="padding:2px;">
+                <li ng-show="directory_show_online_only"><a ng-click="toggleOffline()">Show Offline</a></li>
+                <li ng-show="!directory_show_online_only"><a ng-click="toggleOffline()">Hide Offline</a></li>
+<!--
+                <li role="presentation" class="dropdown-header">Filter By Position:</li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Admin</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">SM / Shift Manager</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">MC / Mentor Coach</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">PC / Peer Coach</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">PlusOne Agent</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">On Shift</a></li>
+
+-->
+              </ul>
+        </div>
+    </div>
+        <div id="chat-module-contacts-display" class="cm-directory-chat-panel-content min-scroll" style="height:{{cm_directory_chat_message_display_height + (vertical_adjust)}}px; overflow-y:auto; overflow-x:hidden;">
+            <div ng-show="directory_search.text.length == 0">
+                <div ng-show="smod">
+                    <div class="cm-directory-label" style="top:-5px;">
+                        <div class="cm-directory-label-decal one-edge-shadow">
+                            <div ng-class="{'cm-directory-label-decal-description': module.platform.browser == 'Firefox','cm-directory-label-decal-description-inset': module.platform.browser != 'Firefox'}">Shift Manger On Duty</div>
+                        </div>
+                    </div>
+                    <div ng-show="smod" ng-click="chat(smod)" class="cm-directory-contact cm-pointer">
+                        <img ng-src="/components/com_callcenter/images/avatars/{{smod.avatar}}-90.jpg" width=20 height=20/><span class="cm-directory-contact-name" ng-bind="smod.name"></span><div class="chat-status {{smod.state + '_Directory_Status'}}"></div>
+                    </div>
+                </div>
+                <div ng-show="tod">
+                    <div class="cm-directory-label">
+                        <div class="cm-directory-label-decal one-edge-shadow">
+                            <div ng-class="{'cm-directory-label-decal-description': module.platform.browser == 'Firefox','cm-directory-label-decal-description-inset': module.platform.browser != 'Firefox'}">Tech Manger On Duty</div>
+                        </div>
+                    </div>
+                    <div ng-show="tod" ng-click="chat(tod)" class="cm-directory-contact cm-pointer">
+                        <img ng-src="/components/com_callcenter/images/avatars/{{tod.avatar}}-90.jpg" width=20 height=20/><span class="cm-directory-contact-name" ng-bind="tod.name"></span><div class="chat-status {{tod.state + '_Directory_Status'}}"></div>
+                    </div>
+                </div>
+                <div ng-if="admin &&  admin.online.$value && user_profile.role == 'Mentor Coach'">
+                    <div class="cm-directory-label">
+                        <div class="cm-directory-label-decal one-edge-shadow">
+                            <div ng-class="{'cm-directory-label-decal-description': module.platform.browser == 'Firefox','cm-directory-label-decal-description-inset': module.platform.browser != 'Firefox'}">Performance Manager</div>
+                        </div>
+                    </div>
+                    <div ng-click="chat(admin)" ng-class="{'cm-directory-contact-online': admin.online.$value == true, 'cm-directory-contact-offline': admin.online.$value != true}">
+                        <img ng-src="/components/com_callcenter/images/avatars/{{admin.avatar}}-90.jpg" width=20 height=20/><span class="cm-directory-contact-name" ng-bind="admin.name"></span><div class="cm-directory-contact-status chat-status {{admin.state.$value + '_Directory_Status'}}"></div>
+                    </div>
+                </div>
+
+                <div ng-if="mc && mc.online.$value">
+                    <div class="cm-directory-label">
+                        <div class="cm-directory-label-decal one-edge-shadow">
+                            <div ng-class="{'cm-directory-label-decal-description': module.platform.browser == 'Firefox','cm-directory-label-decal-description-inset': module.platform.browser != 'Firefox'}">MC - Mentor Coach</div>
+                        </div>
+                    </div>
+                    <div ng-click="chat(mc)" ng-class="{'cm-directory-contact-online': mc.online.$value == true, 'cm-directory-contact-offline': mc.online.$value != true}">
+                        <img ng-src="/components/com_callcenter/images/avatars/{{mc.avatar}}-90.jpg" width=20 height=20/><span class="cm-directory-contact-name" ng-bind="mc.name"></span><div class="cm-directory-contact-status chat-status {{mc.state.$value + '_Directory_Status'}}"></div>
+                    </div>
+                </div>
+
+                <div ng-if="pc && pc.online.$value">
+                    <div class="cm-directory-label">
+                        <div class="cm-directory-label-decal one-edge-shadow">
+                            <div ng-class="{'cm-directory-label-decal-description': module.platform.browser == 'Firefox','cm-directory-label-decal-description-inset': module.platform.browser != 'Firefox'}">PC - Peer Coach</div>
+                        </div>
+                    </div>
+                    <div ng-click="chat(pc)" ng-class="{'cm-directory-contact-online': pc.online.$value == true, 'cm-directory-contact-offline': pc.online.$value != true}">
+                        <img ng-src="/components/com_callcenter/images/avatars/{{pc.avatar}}-90.jpg" width=20 height=20/><span class="cm-directory-contact-name" ng-bind="pc.name"></span><div class="cm-directory-contact-status chat-status {{pc.state.$value + '_Directory_Status'}}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div ng-show="directory_search.text.length == 0" class="cm-directory-label">
+                <div class="cm-directory-label-decal one-edge-shadow">
+                    <div ng-class="{'cm-directory-label-decal-description': module.platform.browser == 'Firefox','cm-directory-label-decal-description-inset': module.platform.browser != 'Firefox'}">Online</div>
+                </div>
+            </div>
+            <div ng-repeat="contact in module.contacts.online | array | orderBy:'name' | filter:module.contact_list.search_text">
+                <div ng-click="chat(contact)" class="cm-directory-contact-online" ng-class="{'cm-directory-active-selection':isCurrentDirectorySelection(contacts.contacts_id)}">
+                    <img ng-src="/components/com_callcenter/images/avatars/{{contact.avatar}}-90.jpg" width=20 height=20/><span class="cm-directory-contact-name" ng-bind="contact.name"></span><div class="cm-directory-contact-status chat-status {{contact.state}}_Directory_Status"></div>
+                </div>
+            </div>
+
+            <div ng-if="directory_search.text.length == 0 && directory_show_online_only == false" class="cm-directory-label">
+                <div class="cm-directory-label-decal one-edge-shadow">
+                    <div ng-class="{'cm-directory-label-decal-description': module.platform.browser == 'Firefox','cm-directory-label-decal-description-inset': module.platform.browser != 'Firefox'}">Offline</div>
+                </div>
+            </div>
+            <div ng-if="!directory_show_online_only" ng-repeat="contacts in offline_contactss_list | array | orderBy:'name' | filter:directory_search.text" ng-class="{'cm-directory-active-selection':isCurrentDirectorySelection(contacts.contacts_id)}">
+                <div ng-show="showInGeneralDirectory(contacts)" ng-click="chat(contacts)" class="cm-directory-contact-offline">
+                    <img ng-src="/components/com_callcenter/images/avatars/{{contacts.avatar}}-90.jpg" width=20 height=20/><span class="cm-directory-contact-name" ng-bind="contacts.name"></span><div class="cm-directory-contact-status chat-status Offline_Directory_Status"></div>
+                </div>
+            </div>
+            </div>
+            <div id="cm-directory-contacts-search" style="position:relative; margin-top:5px;">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
+                    <input ng-click="setModuleLock()" type="text" class="form-control" placeholder="Enter Name..." ng-model="directory_search.text" ng-enter-press="selectDirectorySelection()" focus-me="directory_search.isFocusText" ng-tab-press="setNexTab()">
+                </div>
+            </div>
+            <div class="topic-spacer"></div>
+        </div>
         </div>
         <div class="well well-sm" style="width: 300px; height: 500px; overlow-y:auto; overflow-x:hidden; float:left; clear:none; margin-right: 15px;" >
             <div class="well well-sm" ng-repeat="(key, value) in module.engine track by $index">
@@ -55,6 +162,9 @@
                 </div>
                 <div>
                     <label>Sound: </label><div class="btn btn-default" ng-click="ui.fx.playSound();" >Play Sound</div>
+                </div>
+                <div>
+                    <label>Log: </label><div class="btn btn-default" ng-click="ui.fx.log();" >Log Test</div>
                 </div>
         </div>
 
