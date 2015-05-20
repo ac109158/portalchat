@@ -16,6 +16,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.engine = UtilityManager.engine;
     this.module.platform = BrowserService.platform;
     this.module.global = SettingsManager.global;
+    this.module.chats = ChatStorage;
 
     this.module.asset = {};
     this.module.asset.external_window_instance = undefined;
@@ -66,7 +67,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.config = {};
     this.module.config.directory = {};
     this.module.config.directory.models = ['chat_reference', 'chat_description', 'admin', 'mandatory', 'watch_users', 'store_length'];
-    this.module.config.directory.default_chats = [];
+    this.module.config.directory.default_chats = {};
 
     this.module.setting = CoreConfig.module.setting;
 
@@ -120,7 +121,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.menu.profile = false;
     this.module.menu.presence = false;
     this.module.menu.filter = false;
-    this.module.menu.volume = false;
     this.module.menu.directory_chat_list = false;
     this.module.menu.setting = false;
 
@@ -136,7 +136,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             $rootScope.$broadcast('update-chosen');
         }, 2000);
 
-        // that.setDefaultDirectoryChats();
+        that.setDefaultDirectoryChats();
     };
 
     this.setFirebaseLocations = function() {
@@ -216,47 +216,55 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     };
 
     this.setDefaultDirectoryChatConfiguration = function() {
-        that.module.config.directory.default_chats.push({
-            chat_reference: 'sm_group_chat',
-            chat_description: 'PlusOne - Group Chat',
-            admin: 'smod',
-            mandatory: true,
-            watch_users: false,
-            store_length: 1
-        });
-        that.module.config.directory.default_chats.push({
-            chat_reference: 'sm_tech_chat',
-            chat_description: 'Tech Support - Group Chat',
-            admin: 'tod',
-            mandatory: true,
-            watch_users: false,
-            store_length: 2
-        });
-        if (UserManager.user && UserManager.user.supervisors && UserManager.user.supervisors.mc) {
-            that.module.config.directory.default_chats.push({
-                chat_reference: ('mc_' + UserManager.user.supervisors.mc.user_id + '_group_chat'),
-                chat_description: UserManager.user.supervisors.mc.name + ' - MC Team Chat',
-                admin: UserManager.user.supervisors.mc.user_id,
-                mandatory: false,
+        if (!that.module.state.is_ready) {
+            that.module.config.directory.default_chats['sm_group_chat'] = {
+                chat_reference: 'sm_group_chat',
+                session_key: 'sm_group_chat',
+                chat_description: 'PlusOne - Group Chat',
+                admin: 'smod',
+                mandatory: true,
                 watch_users: false,
-                store_length: 3
-            });
+                store_length: 1,
+                monitor: false
+            };
+            that.module.config.directory.default_chats['sm_tech_chat'] = {
+                chat_reference: 'sm_tech_chat',
+                session_key: 'sm_tech_chat',
+                chat_description: 'Tech Support - Group Chat',
+                admin: 'tod',
+                mandatory: true,
+                watch_users: false,
+                store_length: 2,
+                monitor: false
+            };
+            if (UserManager.user && UserManager.user.supervisors && UserManager.user.supervisors.mc) {
+                that.module.config.directory.default_chats['mc_' + UserManager.user.supervisors.mc.user_id + '_group_chat'] = {
+                    chat_reference: ('mc_' + UserManager.user.supervisors.mc.user_id + '_group_chat'),
+                    session_key: 'mc_' + UserManager.user.supervisors.mc.user_id + '_group_chat',
+                    chat_description: UserManager.user.supervisors.mc.name + ' - MC Team Chat',
+                    admin: UserManager.user.supervisors.mc.user_id,
+                    mandatory: false,
+                    watch_users: false,
+                    store_length: 3,
+                    monitor: false
+                };
+            }
         }
     };
 
     this.setDefaultDirectoryChats = function() {
         that.setDefaultDirectoryChatConfiguration();
-        if (that.module.config.directory.default_chats) {
-            angular.forEach(that.module.config.directory.default_chats, function(config) {
-                if (that.validateDirectoryChatConfiguration(config)) {
-                    var new_dc = DirectoryChatManager.buildNewDirectoryChat(config);
-                    new_dc.index_position = config.chat_reference;
-                    that.setDefaultSettings(new_dc);
-                    ChatStorage.directory.chat.map[config.chat_reference] = ChatStorage.directory.chat.list.length;
-                    ChatStorage.directory.chat.list.push(new_dc);
-                }
-            });
-        }
+        // if (that.module.config.directory.default_chats) {
+        //     angular.forEach(that.module.config.directory.default_chats, function(config) {
+        //         if (that.validateDirectoryChatConfiguration(config)) {
+        //             var new_dc = DirectoryChatManager.buildNewDirectoryChat(config);
+        //             new_dc.index_position = config.chat_reference;
+        //             that.setDefaultSettings(new_dc);
+        //             ChatStorage.directory.chat.map[config.chat_reference] = ChatStorage.directory.chat.list.length;
+        //             ChatStorage.directory.chat.list.push(new_dc);
+        //         }
+        //     });
+        // }
     };
 
 
@@ -461,6 +469,12 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     };
     this.toggleMainPanelMenu = function(menu, value) {
         if (that.module.menu && angular.isDefined(that.module.menu[menu])) {
+            angular.forEach(that.module.menu, function(value, key) {
+                console.log(key, ':', value);
+                if (key != menu) {
+                    that.module.menu[key] = false;
+                }
+            });
             if (angular.isDefined(value)) {
                 that.module.menu[menu] = value;
             } else {

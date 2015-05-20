@@ -28,12 +28,12 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
 
 
     this.setOnlineTracking = function() {
-        if (UserManager.fb.target.presence.$value != 'Offline') {
+        if (UserManager.user.presence != 'Offline') {
             that.fb.location.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
             UserManager.user.timestamp = new Date().getTime();
         }
         that.user_check_in = setInterval(function() {
-            if (UserManager.fb.target.presence && UserManager.fb.target.presence.$value !== 'Offline') {
+            if (UserManager.user.presence !== 'Offline') {
                 that.fb.location.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
                 UserManager.user.timestamp = new Date().getTime();
             }
@@ -41,19 +41,19 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
         that.fb.location.user_check_in.on('value', function(snapshot) {
             if (!snapshot.val()) {
                 $timeout(function() {
-                    if (UserManager.fb.target.presence && UserManager.fb.target.presence.$value != 'Offline') {
+                    if (UserManager.user.presence != 'Offline') {
                         $timeout(function() {
                             that.fb.location.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
                             UserManager.user.timestamp = new Date().getTime();
                         }, 1000);
-                    } else if (UserManager.fb.target.presence && UserManager.fb.target.presence.$value === 'Offline') {
+                    } else if (UserManager.user.presence === 'Offline') {
                         that.fb.location.user_check_in.remove();
                     }
                 });
             }
         });
         that.online_update = $timeout(function() {
-            if (UserManager.fb.target.presence && UserManager.fb.target.presence.$value !== 'Offline') {
+            if (UserManager.user.presence !== 'Offline') {
                 that.updateTimestamp();
             }
         }, 5000);

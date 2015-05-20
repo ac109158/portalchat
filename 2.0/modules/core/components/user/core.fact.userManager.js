@@ -7,12 +7,15 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
 
     this.user = {}; // user domain
     this.user.group = [];
+    this.user.presence = CoreConfig.inital.presence;
+    this.user.online = false;
+    this.user.state = undefined;
 
-    this.profile = {};
-    this.profile.main = {};
-    this.profile.main.presence = {};
-    this.profile.additional = {};
-    this.profile.fb = {};
+    this.user.profile = {};
+    this.user.profile.main = {};
+    this.user.profile.main.presence = {};
+    this.user.profile.additional = {};
+    this.user.profile.fb = {};
 
     this.settings = {};
 
@@ -20,10 +23,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     this.fb = {}; // firebase domain
     this.fb.location = {}; // location of values
     this.fb.target = {}; // specific value in a location .. uses $value
-
-    this.stored = {};
-    this.stored.presence = CoreConfig.inital.presence;
-    this.stored.state = undefined;
 
     this.load = function() {
         var promise = CoreApi.__getUser();
@@ -82,41 +81,41 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
 
     this.setUserProfile = function() {
         if (that.user.id) {
-            that.profile.main.name = that.user.name || false;
-            that.profile.main.user_id = that.user.id || false;
-            that.profile.main.avatar = that.user.avatar || false;
+            that.user.profile.main.name = that.user.name || false;
+            that.user.profile.main.user_id = that.user.id || false;
+            that.user.profile.main.avatar = that.user.avatar || false;
 
-            that.profile.main.presence.message = '';
-            that.profile.main.presence.show_message = false;
-            that.profile.main.presence.auto_post = false;
+            that.user.profile.main.presence.message = '';
+            that.user.profile.main.presence.show_message = false;
+            that.user.profile.main.presence.auto_post = false;
 
-            that.profile.main.position = that.user.position || false;
-            // that.profile.main.ip = sjcl.encrypt(CoreConfig.encrypt_pass, that.user.ip) || false;
-            that.profile.main.ip = that.user.ip || false;
+            that.user.profile.main.position = that.user.position || false;
+            // that.user.profile.main.ip = sjcl.encrypt(CoreConfig.encrypt_pass, that.user.ip) || false;
+            that.user.profile.main.ip = that.user.ip || false;
 
             if (that.user.role) {
-                that.profile.additional.role = that.profile.main.role = that.user.role || false;
+                that.user.profile.additional.role = that.user.profile.main.role = that.user.role || false;
             }
             if (that.user.office === false) {
-                that.getCityState(that.user.ip, that.profile.additional, 2);
+                that.getCityState(that.user.ip, that.user.profile.additional, 2);
             } else {
-                that.getCityState(that.user, that.profile.additional, 3);
+                that.getCityState(that.user, that.user.profile.additional, 3);
             }
-            that.profile.main.email = that.user.email || false;
-            that.profile.main.phone = that.user.phone || false;
-            that.profile.main.pc = angular.copy(that.user.supervisors.pc) || false;
-            that.profile.main.mc = angular.copy(that.user.supervisors.mc) || false;
-            that.profile.main.admin = angular.copy(that.user.supervisors.admin) || false;
+            that.user.profile.main.email = that.user.email || false;
+            that.user.profile.main.phone = that.user.phone || false;
+            that.user.profile.main.pc = angular.copy(that.user.supervisors.pc) || false;
+            that.user.profile.main.mc = angular.copy(that.user.supervisors.mc) || false;
+            that.user.profile.main.admin = angular.copy(that.user.supervisors.admin) || false;
 
-            that.profile.additional.office = that.user.office;
-            that.profile.additional.phone = that.profile.main.phone;
-            that.profile.additional.email = that.profile.main.email;
-            that.profile.additional.pc = that.profile.main.pc;
-            that.profile.additional.mc = that.profile.main.mc;
+            that.user.profile.additional.office = that.user.office;
+            that.user.profile.additional.phone = that.user.profile.main.phone;
+            that.user.profile.additional.email = that.user.profile.main.email;
+            that.user.profile.additional.pc = that.user.profile.main.pc;
+            that.user.profile.additional.mc = that.user.profile.main.mc;
 
-            that.profile.fb.user_id = that.profile.main.user_id;
-            that.profile.fb.avatar = that.profile.main.avatar;
-            that.profile.fb.name = that.profile.main.name;
+            that.user.profile.fb.user_id = that.user.profile.main.user_id;
+            that.user.profile.fb.avatar = that.user.profile.main.avatar;
+            that.user.profile.fb.name = that.user.profile.main.name;
         }
     };
 
@@ -125,7 +124,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         if (that.user.id) {
             that.fb.location.profile = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.profile_reference + that.user.id + '/');
             that.fb.location.additional_profile = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.additional_profile_reference + that.user.id + '/');
-            that.fb.location.settings = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + that.user.id + '/');
+            // that.fb.location.settings = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + that.user.id + '/');
             that.fb.location.online = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.online_reference + that.user.id + '/');
             that.fb.location.state = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.state_reference + that.user.id + '/');
             that.fb.location.presence = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.presence_reference + that.user.id + '/');
@@ -134,8 +133,8 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
 
     this.setUserFirebaseTargets = function() {
         if (that.user.id) {
-            that.fb.target.presence = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.presence_reference + that.user.id + '/chat_presence'));
-            that.fb.target.online = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.online_reference + that.user.id + '/' + CoreConfig.online_reference));
+            // that.fb.target.presence = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.presence_reference + that.user.id + '/chat_presence'));
+            // that.fb.target.online = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.online_reference + that.user.id + '/' + CoreConfig.online_reference));
             return true;
         }
         return false;
@@ -182,18 +181,18 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
             if (!online_value) {
                 return false;
             }
-            if (online_value.online === false && that.fb.target.presence.$value != 'Offline') {
+            if (online_value.online === false && that.user.presence != 'Offline') {
                 /*                              console.log('hey, im still online, yo'); */
                 that.fb.location.online.update({
                     'online': true
                 });
-            } else if (online_value.online === false && that.fb.target.presence.$value === 'Offline') {
+            } else if (online_value.online === false && that.user.presence === 'Offline') {
                 that.fb.location.presence.update({
                     'chat_presence': 'Offline'
                 });
-                that.user_stored_online = false;
+                that.user.online = false;
             } else {
-                that.user_stored_online = true;
+                that.user.online = true;
             }
         });
 
@@ -202,13 +201,13 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     this.manageUserState = function() {
         that.fb.location.state.child('state').on('value', function(snapshot) {
             var user_state = snapshot.val();
-            if (user_state === 'Offline' && that.fb.target.presence && that.fb.target.presence.$value != 'Offline') {
+            if (user_state === 'Offline' && that.fb.target.presence && that.user.presence != 'Offline') {
                 // console.log('hey, im still have  a state, yo');
                 that.fb.location.state.update({
-                    'state': that.stored.state
+                    'state': that.user.state
                 });
             } else {
-                that.stored.state = user_state;
+                that.user.state = user_state;
             }
         });
 
@@ -242,21 +241,21 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         that.fb.location.presence.child('message').once('value', function(snapshot) {
             var message = snapshot.val();
             if (message) {
-                that.profile.main.presence.message = message;
+                that.user.profile.main.presence.message = message;
             }
         });
 
         that.fb.location.presence.child('show_message').once('value', function(snapshot) {
             var bool = snapshot.val();
             if (angular.isDefined(bool)) {
-                that.profile.main.presence.show_message = bool;
+                that.user.profile.main.presence.show_message = bool;
             }
         });
 
         that.fb.location.presence.child('auto_post').once('value', function(snapshot) {
             var bool = snapshot.val();
             if (angular.isDefined(bool)) {
-                that.profile.main.presence.auto_post = bool;
+                that.user.profile.main.presence.auto_post = bool;
             }
         });
 
@@ -271,19 +270,18 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
                     'state': 'Idle'
                 });
             }
-            if (presence === 'Offline' && that.stored.presence != 'Offline') {
+            if (presence === 'Offline' && that.user.presence != 'Offline') {
                 // console.log('Hey, I still have chat presence, you');
                 that.fb.location.presence.update({
-                    'chat_presence': that.stored.presence
+                    'chat_presence': that.user.presence
                 });
-            } else if (presence === 'Offline' && that.stored.presence === 'Offline') {
+            } else if (presence === 'Offline' && that.user.presence === 'Offline') {
                 that.fb.location.online.update({
                     'online': false
                 });
             } else {
-                that.stored.presence = presence;
+                that.user.presence = presence;
             }
-            $rootScope.$broadcast('chat_presence_change', presence);
         });
 
 
@@ -326,11 +324,11 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
                 'checkOutTime': Firebase.ServerValue.TIMESTAMP
             });
         };
-        that.fb.location.profile.update(that.profile.fb);
-        that.fb.location.additional_profile.update(that.profile.additional);
+        that.fb.location.profile.update(that.user.profile.fb);
+        that.fb.location.additional_profile.update(that.user.profile.additional);
         that.fb.location.additional_profile.child('platform').update(BrowserService.platform);
         that.fb.location.additional_profile.child('platform').update({
-            'ip': that.profile.main.ip
+            'ip': that.user.profile.main.ip
         });
 
         that.fb.location.additional_profile.child('checkOutTime').once('value', function(snapshot) {
@@ -383,41 +381,41 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
 
 
     this.updatePresenceMessage = function() {
-        if (!that.profile.main.presence.message) {
-            that.profile.main.presence.message_show = false;
+        if (!that.user.profile.main.presence.message) {
+            that.user.profile.main.presence.message_show = false;
             that.updatePresenceMessageShow();
-            that.profile.main.presence.auto_post = false;
+            that.user.profile.main.presence.auto_post = false;
             that.updatePresenceMessagePost();
         }
         that.fb.location.presence.update({
-            message: that.profile.main.presence.message
+            message: that.user.profile.main.presence.message
         });
     };
 
     this.clearPresenceOptions = function() {
-        that.profile.main.presence.message = '';
+        that.user.profile.main.presence.message = '';
         that.updatePresenceMessage();
-        that.profile.main.presence.show_message = false;
+        that.user.profile.main.presence.show_message = false;
         that.updatePresenceMessageShow();
-        that.profile.main.presence.auto_post = false;
+        that.user.profile.main.presence.auto_post = false;
         that.updatePresenceMessagePost();
 
     };
 
     this.updatePresenceMessageShow = function() {
         $log.debug('updatePresenceMessageShow');
-        if (angular.isDefined(that.profile.main.presence.show_message)) {
+        if (angular.isDefined(that.user.profile.main.presence.show_message)) {
             that.fb.location.presence.update({
-                'show_message': that.profile.main.presence.show_message
+                'show_message': that.user.profile.main.presence.show_message
             });
         }
     };
 
     this.updatePresenceMessagePost = function() {
         $log.debug('updatePresenceMessageShowPost');
-        if (angular.isDefined(that.profile.main.presence.auto_post)) {
+        if (angular.isDefined(that.user.profile.main.presence.auto_post)) {
             that.fb.location.presence.update({
-                'auto_post': that.profile.main.presence.auto_post
+                'auto_post': that.user.profile.main.presence.auto_post
             });
         }
     };
@@ -425,12 +423,12 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
 
     this.storeChatPresence = function(presence) {
         if (presence) {
-            that.stored.presence = presence;
+            that.user.presence = presence;
         }
     };
     this.storeUserOnline = function(online) {
         if (angular.isDefined(online)) {
-            that.stored.presence = online;
+            that.user.presence = online;
         }
     };
 
@@ -445,7 +443,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     this.updateState = function(state) {
         // console.log('update state being called with ' + state);
         if (angular.isDefined(that.fb.location.profile)) {
-            if (that.fb.target.presence && that.fb.target.presence.$value != 'Offline') {
+            if (that.fb.target.presence && that.user.presence != 'Offline') {
                 that.fb.location.state.update({
                     'state': state
                 });

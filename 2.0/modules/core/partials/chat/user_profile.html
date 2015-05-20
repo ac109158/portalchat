@@ -1,72 +1,60 @@
-<div style="position:relative; height: 90%;width:96%; margin:0px auto; margin-top:5%; background:rgba(255,255,255,.8); overflow-y:auto; overflow-x:hidden;" class="well well-sm well-slim min-scroll">
-	<div>
-		<span class="cm-profile-span-label">Profile</span>
-		
-	</div>
-	<div style="width:100%; display:block; min-height:20px;">
-		<div style="width:40%; padding:2px; float:left">
-			<img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="/components/com_callcenter/images/avatars/{{avatar}}-90.jpg" alt="...">
-		</div>
-		<div <div style="width:60%; padding:4px; float:left">
-			<div class="well well-sm well-slim">
-				<span class="cm-profile-span" ng-bind="user_profile.name"><br></span>
-				<span class="cm-profile-span" ng-if="user_profile.role" ng-bind="user_profile.role"><br></span>
-				<span class="cm-profile-span" ng-if="user_profile.pc" style="font-size:.8em;" >PC: {{user_profile.pc.name}}<br></span>
-				<span class="cm-profile-span" ng-if="user_profile.mc" style="font-size:.8em;" >MC: {{user_profile.mc.name}}<br></span>
-			</div>
-		</div>
-	</div>
-	<div style="width:100%; display:block; float:left; padding:2px; margin-top:2px;">
-		<div ng-if="user_profile.phone" class="well well-sm well-slim">
-			<span class="cm-profile-span-label">Phone</span>
-			<span class="cm-profile-span">{{user_profile.phone}}</span>
-		</div>
-		<div ng-if="user_profile.email" class="well well-sm well-slim">
-			<span class="cm-profile-span-label">Email</span>
-			<span class="cm-profile-span">{{user_profile.email}}</span>
-		</div>
-	</div>
-	<div style="position:relative; width:100%; height:125px; display:block; float:left; padding:2px; margin:0px; margin-top:2px;  clear:none; background:rgba(69,106,151,0.8);">
-		<div class="cm-presence-menu" style="width:25%; height:100%; display:block; float:left; clear:none;">
-			<ul style="margin:0px; padding:0px; display:block; pointer-events:all; width:100%; max-width: 100%; height:100%; float:left: clear:none; overflow-x: hidden; overflow-y: auto; list-style:none;" class="min-scroll">
-				<li ng-click="setPresence('Online');"><a class="cm-chat-user-option" href="#">Available</a></li>
-				<li ng-click="setPresence('Away')"><a class="cm-chat-user-option" href="#">Away</a></li>
-				<li ng-click="setPresence('Busy')"><a class="cm-chat-user-option" href="#">Busy</a></li>
-				<li ng-click="setPresence('At Lunch')"><a class="cm-chat-user-option" href="#">Lunch</a></li>
-				<li ng-click="setPresence('On Break')"><a class="cm-chat-user-option" href="#">Break</a></li>
-				<li ng-click="setPresence('Training')"><a class="cm-chat-user-option" href="#">Training</a></li>
-				<li ng-if="user_profile.role != 'Administrator' || user_profile.role != 'Shift Manager'" ng-click="setPresence('Offline')"><a class="cm-chat-user-option" href="#">Offline</a></li>
-			</ul>
-		</div>
-		<div style="position:relative; width:75%; height:100%; display:block; float:left; margin:0px; padding:2px;">
-			<div>
-				<div style="width:100%; height:20px; background:rgba(255,255,255,.8); border-radius:2px; margin-bottom:2px;">
-					<center><span>Status: </span><span ng-class="{'Busy' : user_chat_presence.$value != 'Online','Online': user_chat_presence.$value == 'Online' }" ng-bind="user_chat_presence.$value"></span></center>
-				</div>
-				<textarea ng-show="user_chat_presence.$value != 'Online'" style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px;"  placeholder="Enter a detailed message for your current chat status if you would like..." ng-model="user_profile.presence.message" ng-enter-press="updatePresenceMessage()" ng-blur="updatePresenceMessage()"></textarea>
-				<!--
-<div ng-show="user_chat_presence.$value != 'Online' && user_profile.presence.message.length" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
+<div style="position:relative; display:block; width:100%; margin:0px auto; border-top:1px solid white; clear:both" class="min-scroll">
+    <div>
+        <span class="cm-profile-span-label" style="color:white;">Profile</span>
+    </div>
+    <div style="width:100%; display:block; min-height:20px;">
+        <div style="width:40%; padding:2px; float:left">
+            <!-- <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="/components/com_callcenter/images/avatars/{{avatar}}-90.jpg" alt="..."> -->
+            <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="{{module.contact_list.setting.default_avatar}}" alt="...">
+        </div>
+        <div <div style="width:60%; padding:4px; float:left">
+            <div class="well well-sm well-slim">
+                <span class="cm-profile-span" ng-bind="module.user.name"><br></span>
+                <span class="cm-profile-span" ng-if="module.user.role" ng-bind="module.user.role"><br></span>
+                <span class="cm-profile-span" ng-if="module.user.supervisors.pc" style="font-size:.8em;">PC: {{module.user.supervisors.pc.name}}<br></span>
+                <span class="cm-profile-span" ng-if="module.user.supervisors.mc" style="font-size:.8em;">MC: {{module.user.supervisors.mc.name}}<br></span>
+            </div>
+        </div>
+    </div>
+    <div style="width:100%; display:block; float:left; padding:2px; margin-top:2px;">
+        <div class="well well-sm well-slim">
+            <span class="cm-profile-span-label">Phone</span>
+            <span class="cm-profile-span">{{module.user.phone}}</span>
+            <span class="cm-profile-span-label">Email</span>
+            <span class="cm-profile-span">{{module.user.email}}</span>
+        </div>
+    </div>
+    <div style="position:relative; display:block; width:100%; min-height: 50px; float:left; padding:2px; margin:0px; clear:none; background:rgba(69,106,151,0.8); color:black;">
+        <div style="width:100%; min-height:20px; background:rgba(255,255,255,.8); border-radius:2px; margin-bottom:2px; padding:2px;">
+            <center>
+                <span>Chat Status: </span>
+                <select class="pointer" style="color:black;" ng-model="module.user.presence" ng-change="setPresence(module.user.presence);">
+                    <option value='Online'>Available</option>
+                    <option value='Away'>Away</option>
+                    <option value='Busy'>Busy</option>
+                    <option value='At Lunch'>Lunch</option>
+                    <option value='On Break'>Break</option>
+                    <option value='Training'>Training</option>
+                    <option ng-if="user_profile.role != 'Administrator' || user_profile.role != 'Shift Manager'" option='Offline'>Offline</option>
+                </select>
+            </center>
+        </div>
+        <textarea class="pointer" ng-show="module.user.presence != 'Online'" style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px; color:black;" placeholder="Enter a detailed message for your current chat status if you would like..." ng-model="module.user.profile.main.presence.message" ng-enter-press="updatePresenceMessage()" ng-blur="updatePresenceMessage()"></textarea>
+        <!--
+<div ng-show="module.user.presence != 'Online' && module.user.profile.main.presence.message.length" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
 					<center>Add Message to Profile: <input ng-change="updatePresenceMessageShow()" type="checkbox" ng-model="user_profile.presence.show_message"></center>
 				</div>
 -->
-				<div ng-show="user_chat_presence.$value != 'Online' && user_profile.presence.message.length" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px;">
-					<center>Post Message to Chats: <input ng-change="updatePresenceMessagePost()" type="checkbox" ng-model="user_profile.presence.auto_post"></center>
-				</div>
-			</div>
-		</div>
-		<div class="cm-chat-spacer"></div>
-		<div class="well well-sm" style="font-size:.8em;">
-			<div style="width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
-				<span>{{sm_group_chat.chat_description}} Notifications: <input style="position:absolute; right:15px;" ng-change="updateChatSettings(sm_group_chat)" type="checkbox" ng-model="sm_group_chat.monitor"></span>
-			</div>
-			
-			<div style="width:100%; clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
-				<span>{{sm_tech_chat.chat_description}} Notifications: <input style="position:absolute; right:15px;" ng-change="updateChatSettings(sm_tech_chat)" type="checkbox" ng-model="sm_tech_chat.monitor"></span>
-			</div>
-			
-			<div ng-if="mc_group_chat" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
-				<span>{{mc_group_chat.chat_description}} Notifications: <input style="position:absolute; right:15px; " ng-change="updateChatSettings(mc_group_chat)" type="checkbox" ng-model="mc_group_chat.monitor"></span>
-			</div>
-		</div>
-	</div>
+        <div ng-show="module.user.presence != 'Online' && module.user.profile.main.presence.message.length" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px;">
+            <center>Post Message to Chats:
+                <input class="pointer" ng-change="updatePresenceMessagePost()" type="checkbox" ng-model="user_profile.presence.auto_post">
+            </center>
+        </div>
+        <div class="cm-chat-spacer"></div>
+        <div class="well well-sm" style="font-size:.8em; margin-top:5px;">
+            <div ng-repeat="chat in module.config.directory.default_chats track by $index" style="width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
+                <span>{{chat.chat_description}} Notifications: <input class="pointer" style="position:absolute; right:15px;" ng-change="updateChatSettings(chat.session_key)" type="checkbox" ng-model="sm_group_chat.monitor"></span>
+            </div>
+        </div>
+    </div>
 </div>

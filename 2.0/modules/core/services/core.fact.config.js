@@ -128,7 +128,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
         'contact': 4
     };
     this.module.setting = {};
-    this.module.setting.presence_states = ['Online', 'Offline', 'Busy', 'Invisible']; // optional chat stattes
+    this.module.setting.presence_states = [{value:'Online', title:'Available'}, {value:'Away', title:'Away'}, {value:'Busy', title:'Busy'},{value:'At Lunch', title:'At Lunch'},{value:'On Break', title:'On Break'},{value:'Training', title:'Training'}]; // optional chat stattes
     this.module.setting.header_color = "#00335B"; // default color of the chat header
     this.module.setting.closed_header_alert_color = '#ce6000'; // alternate color of the chat header
     this.module.setting.open_header_alert_color = '#4787ED'; // header changes to this color when chatbox is closed an an message is received

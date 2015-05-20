@@ -14,13 +14,15 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
 
     this.ui.fx.increaseFontSize = function() {
         if (SettingsManager.global.font_size < CoreConfig.max.font_size) {
-            SettingsManager.updateGlobalSetting('font_size', (SettingsManager.global.font_size + 1));
+            SettingsManager.updateGlobalSetting('font_size', (SettingsManager.global.font_size + 1), true);
+            NotificationManager.playSound('action');
         }
     };
 
     this.ui.fx.decreaseFontSize = function() {
         if (SettingsManager.global.font_size > CoreConfig.min.font_size) {
-            SettingsManager.updateGlobalSetting('font_size', (SettingsManager.global.font_size - 1));
+            SettingsManager.updateGlobalSetting('font_size', (SettingsManager.global.font_size - 1), true);
+            NotificationManager.playSound('action');
         }
     };
 
@@ -50,7 +52,9 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
 
     this.ui.fx.updateSoundLevel = function(level) {
         if (parseInt(level) && level > -1 && level <= CoreConfig.max.sound_level ) {
+            NotificationManager.updateSoundLevel(level);
             SettingsManager.updateGlobalSetting('sound_level', level);
+            NotificationManager.playSound('new_chat');
         }
     };
 
@@ -79,13 +83,11 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         }
     };
 
-    this.ui.fx.activateExternalWindow = function() {
-        if (that.externalWindowObject) {
-            console.log('activateExternalWindow');
-            that.externalWindowObject.focus();
-        } else {
-            $rootScope.$broadcast('activate-external-window');
-        }
+    this.ui.fx.openChatModuleInExternalWindow = function() {
+        ChatModuleManager.openChatModuleInExternalWindow();
+    };
+    this.ui.fx.focusExternalWindowInstance = function() {
+        ChatModuleManager.focusExternalWindowInstance();
     };
 
     this.ui.fx.closeChatModule = function() {

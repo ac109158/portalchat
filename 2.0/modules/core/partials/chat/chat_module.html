@@ -1,26 +1,48 @@
 <div ng-cloak id="chat-module" window-resize class="cm-fixed-wrapper" ng-controller="core.main" style="font-size:{{module.global.font_size}}px; width:{{module.setting.main_panel.width}}px; height:{{module.setting.main_panel.height}}px;">
     <div ng-if="module.state.is_ready">
         <div ng-if="!module.global.is_open && module.setting.is_external_window_instance == false" style="position:fixed; right:50px; bottom:50px; width:40px; height:40px; background:transparent; text-decoration:none;">
-            <a ng-click="ui.fx.openChatModule();" class="fa fa-external-link-square fa-4x" ng-class="{'Busy':alertToOpen == true}" style="text-decoration:none; pointer-events:all; cursor:pointer;"><span style="position:relative;left:-25px;font-size:10px; color:white;">Chat</span></a>
+            <a ng-click="ui.fx.openChatModule();" class="fa fa-comment fa-4x pointer" ng-class="{'Busy':alertToOpen == true}"><span style="position:relative;left:-25px;font-size:10px; color:white;">Chat</span></a>
         </div>
         <div id="cm-main-panel" ng-if="module.global.is_open && module.setting.is_external_window_instance == false">
             <div id="cm-main-panel-header">
                 <!-- <img style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/> -->
                 <img class="pointer" style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="{{module.contact_list.setting.default_avatar}}" width=35 height=35/>
                 <span style="margin-left:5px; line-height:20px;" ng-bind="module.user.name"></span>
-                <div class="pull-right btn btn-sm btn-default" style="min-width: 35px; height:35px;" ng-click="ui.fx.closeChatModule();">
-                    <center><span class="fa fa-times fa-2x pointer"></span><center>
+                <span style="background:white; width:100px; border-radius:10px; margin-left:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em;" ng-class="{'Busy' : module.user.presence != 'Online' && module.user.presence != 'Offline' && module.user.online == true ,'Offline' : module.user.online == false || module.user.presence == 'Offline','Online' : module.user.presence == 'Online' && module.user.online == true}">{{module.user.presence}}</span>
+                <div class="pull-right btn btn-xs btn-default" ng-click="ui.fx.closeChatModule();">
+                    <center><span class="fa fa-times fa-1x pointer"></span></center>
                 </div>
-                <div class="pull-right btn btn-sm btn-default" style="min-width: 35px; height:35px;" ng-click="ui.fx.toggleMainPanelMenu('setting');">
-                    <center><span class="fa fa-cog fa-2x pointer"></span><center>
+                <div class="pull-right btn btn-xs btn-default" ng-click="ui.fx.toggleMainPanelMenu('setting');">
+                <center><span class="fa fa-cog pointer"></span></center>
                 </div>
             </div>
             <div id="cm-main-panel-header-panel">
-                <div ng-show="module.menu.setting">
-                    Settings
+                <div ng-show="module.menu.setting" style="position:relative; display:block; width: 100%; min-height:30px; padding: 0px; clear:both; border-top:1px solid white; margin-bottom:2px;">
+
+                     <div style="position:relative; width: 100%; height:30px; padding: 0px; clear:both; margin-bottom:2px;">
+                        <label title="Pop Out" class="pull-left" style="position: relative; margin:0px 5px; font-weight: bold;  top:5px; width: 100px;">Pop Out</label>
+                        <div class="btn-group btn-toggle pull-right" style="position: relative; top:5px; margin-right:7px;">
+                            <button  ng-click="ui.fx.openChatModuleInExternalWindow();" class="btn btn-xs btn-default pointer"><i class="fa fa-external-link"></i></button>
+                        </div>
+                    </div>
+
+                    <div style="position:relative; width: 100%; height:30px; padding: 0px; clear:both; margin-bottom:2px;">
+                        <label title="Adjust Font Size" class="pull-left" style="position: relative; margin:0px 5px; font-weight: bold;  top:5px; width: 100px;">Font Size</label>
+                        <div class="btn-group btn-toggle pull-right" style="position: relative; top:5px; margin-right:7px;">
+                            <button  ng-click="ui.fx.decreaseFontSize();" class="btn btn-xs btn-default pointer"><i class="fa fa-chevron-left"></i></button>
+                            <button  ng-click="ui.fx.increaseFontSize();" class="btn btn-xs btn-default pointer"><i class="fa fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+
+                    <div style="position:relative; width: 100%; height:30px; padding: 0px; clear:both; margin-bottom:10px;">
+                        <label title="Volume Control" class="pull-left" style="position: relative; margin:0px 5px; font-weight: bold;  top:5px; width: 100px;">Alert Volume</label>
+                        <div class="pull-right" style="position: relative; top:5px; margin-right:7px;">
+                            <input class="pointer" style="position:relative; width:50px;" type="range" min="0" max="10" value="{{module.global.sound_level}}" step="1" ng-model="module.global.sound_level" ng-mouseup="ui.fx.updateSoundLevel(module.global.sound_level)"/>
+                        </div>
+                    </div>
                 </div>
-                <div ng-show="module.menu.profile">
-                    Profile
+                <div ng-show="module.menu.profile" style="position:relative; display: block; width: 100%; min-height:600px; padding: 0px; clear:both; border-top:1px solid white; margin-bottom:2px;">
+                     <cm-profile></cm-profile>
                 </div>
             </div>
         </div>

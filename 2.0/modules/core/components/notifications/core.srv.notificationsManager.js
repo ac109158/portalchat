@@ -41,7 +41,7 @@ angular.module('portalchat.core').service('NotificationManager',['$timeout', 'Co
             urls: ['./assets/sounds/money.mp3'],
             volume: that.setting.volume_level
         });
-        that.sound.close = new Howl({
+        that.sound.action = new Howl({
             urls: ['./assets/sounds/chat_close.mp3'],
             volume: that.setting.volume_level
         });
@@ -55,7 +55,7 @@ angular.module('portalchat.core').service('NotificationManager',['$timeout', 'Co
             that.sound[name].play();
             $timeout(function(){
                 that.state.is_playing_sound = false;
-            },500);
+            },250);
         }
     };
 
