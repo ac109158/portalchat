@@ -23,6 +23,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
 
 
     this.module.state = {};
+    this.module.state.is_ready = false;
     this.module.state.alert_to_open = false;
     this.module.state.is_locked = false;
     this.module.state.is_open = false;
@@ -33,15 +34,15 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.state.allow_chat_request = true;
 
     this.module.contact_list = {};
-    this.module.contact_list.search = {};
     this.module.contact_list.search_text = '';
-    this.module.contact_list.filtered = [];
     this.module.contact_list.is_text_focus = false;
+    this.module.contact_list.selected = undefined;
     this.module.contact_list.setting = {};
     this.module.contact_list.setting.show_offline = false;
+    this.module.contact_list.setting.default_avatar = CoreConfig.url.default_avatar;
 
-    that.module.session = {};
-    that.module.session.id = '';
+    this.module.session = {};
+    this.module.session.id = '';
 
     this.module.priority = {};
     this.module.priority.queue = [];
@@ -121,11 +122,20 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.menu.filter = false;
     this.module.menu.volume = false;
     this.module.menu.directory_chat_list = false;
+    this.module.menu.setting = false;
+
+    this.module.interval = {};
+    this.module.interval.window_resize = null;
 
     this.load = function() {
         that.setFirebaseLocations();
         that.setFirebaseTargets();
         that.establishUserChat();
+        $timeout(function() {
+            that.module.state.is_ready = true;
+            $rootScope.$broadcast('update-chosen');
+        }, 2000);
+
         // that.setDefaultDirectoryChats();
     };
 
@@ -150,7 +160,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         return true;
     };
 
-    this.registerContactChatRequest = function(session, set_focus) {
+    this.registerContactChatSession = function(session, set_focus) {
         if (session && angular.isObject(session) && session.session_key && session.user_id === UserManager.user.id) {
             var index;
             $log.debug('Requesting chat session');
@@ -179,8 +189,8 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         }
     };
 
-    this.registerDirectoryChatRequest = function(session_key, set_focus) {
-        $log.debug('registerDirectoryChatRequest(' + session_key + ')');
+    this.registerDirectoryChatSession = function(session_key, set_focus) {
+        $log.debug('registerDirectoryChatSession(' + session_key + ')');
         var type = session_key.split('_')[0];
         $log.debug('type: ' + type);
         var id = session_key.split('_')[1];
@@ -339,7 +349,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             return false;
         }, 750);
     };
-    this.closeExternalWindowInstance = function(){
+    this.closeExternalWindowInstance = function() {
 
     };
 
@@ -350,7 +360,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 that.module.asset.external_window_instance = null;
             }
         }
-        that.evaluateModuleLayout();
+        that.evaluateChatModuleLayout();
     };
 
     this.focusExternalWindowInstance = function() {
@@ -449,7 +459,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             ChatStorage.contact.chat.order_map[value.order] = key;
         });
     };
-    this.toggleModulePanelMenu = function(menu, value) {
+    this.toggleMainPanelMenu = function(menu, value) {
         if (that.module.menu && angular.isDefined(that.module.menu[menu])) {
             if (angular.isDefined(value)) {
                 that.module.menu[menu] = value;
@@ -913,7 +923,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         return ChatManager.isChatScrollAtBottom(type, session_key);
     };
 
-    this.evaluateModuleLayout = function() {
+    this.evaluateChatModuleLayout = function() {
+        console.log('here');
+        return;
         if (Object.size(ChatStorage[contact].chat.list) - 1 >= scope.stored_directory_index) {
             scope.setDirectoryChat(scope.stored_directory_index, false);
         } else if (scope.activeChats.length > 0) {
@@ -954,7 +966,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             delete ChatStorage[type].chat.list[session_key];
 
             NotificationManager.playSound('close');
-            that.evaluateModuleLayout();
+            that.evaluateChatModuleLayout();
         }
     };
 

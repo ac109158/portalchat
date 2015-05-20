@@ -69,11 +69,8 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         }
     };
 
-    this.ui.fx.togglePanelMenu = function(menu) {
-        if (angular.isDefined(that.ux.panel.menu[menu])) {
-            that.ux.panel.menu[menu] = !that.ux.panel.menu[menu];
-        }
-
+    this.ui.fx.toggleMainPanelMenu = function(menu, value) {
+        ChatModuleManager.toggleMainPanelMenu(menu, value);
     };
 
     this.ui.fx.setPresence = function(presence) {
@@ -103,16 +100,6 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         ChatModuleManager.lookUpChatReference(priority, message_id, display_id);
     };
 
-    this.ui.fx.toggleChatPanelOpen = function(value) {
-        if (parseInt(SettingsManager.global.layout, 10) === 2 && angular.isDefined(value)) {
-            SettingsManager.updateGlobalSetting('is_open', value);
-        }
-        if (value) {
-            $timeout(function() {
-                that.ui.fx.setModuleLayout();
-            });
-        }
-    };
 
     this.ui.fx.toggleChatModuleLayout = function() {
         if (SettingsManager.global.layout === 1) {

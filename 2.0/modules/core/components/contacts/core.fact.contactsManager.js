@@ -57,11 +57,12 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
                 var user_profiles = snapshot.val();
                 if (user_profiles) {
                     angular.forEach(user_profiles, function(profile) {
-                        that.setContactProfile(profile);
+                        if(!UserManager.user.group[profile.id]){
+                            that.setContactProfile(profile);
+                        }
                     });
                 }
             });
-
         };
 
         this.setAdditionalResources = function() {

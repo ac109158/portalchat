@@ -15,14 +15,14 @@
 		<div ng-click="openUnactiveChat(chat, $index, max_count -1)" class="cm-unactive-chat-list-item" style="background:{{chat.header_color}};" ng-repeat="chat in unactiveChats track by $index">
 			<span class="cm-unactive-chat-list-item-truncate pull-left">
 				<span ng-if="chat.isGroupChat == false" class="pull-left glyphicon glyphicon-user" ng-class="{'Busy' : chat.to_user_chat_presence == 'Busy' && chat.to_user_online.$value == true, 'Online' : chat.to_user_chat_presence == 'Online' && chat.to_user_online.$value == true }" style="float:left;margin-right:5px;"></span>
-				<i ng-show="chat.active_typing_user_socket.$value == true" class="fa fa-spinner fa-spin"></i> <!-- Activates when someone is typing a message to the user --> 
+				<i ng-show="chat.active_typing_user_socket.$value == true" class="fa fa-spinner fa-spin"></i> <!-- Activates when someone is typing a message to the user -->
 				<span ng-show="chat.isGroupChat === true" style="float:left;margin-right:5px;">
 					<i  class="fa fa-comments" ></i>
 					<span>({{chat.group_count}})</span>
 				</span>
 				<span ng-bind="chat.tag || chat.chat_description || chat.to_user_name"></span>
 			</span>
-			
+
 			</span>
 			<span style="font-size:1em;top:-3px;" class="pull-right" ng-show="chat.unread > 0" ng-bind="'(' + chat.unread + ')'"></span>
 		</div>
@@ -30,9 +30,9 @@
 </div>
 
 <div ng-if="layout == 2 && isChatModuleOpen == false && isPageLoaded">
-	<div style="position:absolute; right:0px; bottom:0px; min-width:250px; width:{{chat_panel_width}}px; max-width:600px; pointer-events:all;" class="no-select cm-directory-header">	
+	<div style="position:absolute; right:0px; bottom:0px; min-width:250px; width:{{chat_panel_width}}px; max-width:600px; pointer-events:all;" class="no-select cm-directory-header">
 		<div ng-dblclick="toggleChatModule(true)">
-			<img ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/>				
+			<img ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/>
 			<span style="margin-left:5px; line-height:20px;" ng-bind="name"></span>
 			<span style="background:white; width:100px; border-radius:10px; margin-left:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em; z-index:104"ng-class="{'Busy' : user_chat_presence.$value == 'Busy' && user_online.$value == true ,'Offline' : user_online.$value == false || user_chat_presence.$value == 'Offline','Online' : user_chat_presence.$value == 'Online' && user_online.$value == true}" ng-bind="user_chat_presence.$value"></span>
 		</div>
@@ -48,11 +48,11 @@
 	<div  ng-show="isChatModuleOpen == true && isPageLoaded" class="cm-directory" style="position:absolute; bottom:0px; right:0px; min-width:250px; width:{{chat_panel_width}}px; height:100%; z-index:100;">
 		<div  ng-show="isChatModuleOpen == true"  class="cm-directory-section" style=" min-width:250px; width:{{(chat_panel_width)}}px;">
 			<div id="cm-directory-header" class="cm-directory-header">
-				<div class="cm-directory-header-left no-select" ng-dblclick="toggleChatModule(false)">					
+				<div class="cm-directory-header-left no-select" ng-dblclick="toggleChatModule(false)">
 					<img  style="pointer-events:all;" ng-click="toggleProfileMenu()" ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/>
 					<span style="margin-left:5px; line-height:20px;" ng-bind="name"></span>
 					<span style="background:white; width:100px; border-radius:10px; margin-left:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em; z-index:104;" ng-class="{'Busy' : user_chat_presence.$value != 'Online' && user_chat_presence.$value != 'Offline' && user_online.$value == true ,'Offline' : user_online.$value == false || user_chat_presence.$value == 'Offline','Online' : user_chat_presence.$value == 'Online' && user_online.$value == true}">{{user_chat_presence.$value}}</span>
-					
+
 					<!--
 <ul style="pointer-events:all;" ng-if="showPresenceMenu" class="cm-presence-menu">
 						<li ng-click="setPresence('Online')" role="presentation"><a role="menuitem" tabindex="-1" href="#">Online</a></li>
@@ -76,28 +76,28 @@
 			</div>
 			<div ng-show="showProfileMenu" class="well well-sm slim cm-directory-chat-content-wrapper min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height - (vertical_adjust - sm_group_chat.topic_height)}}px; z-index:111;">
 				<span ng-click="toggleProfileMenu()" class="glyphicon glyphicon-remove cm-close-profile cm-pointer" style="color:red;"></span>
-				<cm-profile></cm-profile>	
+				<cm-profile></cm-profile>
 			</div>
 
 			<div id="cm-directory-content-wrapper" class="cm-directory-content-wrapper" heightd={{chat_module_directory_height - $scope.chat_module_header_heightstyle}}>
 				<div id="cm-directory-upper-panel" class="well well-sm slim">
-					<div ng-if="layout == 1 || layout == null ">	
+					<div ng-if="layout == 1 || layout == null ">
 <!--
 				<div ng-show="activeChats.length > 3" style="width:96%; height:20px; margin:0px auto; padding:10px 5px 0px 5px;">
 							<input type="range" min="100" max="200" value="{{tracker_panel_size}}" step="5" ng-model="tracker_panel_size"/>
-						</div>	
--->					
+						</div>
+-->
 						<cm-directory-tracker-panel></cm-directory-tracker-panel>
-						<chat-module-nav-panel></chat-module-nav-panel>	
+						<chat-module-nav-panel></chat-module-nav-panel>
 					</div>
 					<div ng-if="layout == 2" style="padding:0px; margin:0px;">
-						<chat-module-nav-panel></chat-module-nav-panel>	
+						<chat-module-nav-panel></chat-module-nav-panel>
 					</div>
 <!--
 					<div ng-show="layout == 3">
 						<div ng-show="activeChats.length > 3" style="position:relative; width:100%; margin:0px;">
 							<input style="position:relative; width:100%; outline: 0;" type="range" min="100" max="200" value="{{tracker_panel_size}}" step="{{Math.floor(200 / activeChats.length)}}" ng-model="tracker_panel_size"/>
-						</div>		
+						</div>
 					</div>
 -->
 
@@ -116,18 +116,18 @@
 				<div ng-if="layout == 3" class="cm-directory-section">
 					<chat-module-nav-panel></chat-module-nav-panel>
 				</div>
-				<div class="cm-directory-section">	
+				<div class="cm-directory-section">
 						<div ng-if="tmp == 1" id="contacts"><contacts></contacts></div>
 						<div ng-if="tmp == 2" id="sm_group_chat"><group-chat></group-chat></div>
 						<div ng-if="tmp == 3" id="sm_tech_chat"><tech-chat></tech-chat></div>
 						<div ng-if="tmp == 4 && position == 33 || tmp == 4 && mc" id="mc_group_chat"><mc-chat></mc-chat></div>
 						<div ng-if="tmp == 5 && layout == 1 || tmp == 5 && layout == null" ng-show="activeChats.length > 0" id="directory_chat"><directory-chat></directory-chat></div>
-				</div>							  						
+				</div>
 			</div>
 		</div>
 
 		<div ng-show="(layout !=2  && directory_chat.reference == null && isPageComplete) || isPageComplete" style="position:absolute; bottom:3px; width:15px; height: 15px; left:4px; text-align:center; padding:0; margin:0; pointer-events:all; cursor:pointer;"><center><span ng-click="resize_vertical = !resize_vertical" ng-class="{'glyphicon glyphicon-resize-horizontal' : resize_vertical != true, 'glyphicon glyphicon-resize-vertical' : resize_vertical == true}" style="position:absolute; width:15px; height:15px; padding:2px 1px 1px 1px; border-radius: 5px; background:rgba(69,106,151,0.6); color:white; font-size:.8em; display:block; text-align:center; pointer-events:all; z-index:108;"></span></center></div>
-		
+
 		<div ng-show="layout == 3 && resize_vertical == true" id="cm-directory-resize-slider" style="position:absolute; bottom:5px; width:100%; margin:0px;">
 			<input style="width:75%; margin-left:10%;" type="range" min="-100" max="100" value="{{vertical_adjust}}" step="5" ng-model="vertical_adjust" ng-mouseup="updateVerticalSize()" />
 		</div>
@@ -139,7 +139,7 @@
 		</div>
 		</div>
 
-<ul ng-if="layout == 2 && !isSettingLayout && isPageComplete">			
+<ul ng-if="layout == 2 && !isSettingLayout && isPageComplete">
 	<chatbox ng-repeat="chat in activeChats track by $index" details="chat"><chatbox>
 </ul>
 </div>

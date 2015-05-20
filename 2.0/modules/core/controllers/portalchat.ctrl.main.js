@@ -23,8 +23,7 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
             console.log($scope);
         };
 
-        $scope.$on('assign-task', function(event, task){
-            console.log(task);
+        $scope.$on('core-task-assignment', function(event, task){
             if(task && task.id){
                 CoreManager.assignTask(task);
             }

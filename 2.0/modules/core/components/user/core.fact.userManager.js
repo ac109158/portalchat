@@ -290,14 +290,14 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     };
 
     this.manageUserSupervisors = function() {
-        that.user.group = [];
-        that.user.group.push(that.user.id);
+        that.user.group = {};
+        that.user.group[that.user.id] = that.user.name;
         if (that.user.id && that.user.supervisors) {
             if (that.user.supervisors.pc) {
                 that.fb.locations.pc_online = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.online_reference + that.user.supervisors.pc.user_id + CoreConfig.online_reference));
                 that.fb.locations.pc_presence = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + that.user_presence_reference + that.user.supervisors.pc.user_id + '/' + CoreConfig.chat_presence_reference));
                 that.fb.target.pc_state = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.state_reference + that.user.supervisors.pc.user_id + CoreConfig.state_reference));
-                that.user.group.push(CoreConfig.common.reference.user_prefix + that.user.supervisors.pc.user_id);
+                that.user.group[that.user.supervisors.pc.user_id] = that.user.supervisors.pc.name;
             }
             if (that.user.supervisors.mc) {
                 if (that.user.supervisors.mc.name.slice(0, 4) != 'Ramp') {
@@ -305,13 +305,13 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
                     that.fb.locations.mc_presence = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + that.user_presence_reference + that.user.supervisors.mc.user_id + '/' + CoreConfig.chat_presence_reference));
                     that.fb.target.mc_state = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.state_reference + that.user.supervisors.mc.user_id + CoreConfig.state_reference));
                 }
-                that.user.group.push(CoreConfig.common.reference.user_prefix + that.user.supervisors.mc.user_id);
+                that.user.group[that.user.supervisors.mc.user_id] = that.user.supervisors.mc.name;
             }
             if (that.user.supervisors.admin) {
                 that.fb.locations.admin_online = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.online_reference + that.user.supervisors.admin.user_id + CoreConfig.online_reference));
                 that.fb.locations.admin_presence = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + that.user_presence_reference + that.user.supervisors.admin.user_id + '/' + CoreConfig.chat_presence_reference));
                 that.fb.targets.admin_state = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.state_reference + that.user.supervisors.admin.user_id + CoreConfig.state_reference));
-                that.user.group.push(CoreConfig.common.reference.user_prefix + that.user.supervisors.admin.user_id);
+                that.user.group[that.user.supervisors.admin.user_id] = that.user.supervisors.admin.name;
             }
             if (that.user.isSupervisor === true) {} else {
                 that.user.isSupervisor = false;

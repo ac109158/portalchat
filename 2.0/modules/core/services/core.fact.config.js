@@ -15,6 +15,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     this.url = {};
     this.url.firebase_database = 'https://portalchattest.firebaseio.com/';
     this.url.external = 'index.php?option=com_content&view=article&id=100&Itemid=1111';
+    this.url.default_avatar = '/2.0/assets/img/icon-user-default.png';
 
     //Defaults
 
@@ -162,9 +163,9 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     this.module.setting.queue.width = 110;
 
     this.module.setting.main_panel = {};
-    this.module.setting.main_panel.default_width = 250;
-    this.module.setting.main_panel.width = 250;
-    this.module.setting.main_panel.height = parseInt($window.height, 10) || 0;
+    this.module.setting.main_panel.default_width = 300;
+    this.module.setting.main_panel.width = 300;
+    this.module.setting.main_panel.height = parseInt($window.innerHeight, 10) || 0;
 
     this.module.setting.tracker = {};
     this.module.setting.tracker.height = 115;

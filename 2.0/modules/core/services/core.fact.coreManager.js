@@ -32,19 +32,19 @@ angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', 
             'clearBrowserNotificationList': function() {
                 ChatModuleManager.clearBrowserNotificationList();
             },
-            'log': function(value) {
-                console.log(value);
+            'evaluate-chat-module-layout': function() {
+                ChatModuleManager.evaluateChatModuleLayout();
+            },
+            'register-contact-chat-session': function() {
+                ChatModuleManager.registerContactChatSession();
             }
         };
 
         this.assignTask = function(task) {
-            console.log(that.task_assignments);
             if (task && task.id && that.task_assignments[task.id]) {
                 that.task_assignments[task.id](task.param);
             }
         };
-
-
 
 
         this.returnModule = function() {

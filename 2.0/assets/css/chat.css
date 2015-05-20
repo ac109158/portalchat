@@ -1,0 +1,43 @@
+.pointer{
+    cursor: pointer;
+}
+.cm-fixed-wrapper {
+    position: fixed;
+    right:0;
+    bottom:0;
+    height:20px;
+    background: transparent;
+    pointer-events: all;
+}
+
+#cm-main-panel{
+    position: absolute;
+    width: 100%;
+    height:100%;
+    margin:0;
+    padding:0;
+    right:0;
+    pointer-events: all;
+    background-color:rgba(0,0,0,.5);
+/*  background:url('/modules/mod_chat/app/img/background_05.png');  */
+    background-position:fixed;
+
+}
+
+#cm-main-panel-header {
+    min-height: 35px;
+    background-color: #456a97;
+    color:white;
+    width:100%;
+    margin:0;
+    clear:both;
+}
+#cm-main-panel-header-panel {
+    min-height: 35px;
+    border-top:1px solid white;
+    background-color: #456a97;
+    color:white;
+    width:100%;
+    margin:0;
+    clear:both;
+}
