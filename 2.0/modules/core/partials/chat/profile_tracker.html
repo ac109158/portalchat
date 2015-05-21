@@ -1,7 +1,7 @@
 <div style="position:relative; height: 90%;width:96%; margin:0px auto; margin-top:5%; background:rgba(255,255,255,.8); overflow-y:auto; overflow-x:hidden;" class="well well-sm well-slim min-scroll">
 	<div>
 		<span class="cm-profile-span-label">Profile</span>
-		
+
 	</div>
 	<div style="width:100%; display:block; min-height:20px;">
 		<div style="width:40%; padding:2px; float:left">
@@ -13,7 +13,7 @@
 				<span class="cm-profile-span"ng-if="data.role">{{data.role}}<br></span>
 				<span ng-if="data.pc" class="cm-profile-span"ng-if="data.role" style="font-size:.8em;" >PC: {{data.pc.name}}<br></span>
 				<span ng-if="data.mc" class="cm-profile-span"ng-if="data.role" style="font-size:.8em;" >MC: {{data.mc.name}}<br></span>
-				
+
 			</div>
 		</div>
 	</div>
@@ -26,14 +26,14 @@
 			<span class="cm-profile-span-label">Email</span>
 			<span class="cm-profile-span">{{data.email}}</span>
 		</div>
-		
+
 		<div ng-show="online && data.city && data.state || online && data.checkInTime" class="well well-sm well-slim">
 			<span class="cm-profile-span-label">Sign-In</span>
 			<span ng-show="!data.office && data.city && data.state"class="cm-profile-span">{{data.city +', ' + data.state}}</span>
 			<span ng-show="data.office" class="cm-profile-span">{{data.office}}</span>
 			<span ng-show="data.checkInTime" ng-show="data.checkInTime"class="cm-profile-span">{{data.checkInTime | date:'MM/dd @ h:mma'}}</span>
 		</div>
-		
+
 		<div ng-show="!online && data.city && data.state || !online && data.checkOutTime" class="well well-sm well-slim">
 			<span class="cm-profile-span-label">Sign-Out</span>
 			<span ng-show="!data.office && data.city && data.state" class="cm-profile-span">{{data.city +', ' + data.state}}</span>

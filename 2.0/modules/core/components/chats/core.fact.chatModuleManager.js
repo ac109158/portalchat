@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'UserManager', 'ContactsManager', 'SettingsManager', 'SessionsManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'BrowserService', 'localStorageService', function($rootScope, $log, $timeout, CoreConfig, UserManager, ContactsManager, SettingsManager, SessionsManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, BrowserService, localStorageService) {
+service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'UserManager', 'ContactsManager', 'SettingsManager', 'SessionsManager', 'NotificationManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'BrowserService', 'localStorageService', function($rootScope, $log, $timeout, CoreConfig, UserManager, ContactsManager, SettingsManager, SessionsManager, NotificationManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, BrowserService, localStorageService) {
     var that = this;
     this.fb = {};
     this.fb.chat = {};
@@ -31,7 +31,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.state.is_opening = false;
     this.module.state.is_closing = false;
     this.module.state.is_setting_layout = false;
-    this.module.state.allow_chat_request = true;
     this.module.state.allow_chat_request = true;
 
     this.module.contact_list = {};
@@ -141,7 +140,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
 
     this.setFirebaseLocations = function() {
         if (UserManager.user.id) {
-            console.log(CoreConfig.chat.url_root + CoreConfig.user.id + '/' + CoreConfig.session.root_reference);
+            // console.log(CoreConfig.chat.url_root + CoreConfig.user.id + '/' + CoreConfig.session.root_reference);
             that.fb.chat.location.sessions = new Firebase(CoreConfig.chat.url_root + CoreConfig.user.id + '/' + CoreConfig.session.root_reference);
         }
     };
@@ -159,9 +158,27 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         $log.debug('Finished that.establishUserChat');
         return true;
     };
+    this.chatContactListSearch = function() {
+        that.module.contact_list.selected = undefined;
+    };
+
+    this.chatContact = function(contact) {
+        if (contact && contact.user_id && that.module.state.allow_chat_request) {
+            console.log(contact);
+            that.module.state.allow_chat_request = false;
+            var session = angular.copy(contact);
+            session.session_key = contact.user_id;
+            session.is_group_chat = false;
+            session.is_focus = true;
+            that.registerContactChatSession(session);
+            $timeout(function() {
+                that.module.state.allow_chat_request = true;
+            }, 1000);
+        }
+    };
 
     this.registerContactChatSession = function(session, set_focus) {
-        if (session && angular.isObject(session) && session.session_key && session.user_id === UserManager.user.id) {
+        if (session && angular.isObject(session) && session.session_key && session.user_id !== UserManager.user.id) {
             var index;
             $log.debug('Requesting chat session');
             if (!(UtilityManager.engine.firebase.online)) {
@@ -183,8 +200,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             $timeout(function() {
                 NotificationManager.playSound('new_chat');
             }, 250);
-            $log.debug('all checks passed, build chat');
-            ChatBuilder.buildChatSession(session, set_focus); // (that, contact, isopen, isfocus)
+            $log.debug('all checks passed, build chat', session);
+            console.log('all checks passed, build chat', session);
+            // ChatBuilder.buildChatSession(session, set_focus); // (that, contact, isopen, isfocus)
             return true;
         }
     };
@@ -470,7 +488,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.toggleMainPanelMenu = function(menu, value) {
         if (that.module.menu && angular.isDefined(that.module.menu[menu])) {
             angular.forEach(that.module.menu, function(value, key) {
-                console.log(key, ':', value);
                 if (key != menu) {
                     that.module.menu[key] = false;
                 }
@@ -480,7 +497,21 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             } else {
                 that.module.menu[menu] = !that.module.menu[menu];
             }
+        } else {
+            angular.forEach(that.module.menu, function(value, key) {
+                that.module.menu[key] = false;
+            });
         }
+    };
+    this.toggleContactListShowOffline = function(value) {
+        $rootScope.$evalAsync(function() {
+            that.module.menu.filter = false;
+            if (angular.isDefined(value)) {
+                that.module.contact_list.setting.show_offline = value;
+            } else {
+                that.module.contact_list.setting.show_offline = !that.module.contact_list.setting.show_offline;
+            }
+        });
     };
 
     this.resetDirectoryChatListFocusSettings = function() {
@@ -806,11 +837,11 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 next_tab = 0;
             }
         }
-        that.setPanelTab(next_tab);
+        that.setMainPanelTab(next_tab);
     };
 
-    this.setPanelTab = function(tab_index_position) {
-        if (parseInt(tab_index_position, 10) > 0 && that.module.tab.current.index_position != tab_index_position) {
+    this.setMainPanelTab = function(tab_index_position) {
+        if (parseInt(tab_index_position, 10) > -1 && that.module.tab.current.index_position != tab_index_position) {
             that.module.tab.current = that.module.tab.list[tab_index_position];
             if (that.module.tab.current.type === 'contact') {
                 that.module.tab.current.session_key = that.module.current.contact.chat.stored_session_key;
@@ -939,6 +970,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
 
     this.evaluateChatModuleLayout = function() {
         console.log('here');
+        that.module.setting.main_panel.height = $window.innerHeight;
         return;
         if (Object.size(ChatStorage[contact].chat.list) - 1 >= scope.stored_directory_index) {
             scope.setDirectoryChat(scope.stored_directory_index, false);

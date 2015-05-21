@@ -87,7 +87,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
 
             that.user.profile.main.presence.message = '';
             that.user.profile.main.presence.show_message = false;
-            that.user.profile.main.presence.auto_post = false;
+            that.user.profile.main.presence.post = false;
 
             that.user.profile.main.position = that.user.position || false;
             // that.user.profile.main.ip = sjcl.encrypt(CoreConfig.encrypt_pass, that.user.ip) || false;
@@ -252,10 +252,10 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
             }
         });
 
-        that.fb.location.presence.child('auto_post').once('value', function(snapshot) {
+        that.fb.location.presence.child('post').once('value', function(snapshot) {
             var bool = snapshot.val();
             if (angular.isDefined(bool)) {
-                that.user.profile.main.presence.auto_post = bool;
+                that.user.profile.main.presence.post = bool;
             }
         });
 
@@ -354,22 +354,21 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         });
     };
 
-    this.setPresence = function(presence) {
-        if (presence) {
+    this.setUserChatPresence = function() {
+        if (that.user.presence) {
             that.clearPresenceOptions();
-            that.storeChatPresence(presence);
             that.fb.location.presence.update({
-                'chat_presence': presence
+                'chat_presence': that.user.presence
             });
-            if (presence == 'Offline') {
-                that.storeUserOnline(false);
+            if (that.user.presence == 'Offline') {
+                that.user.online = false;
                 $timeout(function() {
                     that.fb.location.online.update({
                         'online': false
                     });
                 }, 1000);
             } else {
-                that.storeUserOnline(true);
+                that.user.online = true;
                 $timeout(function() {
                     that.fb.location.online.update({
                         'online': true
@@ -379,12 +378,11 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         }
     };
 
-
     this.updatePresenceMessage = function() {
         if (!that.user.profile.main.presence.message) {
             that.user.profile.main.presence.message_show = false;
             that.updatePresenceMessageShow();
-            that.user.profile.main.presence.auto_post = false;
+            that.user.profile.main.presence.post = false;
             that.updatePresenceMessagePost();
         }
         that.fb.location.presence.update({
@@ -397,7 +395,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         that.updatePresenceMessage();
         that.user.profile.main.presence.show_message = false;
         that.updatePresenceMessageShow();
-        that.user.profile.main.presence.auto_post = false;
+        that.user.profile.main.presence.post = false;
         that.updatePresenceMessagePost();
 
     };
@@ -413,22 +411,10 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
 
     this.updatePresenceMessagePost = function() {
         $log.debug('updatePresenceMessageShowPost');
-        if (angular.isDefined(that.user.profile.main.presence.auto_post)) {
+        if (angular.isDefined(that.user.profile.main.presence.post)) {
             that.fb.location.presence.update({
-                'auto_post': that.user.profile.main.presence.auto_post
+                'post': that.user.profile.main.presence.post
             });
-        }
-    };
-
-
-    this.storeChatPresence = function(presence) {
-        if (presence) {
-            that.user.presence = presence;
-        }
-    };
-    this.storeUserOnline = function(online) {
-        if (angular.isDefined(online)) {
-            that.user.presence = online;
         }
     };
 

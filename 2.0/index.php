@@ -9,7 +9,7 @@
 </head>
 <body>
     <div ng-cloak presence="MOUSE TOUCH KEYBOARD" ng-controller="core.main" ng-init="initUser();">
-        <chat-module></chat-module>
+        <cm-view></cm-view>
     </div>
 </body>
 </html>

@@ -2,39 +2,39 @@
 	<div>
 		<span class="cm-profile-span-label">Add Video</span>
 		<form ng-submit="addVideoMessage(chat)">
-				<div class="cm-directory-label" style="top:-5px;">
-					<div class="cm-directory-label-decal one-edge-shadow">
-						<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">Heading</div>
+				<div class="cm-main-panel-label" style="top:-5px;">
+					<div class="cm-main-label-decal one-edge-shadow">
+						<div ng-class="{'cm-main-label-decal-description': browser == 'Firefox','cm-main-label-decal-description-inset': browser != 'Firefox'}">Heading</div>
 					</div>
 				</div>
 				<input class="cm-input" type="text"  ng-model="video.heading" placeholder="Enter a heading if you would like..." focus-me="true"/>
 				<div class="cm-chat-spacer"></div>
-				
-				<div class="cm-directory-label">
-					<div class="cm-directory-label-decal one-edge-shadow">
-						<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">Url</div>
+
+				<div class="cm-main-panel-label">
+					<div class="cm-main-label-decal one-edge-shadow">
+						<div ng-class="{'cm-main-label-decal-description': browser == 'Firefox','cm-main-label-decal-description-inset': browser != 'Firefox'}">Url</div>
 					</div>
 				</div>
 				<div class="cm-bottom-spacer"></div>
 				<input class="cm-input" type="url"  ng-model="video.url" placeholder="Paste the full url of the video here..."/>
 				<div class="cm-chat-spacer"></div>
-				
-				<div class="cm-directory-label">
-					<div class="cm-directory-label-decal one-edge-shadow">
-						<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">Code</div>
+
+				<div class="cm-main-panel-label">
+					<div class="cm-main-label-decal one-edge-shadow">
+						<div ng-class="{'cm-main-label-decal-description': browser == 'Firefox','cm-main-label-decal-description-inset': browser != 'Firefox'}">Code</div>
 					</div>
 				</div>
 				<div class="cm-bottom-spacer"></div>
-				
+
 				<input class="cm-input" type="text"  ng-model="video.code" placeholder="Or Paste the code for the video here..."  required/>
 				<div class="cm-chat-spacer"></div>
-				
-				<div class="cm-directory-label">
-					<div class="cm-directory-label-decal one-edge-shadow">
-						<div ng-class="{'cm-directory-label-decal-description': browser == 'Firefox','cm-directory-label-decal-description-inset': browser != 'Firefox'}">Message</div>
+
+				<div class="cm-main-panel-label">
+					<div class="cm-main-label-decal one-edge-shadow">
+						<div ng-class="{'cm-main-label-decal-description': browser == 'Firefox','cm-main-label-decal-description-inset': browser != 'Firefox'}">Message</div>
 					</div>
 				</div>
-				
+
 				<textarea class="cm-textarea" name="textarea" ng-model="video.message" rows="5" cols="30" placeholder="Finally enter your message..."  required></textarea>
 				<div class="cm-chat-spacer"></div>
 				<input style="margin:5px 0px;" type="submit" name="submit" value="submit" />
@@ -42,8 +42,8 @@
 				<center><span style="font-weight:bold; text-align:center; clear:both;" ng-bind="video.heading"></span></center>
 				<cm-youtube ng-if="video.code" code="video.code"></cm-youtube>
 				<p class="cm-chat-message-text"   ng-bind-html="video.message"></p>
-				
-				
+
+
 		</form>
 	</div>
 </div>

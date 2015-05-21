@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UtilityManager', 'SettingsManager', 'ChatModuleManager', 'PermissionsManager', 'NotificationManager', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UtilityManager,SettingsManager, ChatModuleManager, PermissionsManager, NotificationManager) {
+service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'ChatModuleManager', 'PermissionsManager', 'NotificationManager', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig,UserManager,UtilityManager,SettingsManager, ChatModuleManager, PermissionsManager, NotificationManager) {
     var that = this;
 
     this.ux = {};

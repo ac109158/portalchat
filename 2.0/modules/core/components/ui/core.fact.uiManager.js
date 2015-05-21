@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UtilityManager', 'SettingsManager', 'ChatModuleManager', 'PermissionsManager', 'NotificationManager', function($rootScope, $interval, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UtilityManager, SettingsManager, ChatModuleManager, PermissionsManager, NotificationManager) {
+service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig','UserManager',  'UtilityManager', 'SettingsManager', 'ChatModuleManager', 'PermissionsManager', 'NotificationManager', function($rootScope, $interval, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig,UserManager, UtilityManager, SettingsManager, ChatModuleManager, PermissionsManager, NotificationManager) {
     var that = this;
 
     this.ui = {};
@@ -48,7 +48,9 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         $rootScope.$broadcast('assign-task', {id:'log', param: 'Test'});
     };
 
-
+    this.ui.fx.chatContact = function(contact){
+        ChatModuleManager.chatContact(contact);
+    };
 
     this.ui.fx.updateSoundLevel = function(level) {
         if (parseInt(level) && level > -1 && level <= CoreConfig.max.sound_level ) {
@@ -67,20 +69,29 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     };
 
 
-    this.ui.fx.broadcastPresenceStatus = function(status) {
-        if (status) {
-            $rootScope.$broadcast('chat-presence-change', status);
-        }
-    };
-
     this.ui.fx.toggleMainPanelMenu = function(menu, value) {
         ChatModuleManager.toggleMainPanelMenu(menu, value);
     };
+    this.ui.fx.toggleContactListShowOffline = function(value){
+        ChatModuleManager.toggleContactListShowOffline(value);
+    };
 
-    this.ui.fx.setPresence = function(presence) {
-        if (presence) {
-            SettingsManager.setPresence(presence);
-        }
+    this.ui.fx.chatContactListSearch = function(){
+        ChatModuleManager.chatContactListSearch();
+    };
+
+    this.ui.fx.setMainPanelTab = function(tab_index){
+        ChatModuleManager.setMainPanelTab(tab_index);
+    };
+
+    this.ui.fx.setUserChatPresence = function() {
+        UserManager.setUserChatPresence();
+    };
+    this.ui.fx.updatePresenceMessagePost = function() {
+        UserManager.updatePresenceMessagePost();
+    };
+    this.ui.fx.updatePresenceMessage = function() {
+        UserManager.updatePresenceMessage();
     };
 
     this.ui.fx.openChatModuleInExternalWindow = function() {
@@ -91,6 +102,7 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     };
 
     this.ui.fx.closeChatModule = function() {
+        ChatModuleManager.toggleMainPanelMenu(null);
         ChatModuleManager.closeChatModule();
     };
 

@@ -1,32 +1,32 @@
-<div id="cm-directory-tracker"  class="cm-directory-tracker" ng-show="layout != 2 && activeChats.length > 0">
-	<div class="cm-directory-tracker-label" class="well well-sm">Conversation
-		<div ng-if="layout == 1 && activeChats.length > 0" ng-click="switchLayout(3)" style="position:absolute; top:30px; right:20px; cursor:pointer;" class="pull-right fa fa-expand"></div>
-		<div ng-if="layout == 3" ng-click="switchLayout(1)" style="position:absolute; top:30px; right:20px;" class="pull-right fa fa-compress"></div>
+<div id="cm-main-panel-tracker"  class="cm-main-panel-tracker" ng-show="module.global.layout != 2 && module.chats.contact.count">
+	<div class="cm-main-panel-tracker-label" class="well well-sm">Conversation
+		<div ng-if="module.global.layout == 1 && module.chats.contact.count" ng-click="switchLayout(3)" style="position:absolute; top:30px; right:20px; cursor:pointer;" class="pull-right fa fa-expand"></div>
+		<div ng-if="module.global.layout == 3" ng-click="switchLayout(1)" style="position:absolute; top:30px; right:20px;" class="pull-right fa fa-compress"></div>
 	</div>
-	
-	<div id="cm-directory-tracker-content" class="min-scroll" style="max-height:{{tracker_panel_size}}px;">
+
+	<div id="cm-main-panel-tracker-content" class="min-scroll" style="max-height:{{tracker_panel_size}}px;">
 <!-- 		<div directory-item-scroll="isLastUnread($index) || isDirectoryItem($index)" ng-repeat="chat in activeChats track by $index"> -->
-		<div ng-repeat="chat in activeChats track by $index">
-			<div class="cm-directory-tracker-chat" >
-				<div ng-init=""class="well well-sm cm-directory-tracker-chat-content" ng-click="setDirectoryChat($index, true); openChatModule();" ng-class="{'cm-directory-tracker-active-chat': $index == directory_index, 'cm-directory-tracker-new-chat': chat.isNewMessage == true && $index != directory_index}">
-					<div class="cm-directory-tracker-chat-truncate-title">
-						<span  ng-show="chat.isGroupChat == false" class="glyphicon glyphicon-user pull-left" ng-class="{'Online' : chat.to_user_chat_presence.$value == 'Online' && chat.to_user_online.$value == true }"></span>
-						<span class="pull-left" ng-show="chat.isGroupChat == true">
+		<div ng-repeat="contact_chat in module.chats.contact.list track by $index">
+			<div class="cm-main-panel-tracker-chat" >
+				<div ng-init=""class="well well-sm cm-main-panel-tracker-chat-content" ng-click="setDirectoryChat($index, true); openChatModule();" ng-class="{'cm-main-panel-tracker-active-chat': $index == directory_index, 'cm-main-panel-tracker-new-chat': chat.isNewMessage == true && $index != directory_index}">
+					<div class="cm-main-panel-tracker-chat-truncate-title">
+						<span  ng-show="chat.attr.is_group_chat == false" class="glyphicon glyphicon-user pull-left" ng-class="{'Online' : chat.contact.presence.state == 'Online' && chat.contact.online == true }"></span>
+						<span class="pull-left" ng-show="chat.attr.is_group_chat == true">
 							<i  class="fa fa-comments"></i>
-							<span ng-if="!chat.isDirectoryChat">({{chat.group_count}})</span>
+							<span ng-if="!chat.attr.is_group_chat">({{chat.group_count}})</span>
 						</span>
-						<span ng-show="chat.to_user_chat_presence.$value != 'Busy'" style="position:relative; margin-left:2px;" ng-bind="chat.tag || chat.chat_description || chat.to_user_name" ng-class="{'Busy' : chat.to_user_chat_presence.$value != 'Online' && chat.isGroupChat === false}"></span><!--Name of the Person the user is Chatting, hover when group chat to display of participating users --> 
-						<span class="Busy" ng-show="chat.to_user_chat_presence.$value == 'Busy' && chat.isGroupChat == false">{{chat.to_user_f_name}} is Busy</span> <!-- Show only when User sets chat-presence to busy --> 
-						<span><i ng-show="$index != directory_index && chat.active_typing_user_socket.$value == true" class="fa fa-spinner fa-spin cm-directory-tracker-typing"></i></span> <!-- Activates when someone is typing a message to the user --> 
+						<span ng-show="chat.contact.presence.state != 'Busy'" style="position:relative; margin-left:2px;" ng-bind="chat.tag || chat.chat_description || chat.contact.name" ng-class="{'Busy' : chat.contact.presence.state != 'Online' && chat.attr.is_group_chat === false}"></span><!--Name of the Person the user is Chatting, hover when group chat to display of participating users -->
+						<span class="Busy" ng-show="chat.contact.presence.state == 'Busy' && chat.attr.is_group_chat == false">{{chat.contact.first_name}} is Busy</span> <!-- Show only when User sets chat-presence to busy -->
+						<span><i ng-show="$index != directory_index && chat.contact.is_typing == true" class="fa fa-spinner fa-spin cm-main-panel-tracker-typing"></i></span> <!-- Activates when someone is typing a message to the user -->
 					</div>
-					<span ng-show="$index != directory_index && chat.unread > 0" class="badge cm-directory-tracker-item-unread-count" ng-class="{'chat-new-message': chat.isNewMessage == true}" ng-bind="chat.unread"></span> <!-- Displays the count of any messages received while the chat box was closed --> 
-					<div class="cm-directory-tracker-icons"> <!-- option icons -->
+					<span ng-show="$index != directory_index && chat.ux.unread > 0" class="badge cm-main-panel-tracker-item-unread-count" ng-class="{'chat-new-message': chat.isNewMessage == true}" ng-bind="chat.ux.unread"></span> <!-- Displays the count of any messages received while the chat box was closed -->
+					<div class="cm-main-panel-tracker-icons"> <!-- option icons -->
 						<span ng-click="removeChatSession(chat)" class="glyphicon glyphicon-remove pull-right" style="color:red;"></span> <!-- Displays whether sound is enabled for this chat -->
-						<span ng-init="chat.isSound = true" ng-click="toggleChatSound(chat)" style="margin-right:2px;" class="pull-right" ng-class="{'glyphicon glyphicon-volume-up' : chat.isSound == true, 'glyphicon glyphicon-volume-off' : chat.isSound == false}"></span> <!-- Displays whether sound is enabled for this chat -->
+						<span ng-init="chat.attr.is_sound = true" ng-click="toggleChatSound(chat)" style="margin-right:2px;" class="pull-right" ng-class="{'glyphicon glyphicon-volume-up' : chat.attr.is_sound == true, 'glyphicon glyphicon-volume-off' : chat.attr.is_sound == false}"></span> <!-- Displays whether sound is enabled for this chat -->
 					</div>
-				</div><!-- End of Upper Chat header --> 
+				</div><!-- End of Upper Chat header -->
 			</div>
 		</div>
 	</div>
-	<div class="cm-directory-tracker-label-bottom" class="well well-sm">Tracker</div>
+	<div class="cm-main-panel-tracker-label-bottom" class="well well-sm">Tracker</div>
 </div>

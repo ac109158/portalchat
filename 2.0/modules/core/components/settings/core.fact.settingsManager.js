@@ -148,7 +148,6 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
     this.setFirebaseSettings = function() {
         that.fb.location.settings.once('value', function(snapshot) {
             angular.forEach(snapshot.val(), function(value, key) {
-                console.log(key, ":", value);
                 that.global[key] = value;
             });
 

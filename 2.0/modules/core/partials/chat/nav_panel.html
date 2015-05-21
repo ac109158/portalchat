@@ -1,32 +1,6 @@
-<div id="cm-directory-nav">
-	<div class="cm-chat-spacer"></div>
-	<div>
-		<ul class="nav nav-tabs nav-justified slim" style="width:98%; margin:0px auto; padding-left:0em;">
-<!-- 			<li><a ng-click="setContactsFocus()" class="cm-directory-content-link active" href=".#contacts" data-toggle="tab" id="contacts_link"><i class="fa fa-book fa-2x"></i></a></li> -->
-			<li><a ng-click="setContactsFocus();updateTmp(1); getNotifyPermission();" class="cm-directory-content-link"  id="contacts_link"><i class="cm-nav-icon fa fa-book fa-2x" ng-class="{'activeTab': tmp == 1}"></i></a></li>
-			
-<!-- 			<li><a ng-click="setMandatoryFocus(sm_group_chat)" class="cm-directory-content-link" href=".#sm_group_chat" data-toggle="tab" id="sm_group_chat_link"><div ng-show="sm_group_chat.unread > 0"  class="badge directory-listing-unread-count" ng-bind="sm_group_chat.unread"></div><i class="fa fa-users fa-2x"></i></a></li> -->
-			<li><a ng-click="setMandatoryFocus(sm_group_chat); updateTmp(2);" class="cm-directory-content-link" id="sm_group_chat_link"><div ng-show="sm_group_chat.unread > 0"  class="badge directory-listing-unread-count" ng-bind="sm_group_chat.unread"></div><i class="cm-nav-icon fa fa-users fa-2x" ng-class="{'activeTab': tmp == 2}"></i></a></li>
-			
-<!-- 			<li><a ng-click="setMandatoryFocus(sm_tech_chat)" class="cm-directory-content-link" href=".#sm_tech_chat" data-toggle="tab" id="sm_tech_chat_link"><div  ng-show="sm_tech_chat.unread > 0" class="badge directory-listing-unread-count" ng-bind="sm_tech_chat.unread"></div><i class="fa fa-wrench fa-2x"></i></a></li> -->
-			<li><a ng-click="setMandatoryFocus(sm_tech_chat); updateTmp(3);" class="cm-directory-content-link" id="sm_tech_chat_link"><div  ng-show="sm_tech_chat.unread > 0" class="badge directory-listing-unread-count" ng-bind="sm_tech_chat.unread"></div><i class="cm-nav-icon fa fa-wrench fa-2x" ng-class="{'activeTab': tmp == 3}"></i></a></li>
-			
-<!-- 			<li ng-show="mc || position == 33"><a ng-click="setMandatoryFocus(mc_group_chat)" class="cm-directory-content-link" href=".#mc_group_chat" data-toggle="tab" id="mc_group_chat_link"><div  ng-show="mc_group_chat.unread > 0" class="badge directory-listing-unread-count" ng-bind="mc_group_chat.unread"></div><i style="z-index: 108;" class="fa fa-headphones fa-2x"></i></a></li> -->
-			<li ng-show="mc || position == 33"><a ng-click="setMandatoryFocus(mc_group_chat);updateTmp(4);" class="cm-directory-content-link" id="mc_group_chat_link"><div  ng-show="mc_group_chat.unread > 0" class="badge directory-listing-unread-count" ng-bind="mc_group_chat.unread"></div><i style="z-index: 108;" class="cm-nav-icon fa fa-headphones fa-2x" ng-class="{'activeTab': tmp == 4}"></i></a></li>
-			
-<!-- 			<li ng-show="activeChats.length > 0 && layout.$value == 1"><a id="directory_chat_link" ng-click="referenceDirectoryItem();" ng-class="{'disabled': activeChats.length == 0}" class="cm-directory-content-link"  href=".#directory_chat" data-toggle="tab"><i class="fa fa-comments fa-2x"></i></a></li> -->
-			<li ng-show="activeChats.length > 0 && layout == 1"><a id="directory_chat_link" ng-click="referenceDirectoryItem(); updateTmp(5);" class="cm-directory-content-link"><i class="cm-nav-icon fa fa-comments fa-2x" ng-class="{'activeTab': tmp == 5}"></i></a></li>
-			
-			<li ng-if="user_profile.role == 'PlusOne Admin' ||  user_profile.role == 'Administrator' || user_profile.role == 'Shift Manager'">
-				<a ng-click="toggleNavMenu()" class="cm-directory-content-link"><i class="cm-nav-icon fa fa-plus fa-2x"></i></a>
-				<ul ng-if="showNavMenu" id="cm-directory-nav-menu-list" class="cm-directory-nav-menu-list" style="position:absolute;">
-<!-- 					<li ng-if="isGroupAvailable('mc')"><a ng-click="getDirectoryChat('mc_group_chat')" class="cm-directory-chat-listing">{{"MC Group Chat"}}</a></li> -->
-<!-- 					<li ng-if="isGroupAvailable('admin')"><a ng-click="getDirectoryChat('admin_group_chat');" class="cm-directory-chat-listing">{{"Admin Group Chat"}}</a></li> -->
-					<div>
-						<li ng-repeat="mc in mc_array track by $index | orderBy:['name']"><a ng-click="getDirectoryChat('mc_' + mc.user_id + '_group_chat');" class="cm-directory-chat-listing">{{mc.name + " Team Chat"}}</a></li>
-					</div>
-				</ul>
-			</li>
-		</ul> 
-	</div>
+<div id="cm-main-panel-nav">
+    <div class="cm-chat-spacer"></div>
+    <ul class="nav nav-tabs nav-justified slim" style="width:98%; margin:0px auto; padding-left:0em;">
+        <li ng-repeat="tab in module.tab.list"><a ng-click="ui.fx.setMainPanelTab(tab.index_position);" class="cm-main-panel-content-link" id="{{tab.session_key}}_link"><div ng-show="tab.unread"  class="badge directory-listing-unread-count" ng-bind="tab.unread"></div><i class="cm-nav-icon {{tab.icon_class}}" ng-class="{'cm-active-tab': module.tab.current.index_position == tab.index_position}"></i></a></li>
+    </ul>
 </div>

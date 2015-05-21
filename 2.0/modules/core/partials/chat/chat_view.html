@@ -1,0 +1,63 @@
+<div ng-cloak id="chat-module" window-resize class="cm-fixed-wrapper" style="font-size:{{module.global.font_size}}px; width:{{module.setting.main_panel.width}}px; height:{{module.setting.main_panel.height}}px;">
+    <div ng-if="module.state.is_ready">
+        <div ng-if="!module.global.is_open && module.setting.is_external_window_instance == false" style="position:fixed; right:50px; bottom:50px; width:40px; height:40px; background:transparent; text-decoration:none;">
+            <i ng-click="ui.fx.openChatModule();" class="cm-open-icon fa fa-comment fa-4x pointer" ng-class="{'Busy':alertToOpen == true}"></i>
+        </div>
+        <div id="cm-main-panel" ng-if="module.global.is_open && module.setting.is_external_window_instance == false">
+            <div id="cm-main-panel-header">
+                <!-- <img style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/> -->
+                <img class="pointer" style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="{{module.contact_list.setting.default_avatar}}" width=35 height=35/>
+                <span style="margin-left:5px; line-height:20px;" ng-bind="module.user.name"></span>
+                <span style="background:white; width:100px; border-radius:10px; margin-left:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em;" ng-class="{'Busy' : module.user.presence != 'Online' && module.user.presence != 'Offline' && module.user.online == true ,'Offline' : module.user.online == false || module.user.presence == 'Offline','Online' : module.user.presence == 'Online' && module.user.online == true}">{{module.user.presence}}</span>
+                <div class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.closeChatModule();">
+                    <center><span class="fa fa-times fa-1x"></span></center>
+                </div>
+                <div class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.toggleMainPanelMenu('setting');">
+                    <center><span class="fa fa-cog"></span></center>
+                </div>
+            </div>
+            <div id="cm-main-panel-header-panel">
+                <div ng-show="module.menu.setting" style="position:absolute; right:0;">
+                    <cm-main-settings></cm-main-settings>
+                </div>
+                <div ng-show="module.menu.profile" style="position:absolute;">
+                    <cm-profile></cm-profile>
+                </div>
+            </div>
+            <div id="cm-main-panel-content-wrapper">
+                <div id="cm-main-panel-upper-panel" class="well well-sm well-slim">
+                    <div ng-if="module.global.layout == 1">
+                        <cm-main-panel-tracker-panel></cm-main-panel-tracker-panel>
+                        <chat-module-nav-panel></chat-module-nav-panel>
+                    </div>
+                </div>
+                <!--                <div ng-if="module.global.layout == 3" class="cm-main-panel-section" id="cm-main-panel-tracker-3">
+                    <cm-main-panel-tracker-panel></cm-main-panel-tracker-panel>
+                </div>
+                <div ng-if="module.global.layout == 3 && isPageLoaded" class="cm-main-panel-section" style="background:rgba(255,255,255,0.4);">
+                    <directory-chat></directory-chat>
+                </div>
+                <div ng-if="module.global.layout == 3" class="cm-main-panel-section">
+                    <chat-module-nav-panel></chat-module-nav-panel>
+                </div> -->
+                <div style="position:relative; display: block; width: 100%; height: 800px; overflow-y:auto; overflow-x:hidden;" class="min-scroll">
+                    <div ng-if="module.tab.current.index_position == 0" id="contacts">
+                        <contacts></contacts>
+                    </div>
+                    <!--            <div ng-if="module.tab.current.index_position == 1" id="sm_group_chat">
+                        <group-chat></group-chat>
+                    </div>
+                    <div ng-if="module.tab.current.index_position == 2" id="sm_tech_chat">
+                        <tech-chat></tech-chat>
+                    </div>
+                    <div ng-if="module.tab.current.index_position == 3 && position == 33 || module.tab.current.index_position == 4 && mc" id="mc_group_chat">
+                        <mc-chat></mc-chat>
+                    </div>
+                    <div ng-if="module.tab.current.index_position == 4 && module.global.layout == 1 || module.tab.current.index_position == 4 && module.global.layout == null" ng-show="activeChats.length > 0" id="directory_chat">
+                        <directory-chat></directory-chat>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -48,9 +48,7 @@ angular.module('portalchat.core').service('NotificationManager',['$timeout', 'Co
     };
 
     this.playSound = function(name) {
-        console.log(that.setting.is_global_sound, ':',!that.state.is_playing_sound, ':',that.sound[name]);
         if (that.setting.is_global_sound && !that.state.is_playing_sound && that.sound[name]) {
-
             that.state.is_playing_sound = true;
             that.sound[name].play();
             $timeout(function(){

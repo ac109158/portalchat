@@ -33,16 +33,6 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
             CoreManager.clearBrowserNotificationList();
         });
 
-        $scope.chat = function(agent) {
-            if ($scope.request_chat === true) {
-                $scope.request_chat = false;
-                $rootScope.$broadcast('requestChatSession', agent);
-                $timeout(function() {
-                    $scope.request_chat = true;
-                }, 2000);
-            }
-        };
-
         $scope.$on('close-external-window-instance', function(event) {
             $log.debug('close-external-window-instance');
             CoreManager.closeExternalWindowInstance();

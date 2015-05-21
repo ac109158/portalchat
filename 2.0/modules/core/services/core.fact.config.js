@@ -99,33 +99,32 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
         index_position: 0,
         type: 'misc',
         session_key: 'contacts',
+        icon_class: 'fa fa-book fa-2x'
     }, {
         title: 'Group Chat',
         index_position: 1,
         type: 'directory',
-        session_key: 'sm_group_chat'
+        session_key: 'sm_group_chat',
+        icon_class: 'fa fa-users fa-2x'
     }, {
         title: 'Tech Chat',
         index_position: 2,
         type: 'directory',
-        session_key: 'sm_tech_chat'
-    }, {
-        title: ' MC Group Chat',
-        index_position: 3,
-        type: 'directory',
-        session_key: 'mc_group_chat'
-    }, {
+        session_key: 'sm_tech_chat',
+        icon_class: 'fa fa-wrench fa-2x'
+    },
+    {
         title: 'Chat',
-        index_position: 4,
+        index_position: 3,
         type: 'contact',
-        session_key: ''
+        session_key: '',
+        icon_class: 'fa fa-comments fa-2x'
     }];
     this.module.tab.map = {
         'contacts': 0,
         'sm_group_chat': 1,
         'sm_tech_chat': 2,
-        'mc_group_chat': 3,
-        'contact': 4
+        'contact': 3
     };
     this.module.setting = {};
     this.module.setting.presence_states = [{value:'Online', title:'Available'}, {value:'Away', title:'Away'}, {value:'Busy', title:'Busy'},{value:'At Lunch', title:'At Lunch'},{value:'On Break', title:'On Break'},{value:'Training', title:'Training'}]; // optional chat stattes

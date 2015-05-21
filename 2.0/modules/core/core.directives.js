@@ -10,17 +10,25 @@ directive('avatar', function() {
         template: '<img class="media-object thumbnail" ng-src="/components/com_callcenter/images/avatars/{{avatar}}-90.jpg">'
     };
 }).
-directive('chatModule', function() {
+directive('cmView', function() {
     return {
-        restrict: 'EA',
+        restrict: 'E',
         replace: true,
-        templateUrl: './modules/core/partials/chat/chat_module.html',
+        templateUrl: './modules/core/partials/chat/chat_view.html',
+        link: function(scope, elm, attrs) {}
+    };
+}).
+directive('cmMainSettings', function() {
+    return {
+        restrict: 'E',
+        replace: true,
+        templateUrl: './modules/core/partials/chat/main_settings.html',
         link: function(scope, elm, attrs) {}
     };
 }).
 directive('chatModuleExternal', function() {
     return {
-        restrict: 'EA',
+        restrict: 'E',
         replace: true,
         templateUrl: './modules/core/partials/chat/chat_module_external.html',
         link: function(scope, elm, attrs) {}
@@ -491,13 +499,13 @@ directive('directoryItemScroll', function($timeout, $parse) {
                 if (value === true) {
                     scope.safeApply(function() {
                         $timeout(function() {
-                            document.getElementById('cm-directory-tracker-content').addClass('cm-no-scroll');
-                            $('#cm-directory-tracker-content').animate({
+                            document.getElementById('cm-main-panel-tracker-content').addClass('cm-no-scroll');
+                            $('#cm-main-panel-tracker-content').animate({
                                 scrollTop: elem[0].offsetTop - 100
                             });
                             /*              document.getElementById('chat-module-tracker-content').scrollTop = elem[0].offsetTop - 115;      */
 
-                            document.getElementById('cm-directory-tracker-content').removeClass('cm-no-scroll');
+                            document.getElementById('cm-main-panel-tracker-content').removeClass('cm-no-scroll');
                         });
                     })
                 }

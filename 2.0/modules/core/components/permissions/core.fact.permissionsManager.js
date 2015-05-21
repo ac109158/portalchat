@@ -6,7 +6,7 @@ angular.module('portalchat.core').factory('PermissionsManager', ['$rootScope', '
 
     this.group = {};
     this.group.super_admin = ['113'];
-    this.group.admin = ['Administrator', 'Shift Manager'];
+    this.group.admin = ['Administrator', 'Shift Manager', 'PlusOne Admin'];
 
 
     this.permissions = {};
@@ -25,7 +25,7 @@ angular.module('portalchat.core').factory('PermissionsManager', ['$rootScope', '
     };
 
     this.permissions.hasAdminRights = function(){
-        if(that.group.admin.indexOf(UserManager.user.position) != -1){
+        if(that.group.admin.indexOf(UserManager.user.role) != -1){
             return true;
         }
         return false;

@@ -1,88 +1,88 @@
-<div class="cm-directory-chat-panel-content"  style=" position:relative; display:block; width:100%; height:{{cm_directory_chat_height + vertical_adjust}}px; background:rgba(69,106,151,0.3);" ng-class="{'chat-slide-enter': directory_index == null}">
-	<div class="cm-directory-label" style="height:{{chat_label_height}}px; background:white;">
+<div class="cm-main-panel-chat-panel-content"  style=" position:relative; display:block; width:100%; height:{{cm_directory_chat_height + vertical_adjust}}px; background:rgba(69,106,151,0.3);" ng-class="{'chat-slide-enter': directory_index == null}">
+	<div class="cm-main-panel-label" style="height:{{chat_label_height}}px; background:white;">
 		<span style="margin-right:5px;" class = "pull-left" ng-bind="admin_group_chat.chat_description"></span>
 		<span ng-show="admin_group_chat.isMorePrev"  ng-click="loadMoreGroupChat(admin_group_chat)" ng-class="{'glyphicon glyphicon-circle-arrow-up cm-pointer pull-left': admin_group_chat.reload != true , 'fa fa-refresh fa-spin pull-left': admin_group_chat.reload == true}"></span>
-		<span href="#" class="cm-directory-chat-header-icon glyphicon glyphicon-cog pull-right" ng-click="toggleUserOptions(admin_group_chat);"></span> <!-- toggles option box --> 
-		
-		<span href="#" class="cm-directory-chat-header-icon pull-right" ng-click="admin_group_chat.isSound = !admin_group_chat.isSound" ng-class="{'glyphicon glyphicon-volume-up' : admin_group_chat.isSound == true || admin_group_chat.isSound == 'true', 'glyphicon glyphicon-volume-off' : admin_group_chat.isSound == false}"></span> <!-- Displays whether sound is enabled for this chat -->
-	
-		<div ng-show="admin_group_chat.addTopicOn" class="cm-directory-chat-add-topic-wrapper" ng-submit="addTopic(admin_group_chat)">
+		<span href="#" class="cm-main-panel-chat-header-icon glyphicon glyphicon-cog pull-right" ng-click="toggleUserOptions(admin_group_chat);"></span> <!-- toggles option box -->
+
+		<span href="#" class="cm-main-panel-chat-header-icon pull-right" ng-click="admin_group_chat.isSound = !admin_group_chat.isSound" ng-class="{'glyphicon glyphicon-volume-up' : admin_group_chat.isSound == true || admin_group_chat.isSound == 'true', 'glyphicon glyphicon-volume-off' : admin_group_chat.isSound == false}"></span> <!-- Displays whether sound is enabled for this chat -->
+
+		<div ng-show="admin_group_chat.addTopicOn" class="cm-main-panel-chat-add-topic-wrapper" ng-submit="addTopic(admin_group_chat)">
 			<form class="form slim" role="form">
 				<div class="form-group slim">
 					<input style="width:100%;" type="text" spellcheck="true"  pattern=".{5,40}" maxlength="35" required title="5 characters minimum"  class="topic-input" class="form-control" placeholder="Enter a topic for this chat..." ng-model="admin_group_chat.topic_description"  focus-me="admin_group_chat.isTopicFocus">
 				</div>
-				<button type="submit" style="width:0px;" class='hidden' </button> <!-- hidden --> 
-			</form>	
+				<button type="submit" style="width:0px;" class='hidden' </button> <!-- hidden -->
+			</form>
 			<div class="row slim" style="margin-top:3px; height:2px;">
-				<hr style="color:white; background:white; clear:both; ">	
-			</div>	
+				<hr style="color:white; background:white; clear:both; ">
+			</div>
 		</div>
 	</div>
-	
-	<div id="{{'topic_' + admin_group_chat.session_key + '_wrapper'}}" ng-show="admin_group_chat.topic_location.$value != false && admin_group_chat.topic_location.$value != null " ng-click="clearDirectory(admin_group_chat)" class="cm-directory-chat-topic-wrapper">
+
+	<div id="{{'topic_' + admin_group_chat.session_key + '_wrapper'}}" ng-show="admin_group_chat.topic_location.$value != false && admin_group_chat.topic_location.$value != null " ng-click="clearDirectory(admin_group_chat)" class="cm-main-panel-chat-topic-wrapper">
 	<span ng-click="toggleTopic(admin_group_chat)" class="cm-chat-topic-icon glyphicon glyphicon-pushpin pull-left"></span>
-		<div class="cm-directory-chat-topic min-scroll"  ng-class="{'truncated':admin_group_chat.isTopicTruncated == true}">
+		<div class="cm-main-panel-chat-topic min-scroll"  ng-class="{'truncated':admin_group_chat.isTopicTruncated == true}">
 			<span id="{{'topic_' + admin_group_chat.session_key}}" maxlength=60 ng-enter-press="updateTopic(admin_group_chat)" contenteditable="{{ true}}"  ng-class="{'selectable' : admin_group_chat.admin == directory_chat.user_id ,'no-select' : admin_group_chat.admin != admin_group_chat.user_id}"  ng-bind="admin_group_chat.topic_location.$value"></span>
 		</div>
 		<span href="#" ng-if="true" ng-click="removeTopic(admin_group_chat)" class="cm-chat-topic-close glyphicon pull-right glyphicon-remove"></span>
 	</div>
-	
-	<div chat-anim ng-show="admin_group_chat.showUserOptions == true" class="cm-directory-chat-user-option-wrapper">
-		<div href="#" class="cm-chat-user-option" ng-click="toggleChatSound(admin_group_chat)"> <!-- option to toggle sound on and off for chat --> 
+
+	<div chat-anim ng-show="admin_group_chat.showUserOptions == true" class="cm-main-panel-chat-user-option-wrapper">
+		<div href="#" class="cm-chat-user-option" ng-click="toggleChatSound(admin_group_chat)"> <!-- option to toggle sound on and off for chat -->
 			<span href="#" class="no-select" ng-class="{'glyphicon glyphicon-volume-up' : admin_group_chat.isSound == false || admin_group_chat.isSound == 'false', 'glyphicon glyphicon-volume-off' : admin_group_chat.isSound == true || admin_group_chat.isSound == 'true'}"></span>
-			<span class="option-text" ng-show="admin_group_chat.isSound == false || admin_group_chat.isSound == 'false'" >Sound On</span> <!-- toggle --> 
-			<span class="option-text" ng-show="admin_group_chat.isSound == true || admin_group_chat.isSound == 'true'" href="#">Sound Off</span> <!-- toggle --> 
+			<span class="option-text" ng-show="admin_group_chat.isSound == false || admin_group_chat.isSound == 'false'" >Sound On</span> <!-- toggle -->
+			<span class="option-text" ng-show="admin_group_chat.isSound == true || admin_group_chat.isSound == 'true'" href="#">Sound Off</span> <!-- toggle -->
 		</div>
 
-		<div ng-if="admin_group_chat.topic_location.$value == false" class="cm-chat-user-option"  ng-click="addTopicOn(admin_group_chat)" > <!-- Option to add topic to chat --> 
+		<div ng-if="admin_group_chat.topic_location.$value == false" class="cm-chat-user-option"  ng-click="addTopicOn(admin_group_chat)" > <!-- Option to add topic to chat -->
 			<span href="#" class="glyphicon glyphicon-star"></span>
 			<span class="option-text">Add Topic</span>
 		</div>
-		
-		<div class="cm-chat-user-option" ng-click="sendChatReceipt(admin_group_chat)" > <!-- Option to send chat history to user email --> 
+
+		<div class="cm-chat-user-option" ng-click="sendChatReceipt(admin_group_chat)" > <!-- Option to send chat history to user email -->
 			<span href="#" class=" glyphicon glyphicon-envelope"></span>
-			<span class="option-text">Chat Receipt</span>			
-		</div>			
+			<span class="option-text">Chat Receipt</span>
+		</div>
 	</div> <!-- end of user option pop up -->
-	<div ng-show ="admin_group_chat.emotions == true;" class="well well-sm slim cm-directory-chat-content-wrapper min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height + vertical_adjust}}px;">
+	<div ng-show ="admin_group_chat.emotions == true;" class="well well-sm slim cm-main-panel-chat-content-wrapper min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height + vertical_adjust}}px;">
 		<div ng-repeat="emo in emojis track by $index ">
 			<span ng-click="addEmoji(emo, admin_group_chat);" style="float:left;" ng-bind-html="emo | emoji" ></span>
 		</div>
 	</div>
-	<div  scroll-to-bottom="admin_group_chat.scroll_bottom == true" scroll-to-top="admin_group_chat.scroll_top == true" stick-to-bottom="admin_group_chat.stick_to_bottom" id="{{'message_display_' + admin_group_chat.index_position}}" ng-click="clearDirectory(admin_group_chat)" class="cm-directory-chat-message-display min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height + vertical_adjust}}px;" ng-class="{'chat-fade-out cm-no-scroll': isReloading(admin_group_chat)}">
+	<div  scroll-to-bottom="admin_group_chat.scroll_bottom == true" scroll-to-top="admin_group_chat.scroll_top == true" stick-to-bottom="admin_group_chat.stick_to_bottom" id="{{'message_display_' + admin_group_chat.index_position}}" ng-click="clearDirectory(admin_group_chat)" class="cm-main-panel-chat-message-display min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height + vertical_adjust}}px;" ng-class="{'chat-fade-out cm-no-scroll': isReloading(admin_group_chat)}">
 		<div ng-if="chat.isTopSpacer"></div>
 		<div style="height:{{admin_group_chat.topic_height}}px;"></div>
-		<div class="cm-directory-chat-message-section">
-			<!-- Start of messages for an individual chat  --> 
+		<div class="cm-main-panel-chat-message-section">
+			<!-- Start of messages for an individual chat  -->
 			<div ng-show="admin_group_chat.addTopicOn" class="med-spacer "></div>
 			<div ng-repeat=" message in admin_group_chat.group_chats track by $index">
 				<div class="cm-chat-spacer"  ng-show = "!(message.from_prev_author)"></div>
-				<div ng-if="message.author == admin_group_chat.internal_reference" class="cm-directory-chat-internal-message"> <!-- ng show if this is an internal chat message --> 
+				<div ng-if="message.author == admin_group_chat.internal_reference" class="cm-main-panel-chat-internal-message"> <!-- ng show if this is an internal chat message -->
 					<p class="internal-chat text-muted" style="word-wrap: break-word" ng-bind-html="message.text | linky:'_blank' | emoji "></p>
 				</div>
-				<div ng-if="message.author != admin_group_chat.internal_reference" > <!-- ng-repeat of messgaes stored as a group chat --> 
+				<div ng-if="message.author != admin_group_chat.internal_reference" > <!-- ng-repeat of messgaes stored as a group chat -->
 					<div ng-init="getAuthorAvatar(message, false); isMessagePastHour(message, admin_group_chat.time_reference); isLastMessagePastMinute(message, admin_group_chat.group_chats[$index-1].time); isAuthorSameAsLast(message, admin_group_chat.group_chat_log[$index-1]); isMessageFromUser(message);"></div>
-					<div  class="cm-chat-message-body" > <!-- ng-show if this is not an internal chat message -->  				
+					<div  class="cm-chat-message-body" > <!-- ng-show if this is not an internal chat message -->
 						<div ng-if="message.author == admin_group_chat.user_id && admin_group_chat.group_chat_log[$index-1] != message.author " class="cm-chat-message-avatar-left"  >
 							<center><img ng-src="{{message.avatar}}" class="cm-chat-message-avatar  one-edge-shadow" alt="..."></center>
-							<div class="cm-directory-chat-speek-arrow-left"></div>
+							<div class="cm-main-panel-chat-speek-arrow-left"></div>
 						</div>
 						<div ng-if="message.author != admin_group_chat.user_id && !(message.from_prev_author)" class="cm-chat-message-avatar-right"  >
 							<center><img ng-dblclick="chat(admin_group_chat.user_log['user_' + message.author])" ng-src="{{message.avatar}}" class="cm-chat-message-avatar  one-edge-shadow" alt="..."></center>
-							<div class="cm-directory-chat-speek-arrow-right"></div>
+							<div class="cm-main-panel-chat-speek-arrow-right"></div>
 						</div>
 						<div ng-show="admin_group_chat.group_chat_log[$index-1] != message.author" class="cm-chat-message-timestamp cm-chat-message-timestamp-border" ng-class="{'author-is-other' : message.author != admin_group_chat.user_id, 'author-is-self' : message.author == admin_group_chat.user_id, 'pushLeft' : message.author == admin_group_chat.user_id }">
 							<span class="cm-chat-message-name-left"  ng-show="message.author != admin_group_chat.user_id" ng-bind="message.authorName"></span>
 							<span class="cm-chat-message-name-right" ng-show="message.author == admin_group_chat.user_id" ng-bind="admin_group_chat.self_name"></span>
 							<div ng-class="{'cm-chat-message-timestamp-right' : message.author == admin_group_chat.user_id, 'cm-chat-message-timestamp-left' : message.author != admin_group_chat.user_id}">
 								<span ng-show="message.past_hour" ng-bind="message.time | date:'MM/dd @ h:mma'"></span>
-								<span ng-show="!(message.past_hour)" ng-bind="message.time | {{admin_group_chat.time_format}}"></span>								
+								<span ng-show="!(message.past_hour)" ng-bind="message.time | {{admin_group_chat.time_format}}"></span>
 							</div>
 						</div>
 						<div ng-class="{'alert-info' : message.author != admin_group_chat.user_id, 'alert-warning' : message.author == admin_group_chat.user_id ,'cm-chat-message-new-left no-radius' : admin_group_chat.group_chat_log[$index-1] != message.author, 'cm-chat-message-new-right no-radius' : admin_group_chat.group_chat_log[$index-1] == message.author, 'chat_extend_left no-radius' : admin_group_chat.group_chat_log[$index-1] != message.author &&  message.author != admin_group_chat.user_id ,'chat_extend_right no-radius' : admin_group_chat.group_chat_log[$index-1] == message.author && message.author == admin_group_chat.user_id,'rounded-bottom one-edge-shadow' : $last || admin_group_chat.group_chat_log[$index+1] != message.author}">
 							<div ng-show="message.from_prev_author && message.minute_from_last" class="cm-chat-extend-timestamp" ng-class="{'author-is-other-color' : message.author != admin_group_chat.user_id, 'author-is-self-color' : message.author == admin_group_chat.user_id}">
 								<span ng-show="message.past_hour" ng-bind="message.time | date:'MM/dd @ h:mma'"></span>
-								<span ng-show="!(message.past_hour)" ng-bind="message.time | {{admin_group_chat.time_format}}"></span>										
+								<span ng-show="!(message.past_hour)" ng-bind="message.time | {{admin_group_chat.time_format}}"></span>
 							</div>
 							<p scroll-on-click="isReferencedMessage(message)"  ng-dblclick="addReferenceMessage(admin_group_chat, message )" class="cm-chat-message-text selectable" id="{{'ID_' + admin_group_chat.session_key + '_' + message.priority + '_group'}}" ng-blur="updateGroupMessage(admin_group_chat, message.priority, $index)" ng-enter-press="updateGroupMessage(admin_group_chat, message.priority, $index)" ng-model="message.text"  contenteditable="{{ $last && message.key == admin_group_chat.user_last_chat}}" spellcheck="false" ng-bind-html="message.text  | linky:'_blank' | emoji "></p>
 							<div ng-if="message.reference != undefined ">
@@ -92,31 +92,31 @@
 							</div>
 
 						</div>
-						<div class="chat-spacing"></div>	
+						<div class="chat-spacing"></div>
 						<div class="bottom-spacer"  ng-show="$last"></div>
-					</div> <!-- End of chat-body --> 
+					</div> <!-- End of chat-body -->
 				</div> <!-- end of  non-internal message-->
-			</div> <!-- end of chat message repeat --> 
+			</div> <!-- end of chat message repeat -->
 			<div class="cm-chat-bottom-spacer"></div>
-		</div>  <!-- end of individual message section --> 
+		</div>  <!-- end of individual message section -->
 	</div>
-	
-	<div class="cm-directory-chat-info-wrapper">
-		<div ng-if="admin_group_chat.is_typing_list.length > 0" class="cm-directory-group-typing-wrapper">
+
+	<div class="cm-main-panel-chat-info-wrapper">
+		<div ng-if="admin_group_chat.is_typing_list.length > 0" class="cm-main-panel-group-typing-wrapper">
 			<i class="fa fa-spinner fa-spin pull-left" style="position:relative; top:3px;"></i>
-			<img ng-repeat="avatar in admin_group_chat.is_typing_list track by $index" ng-src="/components/com_callcenter/images/avatars/{{avatar}}-90.jpg" class="cm-directory-group-typing-avatar"/>
+			<img ng-repeat="avatar in admin_group_chat.is_typing_list track by $index" ng-src="/components/com_callcenter/images/avatars/{{avatar}}-90.jpg" class="cm-main-panel-group-typing-avatar"/>
 		</div>
-	</div> 	
-	
+	</div>
+
 	<div style="position:relative; width:100%; margin:0px; padding:1px 0px 0px 0px; height:{{chat_textarea_height}}px;">
-		<textarea ng-click="setDirectoryFocus(admin_group_chat)" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on"  placeholder="Enter chat to the group... " ng-model="admin_group_chat.chat_text"  ng-keydown="isGroupTyping(admin_group_chat)" ng-enter-press="addGroupChatMessage(admin_group_chat)" class="cm-directory-chat-textarea" style="left:2%;" focus-me="admin_group_chat.isTextFocus" ng-tab-press="setNexTab()"></textarea>
+		<textarea ng-click="setDirectoryFocus(admin_group_chat)" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on"  placeholder="Enter chat to the group... " ng-model="admin_group_chat.chat_text"  ng-keydown="isGroupTyping(admin_group_chat)" ng-enter-press="addGroupChatMessage(admin_group_chat)" class="cm-main-panel-chat-textarea" style="left:2%;" focus-me="admin_group_chat.isTextFocus" ng-tab-press="setNexTab()"></textarea>
 	</div>
-	<div ng-click="toggleEmoji(admin_group_chat)" class="cm-directory-chat-emoji-toggle">
-		<center><span ng-blur="toggleEmoji(admin_group_chat)" class="emoji emoji_smiley"></span></center><!-- Toggle for emoji pop up box --> 
+	<div ng-click="toggleEmoji(admin_group_chat)" class="cm-main-panel-chat-emoji-toggle">
+		<center><span ng-blur="toggleEmoji(admin_group_chat)" class="emoji emoji_smiley"></span></center><!-- Toggle for emoji pop up box -->
 	</div>
-	
+
 	<div  class="row" ng-show="admin_group_chat.reference != null">
-		<div class="cm-directory-chat-reference-text">
+		<div class="cm-main-panel-chat-reference-text">
 			<span ng-bind="'@' + admin_group_chat.referenceName"></span>&nbsp;<span ng-bind="'...' + admin_group_chat.referenceText"></span>
 		</div>
 	</div>

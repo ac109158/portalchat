@@ -1,0 +1,146 @@
+<div chat-bar-resize id="chat-module" class="cm-fixed-wrapper" style="font-size:{{font_size}}px;">
+
+<div ng-show="is_external_window.$value == true && isExternalInstance == false" style="position:fixed; right:0px; top:0px; width:40px; height:40px; background:transparent; text-decoration:none; z-index:101;">
+<a ng-click="activateExternalWindow()" class="fa fa-external-link-square fa-4x" ng-class="{'Busy':alertToOpen == true}" style="text-decoration:none; pointer-events:all; cursor:pointer;"><span style="position:relative; z-index:100;left:-25px;font-size:10px; color:white;">Chat</span></a>
+</div>
+
+
+<div ng-if="isPageComplete && !(showUnactive) && unactive_chat_count > 0" class="cm-unactive-chat-toggle" ng-click="toggleUnactive()" ng-bind="unactive_chat_count"></div>
+<div ng-if="isPageComplete && layout == 2 && showUnactive && unactive_chat_count > 0 && isPageComplete" class="cm-unactive-chat-list">
+    <div>
+        <span style="padding-left:2px; font-size:.8em; font-weight:bold;" ng-bind="unactive_chat_count + ' More'"></span>
+        <span ng-click="toggleUnactive()" class="glyphicon glyphicon-remove pull-right"></span>
+    </div>
+    <div class="cm-unactive-chat-list-content">
+        <div ng-click="openUnactiveChat(chat, $index, max_count -1)" class="cm-unactive-chat-list-item" style="background:{{chat.header_color}};" ng-repeat="chat in unactiveChats track by $index">
+            <span class="cm-unactive-chat-list-item-truncate pull-left">
+                <span ng-if="chat.isGroupChat == false" class="pull-left glyphicon glyphicon-user" ng-class="{'Busy' : chat.to_user_chat_presence == 'Busy' && chat.to_user_online.$value == true, 'Online' : chat.to_user_chat_presence == 'Online' && chat.to_user_online.$value == true }" style="float:left;margin-right:5px;"></span>
+                <i ng-show="chat.active_typing_user_socket.$value == true" class="fa fa-spinner fa-spin"></i> <!-- Activates when someone is typing a message to the user -->
+                <span ng-show="chat.isGroupChat === true" style="float:left;margin-right:5px;">
+                    <i  class="fa fa-comments" ></i>
+                    <span>({{chat.group_count}})</span>
+                </span>
+                <span ng-bind="chat.tag || chat.chat_description || chat.to_user_name"></span>
+            </span>
+
+            </span>
+            <span style="font-size:1em;top:-3px;" class="pull-right" ng-show="chat.unread > 0" ng-bind="'(' + chat.unread + ')'"></span>
+        </div>
+    </div>
+</div>
+
+<div ng-if="layout == 2 && isChatModuleOpen == false && isPageLoaded">
+    <div style="position:absolute; right:0px; bottom:0px; min-width:250px; width:{{chat_panel_width}}px; max-width:600px; pointer-events:all;" class="no-select cm-main-panel-header">
+        <div ng-dblclick="toggleChatModule(true)">
+            <img ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/>
+            <span style="margin-left:5px; line-height:20px;" ng-bind="name"></span>
+            <span style="background:white; width:100px; border-radius:10px; margin-left:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em; z-index:104"ng-class="{'Busy' : user_chat_presence.$value == 'Busy' && user_online.$value == true ,'Offline' : user_online.$value == false || user_chat_presence.$value == 'Offline','Online' : user_chat_presence.$value == 'Online' && user_online.$value == true}" ng-bind="user_chat_presence.$value"></span>
+        </div>
+    </div>
+</div>
+
+<div ng-show="isPageLoaded && layout != 2 && isExternalWindow == false" style="position:absolute; right:0px; bottom:0px; height:{{chat_module_directory_height}}px;">
+    <div ng-click="openChatModule(); getNotifyPermission();" class="cm-main-panel-open-bar"><a class="glyphicon glyphicon-chevron-left"></a><span ng-if="alertToOpen" style="position:absolute; display:block; width:15px; height:95%; top:2.5%; background:orange;" class="chat-new-message"></span></div>
+</div>
+
+<div ng-show="isPageLoaded" id="chat_module_container" style="position:absolute; right:0px; bottom:0px; height:{{chat_module_directory_height}}px;" ng-class="{'chat-module-open': isChatModuleOpen == true && layout != 2 && isExternalWindow == false, 'chat-module-close': isChatModuleClosing == true && isExternalWindow == false}">
+    <div id="cm-lock-bar" ng-show="layout != 2 && isChatModuleOpen == true  && !isExternalWindow" ng-click="closeChatModule(); getNotifyPermission()" style="right:{{chat_panel_width}}px;" ng-class="{'cm-main-panel-lock-bar-active': chat_module_lock == true, 'cm-main-panel-lock-bar' : chat_module_lock == false}"><a class="glyphicon glyphicon-chevron-right"></a></div>
+    <div  ng-show="isChatModuleOpen == true && isPageLoaded" class="cm-directory" style="position:absolute; bottom:0px; right:0px; min-width:250px; width:{{chat_panel_width}}px; height:100%; z-index:100;">
+        <div  ng-show="isChatModuleOpen == true"  class="cm-main-panel-section" style=" min-width:250px; width:{{(chat_panel_width)}}px;">
+            <div id="cm-main-panel-header" class="cm-main-panel-header">
+                <div class="cm-main-panel-header-left no-select" ng-dblclick="toggleChatModule(false)">
+                    <img  style="pointer-events:all;" ng-click="toggleProfileMenu()" ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/>
+                    <span style="margin-left:5px; line-height:20px;" ng-bind="name"></span>
+                    <span style="background:white; width:100px; border-radius:10px; margin-left:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em; z-index:104;" ng-class="{'Busy' : user_chat_presence.$value != 'Online' && user_chat_presence.$value != 'Offline' && user_online.$value == true ,'Offline' : user_online.$value == false || user_chat_presence.$value == 'Offline','Online' : user_chat_presence.$value == 'Online' && user_online.$value == true}">{{user_chat_presence.$value}}</span>
+
+                    <!--
+<ul style="pointer-events:all;" ng-if="showPresenceMenu" class="cm-presence-menu">
+                        <li ng-click="setPresence('Online')" role="presentation"><a role="menuitem" tabindex="-1" href="#">Online</a></li>
+                        <li ng-click="setPresence('Busy')" role="presentation"><a role="menuitem" tabindex="-1" href="#">Busy</a></li>
+                        <li ng-if="user_profile.role != 'Administrator' || user_profile.role != 'Shift Manager'"ng-click="setPresence('Offline')" role="presentation"><a role="menuitem" tabindex="-1" href="#">Offline</a></li>
+                    </ul>
+-->
+                </div>
+                <div>
+                    <span style="position:absolute; top:6px; right:67px; cursor:pointer; pointer-events:all; z-index:101;" class="fa fa-plus" ng-click="fontUp()"></span>
+                    <span style="position:absolute; top:6px; right:53px; cursor:pointer; pointer-events:all; z-index:101;" class="fa fa-minus " ng-click="fontDown()"></span>
+                    <span ng-if="!isExternalWindow" ng-click="toggleLayout()" style="position:absolute; top:6px; right:37px; cursor:pointer; pointer-events:all; z-index:101;" class="fa fa-trello"></span>
+                    <span ng-if="!isExternalWindow" ng-click="openExternalWindow()" style="position:absolute; top:7px; right:20px; cursor:pointer; pointer-events:all; z-index:101;" class="fa fa-external-link"></span>
+                    <span ng-click="toggleVolumeMenu()" style="position:absolute; top:6px; right:5px; cursor:pointer; pointer-events:all; z-index:101;" class="fa fa-volume-up"></span>
+                    <ul ng-if="showVolumeMenu" class="cm-volume-control">
+                        <li>
+                            <input style="position:relative; width:90%; margin-left:5%;" type="range" min="0" max="10" value="{{sound_level}}" step="1" ng-model="sound_level" ng-mouseup="updateSoundLevel(sound_level)"  ng-blur="toggleVolumeMenu()"/>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div ng-show="showProfileMenu" class="well well-sm slim cm-main-panel-chat-content-wrapper min-scroll" style="display:block; width:100%; height:{{cm_directory_chat_message_display_height - (vertical_adjust - sm_group_chat.topic_height)}}px; z-index:111;">
+                <span ng-click="toggleProfileMenu()" class="glyphicon glyphicon-remove cm-close-profile cm-pointer" style="color:red;"></span>
+                <cm-profile></cm-profile>
+            </div>
+
+            <div id="cm-main-panel-content-wrapper" class="cm-main-panel-content-wrapper" heightd={{chat_module_directory_height - $scope.chat_module_header_heightstyle}}>
+                <div id="cm-main-panel-upper-panel" class="well well-sm slim">
+                    <div ng-if="layout == 1 || layout == null ">
+<!--
+                <div ng-show="activeChats.length > 3" style="width:96%; height:20px; margin:0px auto; padding:10px 5px 0px 5px;">
+                            <input type="range" min="100" max="200" value="{{tracker_panel_size}}" step="5" ng-model="tracker_panel_size"/>
+                        </div>
+-->
+                        <cm-main-panel-tracker-panel></cm-main-panel-tracker-panel>
+                        <chat-module-nav-panel></chat-module-nav-panel>
+                    </div>
+                    <div ng-if="layout == 2" style="padding:0px; margin:0px;">
+                        <chat-module-nav-panel></chat-module-nav-panel>
+                    </div>
+<!--
+                    <div ng-show="layout == 3">
+                        <div ng-show="activeChats.length > 3" style="position:relative; width:100%; margin:0px;">
+                            <input style="position:relative; width:100%; outline: 0;" type="range" min="100" max="200" value="{{tracker_panel_size}}" step="{{Math.floor(200 / activeChats.length)}}" ng-model="tracker_panel_size"/>
+                        </div>
+                    </div>
+-->
+
+                </div>
+                <div ng-if="layout == 3" class="cm-main-panel-section" id="cm-main-panel-tracker-3" >
+                    <cm-main-panel-tracker-panel></cm-main-panel-tracker-panel>
+                </div>
+                <div ng-if="layout == 3 && isPageLoaded" class="cm-main-panel-section" style="background:rgba(255,255,255,0.4);">
+                    <directory-chat></directory-chat>
+                </div>
+    <!--
+            <div ng-show="layout !=2 && directory_index != null && directory_chat.reference == null" id="cm-main-panel-resize-slider-3" style="position:absolute; width:100%; margin:0px; margin-top:-22px; pointer-events:all;">
+                    <input style="width:75%; margin-left:10%;" type="range" min="-50" max="50" value="{{resize_adjustment_3}}" step="5" ng-model="resize_adjustment_3" />
+                </div>
+-->
+                <div ng-if="layout == 3" class="cm-main-panel-section">
+                    <chat-module-nav-panel></chat-module-nav-panel>
+                </div>
+                <div class="cm-main-panel-section">
+                        <div ng-if="tmp == 1" id="contacts"><contacts></contacts></div>
+                        <div ng-if="tmp == 2" id="sm_group_chat"><group-chat></group-chat></div>
+                        <div ng-if="tmp == 3" id="sm_tech_chat"><tech-chat></tech-chat></div>
+                        <div ng-if="tmp == 4 && position == 33 || tmp == 4 && mc" id="mc_group_chat"><mc-chat></mc-chat></div>
+                        <div ng-if="tmp == 5 && layout == 1 || tmp == 5 && layout == null" ng-show="activeChats.length > 0" id="directory_chat"><directory-chat></directory-chat></div>
+                </div>
+            </div>
+        </div>
+<div ng-show="(layout !=2  && directory_chat.reference == null && isPageComplete) || isPageComplete" style="position:absolute; bottom:3px; width:15px; height: 15px; left:4px; text-align:center; padding:0; margin:0; pointer-events:all; cursor:pointer;">
+    <center><span ng-click="resize_vertical = !resize_vertical" ng-class="{'glyphicon glyphicon-resize-horizontal' : resize_vertical != true, 'glyphicon glyphicon-resize-vertical' : resize_vertical == true}" style="position:absolute; width:15px; height:15px; padding:2px 1px 1px 1px; border-radius: 5px; background:rgba(69,106,151,0.6); color:white; font-size:.8em; display:block; text-align:center; pointer-events:all; z-index:108;"></span></center>
+</div>
+<div ng-show="layout == 3 && resize_vertical == true" id="cm-main-panel-resize-slider" style="position:absolute; bottom:5px; width:100%; margin:0px;">
+    <input style="width:75%; margin-left:10%;" type="range" min="-100" max="100" value="{{vertical_adjust}}" step="5" ng-model="vertical_adjust" ng-mouseup="updateVerticalSize()" />
+</div>
+<div ng-show="resize_vertical == false && isPageComplete && isExternalWindow == false" id="cm-main-panel-resize-slider-width" style="position:absolute; bottom:5px; width:100%; margin:0px;">
+    <input style="width:75%; margin-left:10%;" type="range" min="0 " max="100" value="{{width_adjust}}" step="1" ng-model="width_adjust" ng-mouseup="updateWidthSize()" />
+</div>
+<div ng-show="layout == 2 && resize_vertical == true && isPageComplete" id="cm-main-panel-resize-slider-2" style="position:absolute; bottom:2px; width:100%; margin:0px;">
+    <input style="position:relative; top:-3px; width:75%; margin-left:10%;" type="range" min="-100" max="200" value="{{vertical_adjust_2}}" step="5" ng-model="vertical_adjust_2" ng-mouseup="updateVerticalSize2()" />
+</div>
+</div>
+
+
+<ul ng-if="layout == 2 && !isSettingLayout && isPageComplete">
+    <chatbox ng-repeat="chat in activeChats track by $index" details="chat"><chatbox>
+</ul>
+</div>

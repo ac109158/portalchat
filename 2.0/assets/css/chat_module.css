@@ -22,7 +22,7 @@ top: 20px;
 
 /*********************    HELPER CLASSES    *************************/
 
-div#cm-directory-header ul, div#cm-directory-header ul li, div#cm-directory-header ul li a  {
+div#cm-main-panel-header ul, div#cm-main-panel-header ul li, div#cm-main-panel-header ul li a  {
 	min-width:0px;
 	padding:0px;
 	margin:0px;
@@ -160,7 +160,7 @@ text-shadow: 0px 2px 3px #555;
 	background:#ccc;
 }
 
-.cm-directory-list-divider {
+.cm-main-panel-list-divider {
 	height:3px;
 	margin: 0px;
 	padding: 0px;
@@ -598,12 +598,12 @@ input[type='range']::-moz-range-thumb {
 	background:rgba(204,204,204,0.8);
 }
 
-.cm-directory-lock-bar {
+.cm-main-panel-lock-bar {
 	background:rgba(69,106,151,0.8);
 }
 
 
-.cm-directory-lock-bar-active {
+.cm-main-panel-lock-bar-active {
 
 	background:rgba(69,106,151,0.8);
 
@@ -612,7 +612,7 @@ input[type='range']::-moz-range-thumb {
 	background:rbga(206,96,0,.8);
 }
 
-.cm-directory-open-bar {
+.cm-main-panel-open-bar {
 	background:rgba(204,204,204,0.6);
 	height: 100%;
 	min-width:15px;
@@ -630,12 +630,12 @@ input[type='range']::-moz-range-thumb {
 }
 
 
-.cm-directory-section{
+.cm-main-panel-section{
 	margin:0px;
 	padding:0px;
 }
 
-.cm-directory-header {
+.cm-main-panel-header {
 	min-height: 25px;
 	background-color: #456a97;
 	color:white;
@@ -645,7 +645,7 @@ input[type='range']::-moz-range-thumb {
 
 }
 
-.cm-directory-header-left {
+.cm-main-panel-header-left {
 	float:left;
 	width:90%;
 	height:23px;
@@ -654,7 +654,7 @@ input[type='range']::-moz-range-thumb {
 	clear:none;
 }
 
-.cm-directory-header-description {
+.cm-main-panel-header-description {
 	color: #fff;
 	font-size: 1.2px;
 	font-family: Arial, Helvetica, sans-serif;
@@ -665,7 +665,7 @@ input[type='range']::-moz-range-thumb {
 	float:left;
 }
 
-.cm-directory-content-wrapper {
+.cm-main-panel-content-wrapper {
 	display: block;
 	padding-top:2px;
 	width:100%;
@@ -675,7 +675,7 @@ input[type='range']::-moz-range-thumb {
 	margin:0px;
 }
 
-#cm-directory-upper-panel {
+#cm-main-panel-upper-panel {
 	padding:0px;
 	min-height: 0px;
 	margin:0px;
@@ -686,14 +686,14 @@ input[type='range']::-moz-range-thumb {
 }
 
 
-#cm-directory-tracker {
+#cm-main-panel-tracker {
 	width:100%;
 	margin:0px auto;
 	padding:0px;
 	border: none;
 }
 
-.cm-directory-tracker-label {
+.cm-main-panel-tracker-label {
 	font-size:1.2em;
 	min-height: 1.2em;
 	margin:2px;
@@ -706,7 +706,7 @@ input[type='range']::-moz-range-thumb {
 	border: none;
 }
 
-.cm-directory-tracker-label-bottom {
+.cm-main-panel-tracker-label-bottom {
 	font-size:1.2em;
 	min-height: 1.2em;
 	margin-bottom:5px;
@@ -718,7 +718,7 @@ input[type='range']::-moz-range-thumb {
 	border:none;
 }
 
-#cm-directory-tracker-content
+#cm-main-panel-tracker-content
 {
 	padding:5px 5px;
 	border-bottom:none;
@@ -726,7 +726,7 @@ input[type='range']::-moz-range-thumb {
 	overflow-x: hidden;
 }
 
-.cm-directory-tracker-chat {
+.cm-main-panel-tracker-chat {
 	position:relative;
 	min-height:0px;
 	width:33%;
@@ -740,7 +740,7 @@ input[type='range']::-moz-range-thumb {
 	clear:none;
 }
 
-.cm-directory-tracker-chat-content {
+.cm-main-panel-tracker-chat-content {
 	position:relative;
 	display: block;
 	width:100%;
@@ -752,22 +752,22 @@ input[type='range']::-moz-range-thumb {
 }
 
 
-.cm-directory-tracker-active-chat {
+.cm-main-panel-tracker-active-chat {
 	background: #ccc;
 }
 
-.cm-directory-tracker-new-chat {
+.cm-main-panel-tracker-new-chat {
 	background: #4787ED;
 	color:white;
 }
 
-.cm-directory-tracker-typing {
+.cm-main-panel-tracker-typing {
 	position:absolute;
 	left:1px;
 	top:-1px;
 }
 
-.cm-directory-tracker-chat-truncate-title {
+.cm-main-panel-tracker-chat-truncate-title {
 	position:relative;
 	width: 75%;
 	white-space: nowrap;
@@ -777,7 +777,7 @@ input[type='range']::-moz-range-thumb {
 	clear:none;
 }
 
-.cm-directory-tracker-icons {
+.cm-main-panel-tracker-icons {
 	position:absolute;
 	padding: 1px;
 	width:35%;
@@ -787,7 +787,7 @@ input[type='range']::-moz-range-thumb {
 
 }
 
-.cm-directory-chat-panel-content
+.cm-main-panel-chat-panel-content
 {
 		position:relative;
 		clear: both;
@@ -1510,15 +1510,15 @@ input[type='range']::-moz-range-thumb {
 
 /*********************    General Chat ^   *************************/
 
-.cm-directory-contact {
+.cm-main-panel-contact {
 	width:98%;
 	margin-left: 1%;
 	background: rgba(255,255,255,.5);
 }
-.cm-directory-contact:hover {
+.cm-main-panel-contact:hover {
 	background: rgba(255,255,255,.8);
 }
-.cm-directory-contact > span{
+.cm-main-panel-contact > span{
 	font-family: Arial, Helvetica, sans-serif;
 	display:inline-block;
 	font-size:1em;
@@ -1532,7 +1532,7 @@ input[type='range']::-moz-range-thumb {
 	white-space:nowrap;
 }
 
-.cm-directory-label {
+.cm-main-panel-label {
 	width:100%;
 	min-height:25px;
 	display:block;
@@ -1546,12 +1546,12 @@ input[type='range']::-moz-range-thumb {
 	margin: 0px;
 }
 
-.cm-directory-contact > .chat-status{
+.cm-main-panel-contact > .chat-status{
 	float:right;
 	margin: 10px 5px 0px 0px;
 }
 
-.cm-directory-label-decal {
+.cm-main-label-decal {
 	min-height:15px;
 /* 	border-radius: 5px 20px 5px; */
 	border:1px solid #ccc;
@@ -1559,7 +1559,7 @@ input[type='range']::-moz-range-thumb {
 	margin-bottom: 2px;
 }
 
-.cm-directory-label-decal-description {
+.cm-main-label-decal-description {
 	margin:0px auto;
 	text-align:center;
 	font-weight:bold;
@@ -1568,7 +1568,7 @@ input[type='range']::-moz-range-thumb {
 	padding: 0px;
 }
 
-.cm-directory-label-decal-description-inset {
+.cm-main-label-decal-description-inset {
 	margin:0px auto;
 	text-align:center;
 	font-weight:bold;
@@ -1582,7 +1582,7 @@ input[type='range']::-moz-range-thumb {
     padding: 0px;
 }
 
-.cm-directory-active-selection {
+.cm-main-panel-active-selection {
 	background-color:#e2e2e2;
 	border-top:1px solid #ccc;
 	border-bottom:1px solid #ccc;
@@ -1653,7 +1653,7 @@ input[type=text], input[type=password], input[type=email], input[type=number], t
 
 /*********************   Contacts V   *************************/
 
-.cm-directory-contact-online{
+.cm-main-panel-contact-online{
 	padding:2px 5px;
 	height:24px;
 	width:98%;
@@ -1666,7 +1666,7 @@ input[type=text], input[type=password], input[type=email], input[type=number], t
 	cursor: pointer;
 }
 
-.cm-directory-contact-offline{
+.cm-main-panel-contact-offline{
 	padding:2px 2px;
 	height:24px;
 	width:100%;
@@ -1678,37 +1678,37 @@ input[type=text], input[type=password], input[type=email], input[type=number], t
 	cursor: pointer;
 }
 
-.cm-directory-contact-offline:hover, .cm-directory-contact-online:hover{
+.cm-main-panel-contact-offline:hover, .cm-main-panel-contact-online:hover{
 	background-color:rgba(255,255,255,1);;
 	border-top:1px solid rgba(255,255,255,1);
 	border-bottom:1px solid rgba(255,255,255,1);
 }
 
-.cm-directory-contact > img{
+.cm-main-panel-contact > img{
 	width:26px;
 	height:26px;
 	float:left;
 }
 
-.cm-directory-contact-name {
+.cm-main-panel-contact-name {
 	margin-left:5px;
 	font-size:1em;
 }
 
-.cm-directory-contact-status {
+.cm-main-panel-contact-status {
 	position:relative;
 	float: right;
 	top:5px;
 }
 
-#cm-directory-contacts-search {
+#cm-main-panel-contacts-search {
 	position: absolute;
 	width: 100%;
 	height:30px;
 	bottom:0px;
 }
 
-#cm-directory-contacts-search > input{
+#cm-main-panel-contacts-search > input{
 	border:none;
 	background:transparent;
 	width:99%;
@@ -1724,7 +1724,7 @@ input[type=text], input[type=password], input[type=email], input[type=number], t
 /*********************     Contacts ^   *************************/
 
 /*********************     tracker v   *************************/
-.cm-directory-tracker-item-unread-count {
+.cm-main-panel-tracker-item-unread-count {
 	position:absolute;
 	font-size:5px;
 	top:2px;
@@ -1746,19 +1746,19 @@ ul.nav.nav-tabs a:hover {
 	background: transparent;
 }
 
-#cm-directory-nav {
+#cm-main-panel-nav {
 	position:relative;
 	padding-bottom:0px;
 	background:rgba(255,255,255,0.2);
 	border-radius:0px;
 }
 
-#cm-directory-nav ul {
+#cm-main-panel-nav ul {
 	position:relative;
 	margin: 0px auto;
 }
 
-#cm-directory-nav ul li a {
+#cm-main-panel-nav ul li a {
 	position: relative;
 	padding:5px 1px 0px 1px;
 	text-align: center;
@@ -1775,20 +1775,20 @@ ul.nav.nav-tabs a:hover {
 	color:white;
 }
 
-.cm-directory-content-link {
+.cm-main-panel-content-link {
 /* 	width:41.25px; */
 	font-size: .8em;
 	height: 30px;
 	cursor: pointer;
 }
-a.fa.cm-directory-content-link{
+a.fa.cm-main-panel-content-link{
 	padding-top:10px;
 }
-.cm-directory-content-link:hover{
+.cm-main-panel-content-link:hover{
 	background: transparent;
 }
 
-.cm-directory-content-link a {
+.cm-main-panel-content-link a {
 	height: 25px;
 }
 
@@ -1798,7 +1798,7 @@ a.fa.cm-directory-content-link{
 	margin: 0px;
 	width:100px;
 	right: 0px;
-	background:rgba(69,106,151,0.8);
+	background:rgba(255,255,255,0.8);
 	font-size: 1em;
 	text-align: center;
 	z-index:109;
@@ -1822,7 +1822,7 @@ a.fa.cm-directory-content-link{
 	cursor: pointer;
 }
 
-.cm-directory-nav-menu-list {
+.cm-main-panel-nav-menu-list {
 	position:absolute;
 	padding:2px;
 	min-width:200px;
@@ -1837,27 +1837,27 @@ a.fa.cm-directory-content-link{
 	color:black;
 }
 
-.cm-directory-nav-menu-list li {
+.cm-main-panel-nav-menu-list li {
 	background:rgba(255,255,255,.5);
 	height:15px;
 	cursor: pointer;
 	color:black;
 }
 
-.cm-directory-nav-menu-list li a {
+.cm-main-panel-nav-menu-list li a {
 	font-size: .8em;
 	text-decoration: none;
 	outline:0;
 	cursor: pointer;
 }
 
-.cm-directory-nav-menu-list li:hover {
+.cm-main-panel-nav-menu-list li:hover {
 	background:rgba(255,255,255,.8);
 	color:black;
 }
 
 
-.cm-directory-chat-listing{
+.cm-main-panel-chat-listing{
 
 	color:black;
 }
@@ -1865,14 +1865,14 @@ a.fa.cm-directory-content-link{
 /*********************     Nav Panel ^   *************************/
 
 /*********************     Directory Chat v  *************************/
-.cm-directory-chat-header-icon {
+.cm-main-panel-chat-header-icon {
 	color:#456a97;
 	text-decoration:none;
 	margin-left: 3px;
 	cursor: pointer;
 }
 
-.cm-directory-chat-item-unread-count {
+.cm-main-panel-chat-item-unread-count {
 	position:absolute;
 	font-size:5px;
 	top:2px;
@@ -1882,26 +1882,26 @@ a.fa.cm-directory-content-link{
 	z-index:104;
 }
 
-.cm-directory-chat-header-icon:hover {
+.cm-main-panel-chat-header-icon:hover {
 	color:#456a97;
 }
 
-.cm-directory-chat-header-icon:active {
+.cm-main-panel-chat-header-icon:active {
 	color:#456a97;
 }
 
-.cm-directory-chat-message-section {
+.cm-main-panel-chat-message-section {
 	position: relative;
 	min-height: 0px;
 }
 
-.cm-directory-chat-typing-indicator {
+.cm-main-panel-chat-typing-indicator {
 	position:absolute;
 	left:1px;
 	top:-1px;
 }
 
-.cm-directory-chat-speek-arrow-right {
+.cm-main-panel-chat-speek-arrow-right {
 	position:absolute;
 	right:-8px;
 	top:-8px;
@@ -1912,7 +1912,7 @@ a.fa.cm-directory-content-link{
 	border-left: 8px solid #999;
 }
 
-.cm-directory-chat-speek-arrow-left {
+.cm-main-panel-chat-speek-arrow-left {
 	position:absolute;
 	left:-8px;
 	top:-8px;
@@ -1923,7 +1923,7 @@ a.fa.cm-directory-content-link{
 	border-right:8px solid #999;
 }
 
-.cm-directory-chat-content-wrapper {
+.cm-main-panel-chat-content-wrapper {
 	position:absolute;
 	width:100%;
 	top:27px;
@@ -1936,7 +1936,7 @@ a.fa.cm-directory-content-link{
     overflow-x: hidden;
 }
 
-.cm-directory-chat-active-users-box {
+.cm-main-panel-chat-active-users-box {
 	position:absolute;
 	top:26px;
 	left:-1px;
@@ -1953,7 +1953,7 @@ a.fa.cm-directory-content-link{
 	z-index: 107;
 }
 
-.cm-directory-chat-active-user {
+.cm-main-panel-chat-active-user {
 	padding:2px 4px;
 	height:25px;
 	width:100%;
@@ -1964,13 +1964,13 @@ a.fa.cm-directory-content-link{
 	background-color:rgba(255,255,255,0.4);
 }
 
-.cm-directory-chat-active-user:hover{
+.cm-main-panel-chat-active-user:hover{
 	background-color:rgba(255,255,255,0.8);;
 	border-top:1px solid rgba(255,255,255,0.8);;
 	border-bottom:1px solid rgba(255,255,255,0.8);;
 }
 
-.cm-directory-chat-user-option-wrapper {
+.cm-main-panel-chat-user-option-wrapper {
 	position:absolute;
 	top:27px;
 	left:2px;
@@ -1987,7 +1987,7 @@ a.fa.cm-directory-content-link{
 }
 
 
-.cm-directory-chat-tag-wrapper {
+.cm-main-panel-chat-tag-wrapper {
 	position: absolute;
 	top:24px;
 	background:rgba(69,106,151,0.2);
@@ -1998,7 +1998,7 @@ a.fa.cm-directory-content-link{
 }
 
 
-.cm-directory-chat-add-input {
+.cm-main-panel-chat-add-input {
 	position:absolute;
 	display:block;
 	width:100%;
@@ -2010,7 +2010,7 @@ a.fa.cm-directory-content-link{
 	border-radius: 5px;
 }
 
-.cm-directory-chat-add-topic-wrapper {
+.cm-main-panel-chat-add-topic-wrapper {
 	position: absolute;
 	width:98%;
 	height: 23px;
@@ -2024,7 +2024,7 @@ a.fa.cm-directory-content-link{
 	top:27px;
 }
 
-.cm-directory-chat-topic-wrapper {
+.cm-main-panel-chat-topic-wrapper {
 	position: absolute;
 	min-height: 23px;
 	background:rgba(69,106,151,0.9);
@@ -2038,7 +2038,7 @@ a.fa.cm-directory-content-link{
 	padding:3px 2px 3px 2px;
 	z-index:108;
 }
-.cm-directory-chat-topic {
+.cm-main-panel-chat-topic {
 	position:relative;
 	width:83%;
 	min-height: 15px;
@@ -2059,7 +2059,7 @@ a.fa.cm-directory-content-link{
 
 }
 
-.cm-directory-chat-reference-text {
+.cm-main-panel-chat-reference-text {
 	position:absolute;
 	width:89%;
 	margin-top:5px;
@@ -2078,7 +2078,7 @@ a.fa.cm-directory-content-link{
 	z-index:110;
 }
 
-.cm-directory-chat-message-display {
+.cm-main-panel-chat-message-display {
 	position:relative;
 	overflow-y:scroll;
 	overflow-x: hidden;
@@ -2088,7 +2088,7 @@ a.fa.cm-directory-content-link{
 }
 
 
-.cm-directory-chat-internal-message {
+.cm-main-panel-chat-internal-message {
 	width:94%;
 	left: 1%;
 	font-size: .8em;
@@ -2099,7 +2099,7 @@ a.fa.cm-directory-content-link{
 	clear:both;
 }
 
-.cm-directory-chat-emoji-toggle {
+.cm-main-panel-chat-emoji-toggle {
 	position:absolute;
 	width: 25px;
 	height: 25px;
@@ -2110,13 +2110,13 @@ a.fa.cm-directory-content-link{
 	z-index:109;
 }
 
-.cm-directory-chat-info-wrapper {
+.cm-main-panel-chat-info-wrapper {
 	position:absolute;
 	margin-top:-20px;
 	width:100%;
 	height: 20px;
 }
-.cm-directory-group-typing-wrapper {
+.cm-main-panel-group-typing-wrapper {
 	position:relative;
 	width:94%;
 	height:20px;
@@ -2124,7 +2124,7 @@ a.fa.cm-directory-content-link{
 	overflow:none;
 }
 
-.cm-directory-group-typing-avatar {
+.cm-main-panel-group-typing-avatar {
 	width:20px;
 	height:20px;
 	margin-right:5px;
@@ -2140,7 +2140,7 @@ a.fa.cm-directory-content-link{
 }
 
 
-.cm-directory-chat-offline-text {
+.cm-main-panel-chat-offline-text {
 	position:absolute;
 	width:92%;
 	height: 15px;
@@ -2156,7 +2156,7 @@ a.fa.cm-directory-content-link{
 	line-height: 130%;
 }
 
-.cm-directory-chat-textarea {
+.cm-main-panel-chat-textarea {
 	position:relative;
 	height:35px;
 	border-radius: 5px;
