@@ -17,6 +17,7 @@ service('ChatStorage', ['$log', '$timeout','CoreConfig',function($log, $timeout,
 
     this.contact = {};
     this.contact.session = {};
+    this.contact.session.list = {};
     this.contact.session.map = {};
 
     this.contact.chat = {};

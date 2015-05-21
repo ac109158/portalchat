@@ -166,10 +166,19 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         if (contact && contact.user_id && that.module.state.allow_chat_request) {
             console.log(contact);
             that.module.state.allow_chat_request = false;
-            var session = angular.copy(contact);
-            session.session_key = contact.user_id;
+            var session = {};
+            session.type = 'contact';
+            session.session_key = UserManager.user.id + ':' + contact.user_id;
+            session.name = contact.name;
+            session.user_id = contact.user_id;
+            session.is_directory_chat = false;
             session.is_group_chat = false;
+            session.is_open = true;
             session.is_focus = true;
+            session.timestamp = new Date().getTime();
+            session.is_sound = true;
+            session.nudge = false;
+            session.order = 0;
             that.registerContactChatSession(session);
             $timeout(function() {
                 that.module.state.allow_chat_request = true;
@@ -202,7 +211,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             }, 250);
             $log.debug('all checks passed, build chat', session);
             console.log('all checks passed, build chat', session);
-            // ChatBuilder.buildChatSession(session, set_focus); // (that, contact, isopen, isfocus)
+            ChatBuilder.buildChatForSession(session); // (that, contact, isopen, isfocus)
             return true;
         }
     };

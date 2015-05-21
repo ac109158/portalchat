@@ -16,201 +16,228 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             that.builder.attr.last_created_chat = undefined;
         }, 1000);
     };
-
-    this.getDefaultChatTemplate = function() {
-        var chat = {};
-        chat.session_key = '';
-        chat.order = '';
-
-        chat.fb = {};
-        chat.fb.user.location = {};
-        chat.fb.contact.location = {};
-        chat.fb.group.location = {};
-
-        chat.fb.user.target = {};
-        chat.fb.contact.target = {};
-        chat.fb.group.target = {};
-
-        chat.contacts = {};
-        chat.contacts.active_list = [];
-        chat.contacts.active_list_map = [];
-        chat.contacts.participated_list = [];
-        chat.contacts.details = [];
-        chat.contacts.detailsMap = {};
-
-        chat.message = {};
-        chat.message.text = '';
-
-
-        chat.messages = {};
-        chat.messages.list = [];
-        chat.messages.map = [];
-
-        chat.video = {};
-        chat.video.code = '';
-        chat.video.url = '';
-        chat.video.message = '';
-        chat.video.heading = '';
-
-        chat.image = {};
-        chat.image.url = '';
-        chat.image.heading = '';
-        chat.image.message = '';
-
-        chat.audio = {};
-        chat.audio.heading = '';
-        chat.audio.message = '';
-        chat.audio.url = '';
-        chat.audio.cid = '';
-
-        // topic values
-        chat.topic = {};
-        chat.topic.description = '';
-        chat.topic.height = 0;
-        chat.topic.truncated = false;
-        chat.topic.set = '';
-        //tagging
-
-        chat.tag = {};
-        chat.tag.description = '';
-        chat.tag.set = '';
-        // on the bubble
-
-        //scroll control
-        chat.scroll = {};
-        chat.scroll.to_bottom = true;
-        chat.scroll.to_top = false;
-        //chat refernencing
-        chat.reference = {};
-        chat.reference.key = null;
-        chat.reference.author = null;
-        chat.reference.name = null;
-        chat.reference.text = null;
-        //typing presence
-        chat.typing = {};
-        chat.typing.monitor = that.is_typing_presence; // this is used to turn chat typing presence on or off
-        chat.typing.active = false; // this is used to alert the contact if the user is currently typing
-        chat.typing.active_list = [];
-        //adding another user
-
-        chat.invite = {};
-        chat.invite.contact_list = [];
-        chat.invite.contact = ''; // this is used the track the name of the user that is to be invited into the group chat. .ie a string such as "Andy Cook";
-        chat.invite.set_contact = false; // this flag is used to determine that the host user has selected  a name to invite into the chat and that name has been verified to exist within the invite_list
-        //states
-
-        chat.attr = {};
-        chat.attr.is_init = false;
-        chat.attr.is_converted = false;
-        chat.attr.is_directory_chat = false;
-        chat.attr.is_group_chat = false;
-        chat.attr.is_new_message = false;
-        chat.attr.is_open = true;
-        chat.attr.is_previous_messages = true;
-        chat.attr.is_reloading = false;
-        chat.attr.is_reloaded = false;
-        chat.attr.is_sound = true;
-        chat.attr.is_tag_focus = false;
-        chat.attr.is_text_focus = false;
-        chat.attr.is_topic_focus = false;
-        chat.attr.is_top_spacer = false;
-        chat.attr.is_active = false;
-        chat.attr.last_sent_user_message = '';
-        chat.attr.last_sent_contact_message = '';
-        // priority/indexing
-
-        chat.priority = {};
-        chat.priority.first = false;
-        chat.priority.next = 1;
-
-
-
-
-        chat.ux = {};
-        chat.ux.nudge = false;
-        chat.ux.is_header = true;
-        chat.ux.topic_height = 0;
-        chat.ux.time_reference = new Date().getTime();
-        chat.ux.time_format = 'timeago';
-        chat.ux.unread = 0; // this tracks the count of the messages sent to the user while the chat box is closed
-        chat.ux.resize_adjustment = 0;
-        chat.ux.internal_reference = CoreConfig.chat.internal_reference;
-        chat.ux.header_color = CoreConfig.chat.ui.header_color; // default color to restore after a alert changes has happened
-
-        chat.menu = {};
-        chat.menu.options = false;
-        chat.menu.tag = false;
-        chat.menu.topic = false;
-        chat.menu.emoticons = false; // toggle flag tht determines if the emotion dox should be displayed to the user
-        chat.menu.user_list = false;
-        chat.menu.image = false;
-        chat.menu.audio = false;
-        chat.menu.video = false;
-        chat.menu.media = false;
-        chat.menu.invite = false; // this is used to toggle ability to invite user into the chat
-
-        chat.user = {};
-        chat.user.avatar = UserManager.user.avatar;
-        chat.user.id = UserManager.user.id;
-        chat.user.self_name = 'Me'; // variable for what the chat session should label messages that came from the user/self ex. "Me"
-
-        chat.contact = {};
-        chat.contact.name = '';
-        chat.contact.first_name = '';
-        chat.contact.avatar = '';
-        chat.contact.id = false;
-        chat.contact.additional_profile = null;
-
-        chat.interval = {};
-        chat.interval.invite_menu_close = undefined;
-        chat.interval.is_user_typing = undefined;
-
-        return chat;
+    this.setContactChatOrderMap = function() {
+        ChatStorage.contact.chat.order_map = {};
+        angular.forEach(ChatStorage.contact.chat.list, function(value, key) {
+            ChatStorage.contact.chat.order_map[value.order] = key;
+        });
+        ChatStorage.contact.chat.count = Object.size(ChatStorage.contact.chat.list);
     };
 
-    // that.retrieveSessionKey = function(contact_id) {
-    //     if (scope.active_sessions['user_' + to_user.user_id] == true) {
-    //         console.log('retrieveSessionKey : ');
-    //         return false;
-    //     }
-    //     var to_user_session_key;
-    //     chatSession.to_user_session_location = new Firebase(ChatService._url_root + to_user.user_id + '/' + ChatService._active_session_reference + ChatService._sub_category_reference + 'session_key/');
-    //     chatSession.to_user_session_location.on('value', function(snapshot) {
-    //         if (angular.isDefined(snapshot.val())) {
-    //             ChatService.updateSessionStatus(scope, snapshot, chatSession.to_user_session_location, chatSession.index_position, chatSession.isGroupChat);
-    //         }
-    //     });
-    //     if (angular.isUndefined(to_user.session_key) || to_user.session_key === null) {
-    //         chatSession.to_user_session_location.once('value', function(snapshot) {
-    //             if (snapshot.val() === null) {
-    //                 var user_id = UserService._user_profile.user_id;
-    //                 var firekey = ChatService._group_active_session_location.push({
-    //                     admin: UserService._user_profile.user_id,
-    //                     topic: false
-    //                 });
-    //                 ChatService._new_session_key = firekey.name();
-    //                 scope.new_session_key = firekey.name();
-    //             } else {
-    //                 scope.new_session_key = snapshot.val();
-    //             }
-    //         });
-    //     } else {
-    //         chatSession.session_key = to_user.session_key;
-    //     }
-    // };
+    this.setDefaultChatTemplate = function(session) {
+        if (session && session.type && session.session_key && ChatStorage[session.type]) {
+            if(!session.order){
+                angular.forEach(Object.keys(ChatStorage[session.type].chat.list), function(key){
+                    ChatStorage[session.type].chat.list[key].order++;
+                });
+            }
+            ChatStorage[session.type].chat.list[session.session_key] = {};
+            ChatStorage[session.type].chat.list[session.session_key].session_key = session.session_key;
+            ChatStorage[session.type].chat.list[session.session_key].order = session.order;
+            ChatStorage[session.type].chat.list[session.session_key].active = false;
+
+            ChatStorage[session.type].chat.list[session.session_key].contacts = {};
+            ChatStorage[session.type].chat.list[session.session_key].contacts.active_list = [];
+            ChatStorage[session.type].chat.list[session.session_key].contacts.active_list_map = [];
+            ChatStorage[session.type].chat.list[session.session_key].contacts.participated_list = [];
+            ChatStorage[session.type].chat.list[session.session_key].contacts.details = [];
+            ChatStorage[session.type].chat.list[session.session_key].contacts.detailsMap = {};
+
+            ChatStorage[session.type].chat.list[session.session_key].message = {};
+            ChatStorage[session.type].chat.list[session.session_key].message.text = '';
 
 
-    this.buildChatForSession = function(session, set_focus) { // this function builds out the details of an individual chat sesssion
-        if (angular.isUndefined(session)) {
+            ChatStorage[session.type].chat.list[session.session_key].messages = {};
+            ChatStorage[session.type].chat.list[session.session_key].messages.list = [];
+            ChatStorage[session.type].chat.list[session.session_key].messages.map = [];
+
+            ChatStorage[session.type].chat.list[session.session_key].video = {};
+            ChatStorage[session.type].chat.list[session.session_key].video.code = '';
+            ChatStorage[session.type].chat.list[session.session_key].video.url = '';
+            ChatStorage[session.type].chat.list[session.session_key].video.message = '';
+            ChatStorage[session.type].chat.list[session.session_key].video.heading = '';
+
+            ChatStorage[session.type].chat.list[session.session_key].image = {};
+            ChatStorage[session.type].chat.list[session.session_key].image.url = '';
+            ChatStorage[session.type].chat.list[session.session_key].image.heading = '';
+            ChatStorage[session.type].chat.list[session.session_key].image.message = '';
+
+            ChatStorage[session.type].chat.list[session.session_key].audio = {};
+            ChatStorage[session.type].chat.list[session.session_key].audio.heading = '';
+            ChatStorage[session.type].chat.list[session.session_key].audio.message = '';
+            ChatStorage[session.type].chat.list[session.session_key].audio.url = '';
+            ChatStorage[session.type].chat.list[session.session_key].audio.cid = '';
+
+            // topic values
+            ChatStorage[session.type].chat.list[session.session_key].topic = {};
+            ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
+            ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
+            ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
+            ChatStorage[session.type].chat.list[session.session_key].topic.set = '';
+            //tagging
+
+            ChatStorage[session.type].chat.list[session.session_key].tag = {};
+            ChatStorage[session.type].chat.list[session.session_key].tag.description = '';
+            ChatStorage[session.type].chat.list[session.session_key].tag.set = '';
+            // on the bubble
+
+            //scroll control
+            ChatStorage[session.type].chat.list[session.session_key].scroll = {};
+            ChatStorage[session.type].chat.list[session.session_key].scroll.to_bottom = true;
+            ChatStorage[session.type].chat.list[session.session_key].scroll.to_top = false;
+            //chat refernencing
+            ChatStorage[session.type].chat.list[session.session_key].reference = {};
+            ChatStorage[session.type].chat.list[session.session_key].reference.key = null;
+            ChatStorage[session.type].chat.list[session.session_key].reference.author = null;
+            ChatStorage[session.type].chat.list[session.session_key].reference.name = null;
+            ChatStorage[session.type].chat.list[session.session_key].reference.text = null;
+            //typing presence
+            ChatStorage[session.type].chat.list[session.session_key].typing = {};
+            ChatStorage[session.type].chat.list[session.session_key].typing.monitor = CoreConfig.is_typing_presence; // this is used to turn chat typing presence on or off
+            ChatStorage[session.type].chat.list[session.session_key].typing.active = false; // this is used to alert the contact if the user is currently typing
+            ChatStorage[session.type].chat.list[session.session_key].typing.active_list = [];
+            //adding another user
+
+            ChatStorage[session.type].chat.list[session.session_key].invite = {};
+            ChatStorage[session.type].chat.list[session.session_key].invite.contact_list = [];
+            ChatStorage[session.type].chat.list[session.session_key].invite.contact = ''; // this is used the track the name of the user that is to be invited into the group chat ie a string such as "Andy Cook";
+            ChatStorage[session.type].chat.list[session.session_key].invite.set_contact = false; // this flag is used to determine that the host user has selected  a name to invite into the chat and that name has been verified to exist within the invite_list
+            //states
+
+            ChatStorage[session.type].chat.list[session.session_key].attr = {};
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_init = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_converted = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_directory_chat = session.is_directory_chat;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_group_chat = session.is_group_chat;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_new_message = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_open = true;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_previous_messages = true;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_reloading = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_reloaded = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_sound = true;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_tag_focus = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_text_focus = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_topic_focus = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_top_spacer = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_active = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.last_sent_user_message = '';
+            ChatStorage[session.type].chat.list[session.session_key].attr.last_sent_contact_message = '';
+            // priority/indexing
+
+            ChatStorage[session.type].chat.list[session.session_key].priority = {};
+            ChatStorage[session.type].chat.list[session.session_key].priority.first = 0;
+            ChatStorage[session.type].chat.list[session.session_key].priority.next = 1;
+
+
+
+
+            ChatStorage[session.type].chat.list[session.session_key].ux = {};
+            ChatStorage[session.type].chat.list[session.session_key].ux.nudge = false;
+            ChatStorage[session.type].chat.list[session.session_key].ux.is_header = true;
+            ChatStorage[session.type].chat.list[session.session_key].ux.topic_height = 0;
+            ChatStorage[session.type].chat.list[session.session_key].ux.time_reference = session.timestamp;
+            ChatStorage[session.type].chat.list[session.session_key].ux.time_format = 'timeago';
+            ChatStorage[session.type].chat.list[session.session_key].ux.unread = 0; // this tracks the count of the messages sent to the user while the chat box is closed
+            ChatStorage[session.type].chat.list[session.session_key].ux.resize_adjustment = 0;
+            ChatStorage[session.type].chat.list[session.session_key].ux.internal_reference = CoreConfig.chat.internal_reference;
+            ChatStorage[session.type].chat.list[session.session_key].ux.header_color = CoreConfig.module.setting.header_color; // default color to restore after a alert changes has happened
+
+            ChatStorage[session.type].chat.list[session.session_key].menu = {};
+            ChatStorage[session.type].chat.list[session.session_key].menu.options = false;
+            ChatStorage[session.type].chat.list[session.session_key].menu.tag = false;
+            ChatStorage[session.type].chat.list[session.session_key].menu.topic = false;
+            ChatStorage[session.type].chat.list[session.session_key].menu.emoticons = false; // toggle flag tht determines if the emotion dox should be displayed to the user
+            ChatStorage[session.type].chat.list[session.session_key].menu.user_list = false;
+            ChatStorage[session.type].chat.list[session.session_key].menu.image = false;
+            ChatStorage[session.type].chat.list[session.session_key].menu.audio = false;
+            ChatStorage[session.type].chat.list[session.session_key].menu.video = false;
+            ChatStorage[session.type].chat.list[session.session_key].menu.media = false;
+            ChatStorage[session.type].chat.list[session.session_key].menu.invite = false; // this is used to toggle ability to invite user into the chat
+
+            ChatStorage[session.type].chat.list[session.session_key].user = {};
+            ChatStorage[session.type].chat.list[session.session_key].user.avatar = UserManager.user.avatar;
+            ChatStorage[session.type].chat.list[session.session_key].user.id = UserManager.user.id;
+            ChatStorage[session.type].chat.list[session.session_key].user.self_name = 'Me'; // variable for what the chat session should label messages that came from the user/self ex. "Me"
+
+            ChatStorage[session.type].chat.list[session.session_key].contact = {};
+            ChatStorage[session.type].chat.list[session.session_key].contact.name = '';
+            ChatStorage[session.type].chat.list[session.session_key].contact.first_name = '';
+            ChatStorage[session.type].chat.list[session.session_key].contact.avatar = '';
+            ChatStorage[session.type].chat.list[session.session_key].contact.id = false;
+            ChatStorage[session.type].chat.list[session.session_key].contact.additional_profile = null;
+
+            ChatStorage[session.type].chat.list[session.session_key].interval = {};
+            ChatStorage[session.type].chat.list[session.session_key].interval.invite_menu_close = undefined;
+            ChatStorage[session.type].chat.list[session.session_key].interval.is_user_typing = undefined;
+
+            ChatStorage[session.type].session.list[session.session_key] = {};
+            ChatStorage[session.type].session.list[session.session_key].fb = {};
+            ChatStorage[session.type].session.list[session.session_key].fb.user = {};
+            ChatStorage[session.type].session.list[session.session_key].fb.user.location = {};
+            ChatStorage[session.type].session.list[session.session_key].fb.contact = {};
+            ChatStorage[session.type].session.list[session.session_key].fb.contact.location = {};
+            ChatStorage[session.type].session.list[session.session_key].fb.group = {};
+            ChatStorage[session.type].session.list[session.session_key].fb.group.location = {};
+
+            ChatStorage[session.type].session.list[session.session_key].fb.user.target = {};
+            ChatStorage[session.type].session.list[session.session_key].fb.contact.target = {};
+            ChatStorage[session.type].session.list[session.session_key].fb.group.target = {};
+            that.setContactChatOrderMap();
+            return true;
+        }
+        return false;
+    };
+
+    this.retrieveSessionKey = function(session) {
+        if (session.is_group_chat) {
+
+        } else {
+
+        }
+        if (scope.active_sessions['user_' + to_user.user_id] == true) {
+            console.log('retrieveSessionKey : ');
+            return false;
+        }
+        var to_user_session_key;
+        template.fb.contact.location.session = new $firebaseObject(CoreConfig.chat.url_root + template.contact.id + '/' + CoreConfig.chat.active_session_reference + template.user.id + 'session_key/');
+        template.fb.contact.location.session.on('value', function(snapshot) {
+            if (angular.isDefined(snapshot.val())) {
+                ChatService.updateSessionStatus(scope, snapshot, chatSession.to_user_session_location, chatSession.index_position, chatSession.isGroupChat);
+            }
+        });
+        if (angular.isUndefined(to_user.session_key) || to_user.session_key === null) {
+            chatSession.to_user_session_location.once('value', function(snapshot) {
+                if (snapshot.val() === null) {
+                    var user_id = UserService._user_profile.user_id;
+                    var firekey = ChatService._group_active_session_location.push({
+                        admin: UserService._user_profile.user_id,
+                        topic: false
+                    });
+                    ChatService._new_session_key = firekey.name();
+                    scope.new_session_key = firekey.name();
+                } else {
+                    scope.new_session_key = snapshot.val();
+                }
+            });
+        } else {
+            chatSession.session_key = to_user.session_key;
+        }
+    };
+
+
+    this.buildChatForSession = function(session) { // this function builds out the details of an individual chat sesssion
+        if (angular.isUndefined(session) || !session.session_key) {
             ///////////////////////////////////////////////////////////
             $log.debug('that.__buildChatSession failed. Undefined session');
             ////////////////////////////////////////////////////////////
             return false;
         }
-        var template = that.getDefaultChatTemplate();
-
-
-        that.__retrieveSessionKey(session); // establish a unique session key for this chat
+        if (that.setDefaultChatTemplate(session)) {
+            console.log('here: ', ChatStorage[session.type]);
+        }
+        return false;
+        var session_key = that.retrieveSessionKey(session); // establish a unique session key for this chat
+        var template = that.setDefaultChatTemplate();
 
         if (angular.isDefined(session.contact.time)) {
             template.ux.time_reference = session.contact.time;
