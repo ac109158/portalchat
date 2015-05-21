@@ -12,7 +12,7 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
     this.load = function() {
         if (CoreConfig.user && CoreConfig.user.id) {
             that.setFirebaseLocation();
-            $timeout(function(){
+            $timeout(function() {
                 that.setOnlineTracking();
             }, 2000);
             return true;
@@ -90,22 +90,24 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
                     if (user_id_key == CoreConfig.user.id) {
                         stamp_index = i;
                     }
-                    if (ContactsManager.contacts.profiles[contact_tag] && value > ContactsManager.contacts.profiles[contact_tag].last_check_in) {} else {
-                        ContactsManager.storeOfflineQueue(CoreConfig.common.reference.user_prefix + user_id_key);
-                        $timeout(function() {
-                            if (ContactsManager.isOfflineQueued(contact_tag)) {
-                                that.fb.location.online_check.child(user_id_key).remove();
-                                ContactsManager.setContactOffline(contact_tag);
-                                console.log('setting offline: ', user_id_key);
-                                ContactsManager.fb.location.online.child(user_id_key).update({
-                                    'online': false
-                                });
-                            }
-                        }, 4000);
+                    if (angular.isDefined(ContactsManager.contacts.profiles.map[contact_tag]) && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]]) {
+                        if (value > ContactsManager.contacts.profiles[contact_tag].last_check_in) {} else {
+                            ContactsManager.storeOfflineQueue(CoreConfig.common.reference.user_prefix + user_id_key);
+                            $timeout(function() {
+                                if (ContactsManager.isOfflineQueued(contact_tag)) {
+                                    that.fb.location.online_check.child(user_id_key).remove();
+                                    ContactsManager.setContactOffline(contact_tag);
+                                    console.log('setting offline: ', user_id_key);
+                                    ContactsManager.fb.location.online.child(user_id_key).update({
+                                        'online': false
+                                    });
+                                }
+                            }, 4000);
+                        }
                     }
                 }
-                if (ContactsManager.contacts.profiles[contact_tag]) {
-                    ContactsManager.contacts.profiles[contact_tag].last_check_in = value;
+                if (angular.isDefined(ContactsManager.contacts.profiles.map[contact_tag]) && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]]) {
+                    ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]].last_check_in = value;
                 }
             });
             that.isTimestamps = true;

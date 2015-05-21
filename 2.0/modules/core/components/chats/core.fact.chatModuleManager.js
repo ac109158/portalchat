@@ -39,6 +39,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     this.module.contact_list.selected = undefined;
     this.module.contact_list.setting = {};
     this.module.contact_list.setting.show_offline = false;
+    this.module.contact_list.setting.filter = {
+        online: true
+    };
     this.module.contact_list.setting.default_avatar = CoreConfig.url.default_avatar;
 
     this.module.session = {};
@@ -130,11 +133,22 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         that.setFirebaseLocations();
         that.setFirebaseTargets();
         that.establishUserChat();
+        ChatBuilder.load();
         $timeout(function() {
-            that.module.state.is_ready = true;
-            $rootScope.$broadcast('update-chosen');
-        }, 2000);
-
+            $timeout(function() {
+                if (CoreConfig.monitorContactsBehavior) {
+                    angular.forEach(ContactsManager.contacts.profiles.list, function(contact_profile) {
+                        ContactsManager.monitorContactBehaviour(contact_profile);
+                    });
+                }
+                $timeout(function() {
+                    that.module.state.is_ready = true;
+                    $timeout(function() {
+                        $rootScope.$broadcast('update-chosen');
+                    });
+                }, 750);
+            }, 750);
+        }, 750);
         that.setDefaultDirectoryChats();
     };
 
@@ -159,6 +173,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         return true;
     };
     this.chatContactListSearch = function() {
+        that.chatContact(that.module.contact_list.selected);
         that.module.contact_list.selected = undefined;
     };
 
@@ -169,12 +184,14 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             var session = {};
             session.type = 'contact';
             session.session_key = UserManager.user.id + ':' + contact.user_id;
+            session.active = false;
+            session.avatar = contact.avatar;
             session.name = contact.name;
-            session.user_id = contact.user_id;
+            session.contact_id = contact.user_id;
             session.is_directory_chat = false;
             session.is_group_chat = false;
+            session.is_typing = false;
             session.is_open = true;
-            session.is_focus = true;
             session.timestamp = new Date().getTime();
             session.is_sound = true;
             session.nudge = false;
@@ -206,9 +223,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 $log.debug('Chat is already in chat list');
                 return;
             }
-            $timeout(function() {
-                NotificationManager.playSound('new_chat');
-            }, 250);
+
             $log.debug('all checks passed, build chat', session);
             console.log('all checks passed, build chat', session);
             ChatBuilder.buildChatForSession(session); // (that, contact, isopen, isfocus)
@@ -776,7 +791,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         }
         var notification = new Notification(title, {
             tag: message.session_key,
-            icon: '/components/com_callcenter/images/avatars/' + ContactsManager.contacts.profiles[CoreConfig.common.reference.user_prefix + message.author].avatar + '-90.jpg',
+            icon: '/components/com_callcenter/images/avatars/' + ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + message.author]].avatar + '-90.jpg',
             body: message.text
         });
         notification.onclick = function() {

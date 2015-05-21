@@ -355,8 +355,8 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
         if (message.author === CoreConfig.chat.internal_reference) {
             message.avatar = false;
             return;
-        } else if (angular.isDefined(ContactsManager.contacts.profiles[CoreConfig.common.reference.user_prefix + message.author])) {
-            message.avatar = '/components/com_callcenter/images/avatars/' + ContactsManager.contacts.profiles[CoreConfig.common.reference.user_prefix + message.author].avatar + '-90.jpg';
+        } else if (angular.isDefined(ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + message.author]) && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + message.author]] ) {
+            message.avatar = '/components/com_callcenter/images/avatars/' + ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + message.author]].avatar + '-90.jpg';
             return;
         } else if (angular.isDefined(user_details[message.author])) {
             message.avatar = '/components/com_callcenter/images/avatars/' + user_details[message.author].avatar + '-90.jpg';

@@ -3,7 +3,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     var that = this;
 
     //Global Settings
-    // this is used to turn chat typing presence on or off
+    this.is_typing_presence = true;// this is used to turn chat typing presence on or off
     this.monitorContactsBehavior = true; // Set true to monitor each contact's online, presence, and state..
     this.force_online = false; // set true to force users online for chat when they log into the site
     this.encrypt_pass = 'Anything but plain text';
@@ -61,7 +61,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     this.chat = {};
     this.chat.internal_reference = "internal_chat";
     this.chat.root_reference = "Chat-System/Users" + '/';
-    this.chat.url_root = that.fb_url + this.chat.root_reference;
+    this.chat.url_root = that.url.firebase_database + this.chat.root_reference;
 
     this.chat.active_session_reference = "Active-Sessions" + '/'; // folder reference to look monitoring users active chats
     this.chat.is_typing_reference = 'is-typing';
