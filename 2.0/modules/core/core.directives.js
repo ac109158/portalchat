@@ -114,7 +114,7 @@ directive('chatModuleNavPanel', function() {
         link: function(scope, elm, attrs) {}
     };
 }).
-directive('cmDirectoryTrackerPanel', function() {
+directive('cmMainPanelTrackerPanel', function() {
     return {
         scope: true,
         restrict: 'EA',

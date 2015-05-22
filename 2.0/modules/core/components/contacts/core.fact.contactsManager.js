@@ -112,6 +112,8 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
                     profile.name = profile.alias;
                     delete profile.alias;
                 }
+                profile.first_name = profile.name.match(/\S+/g)[0];
+                profile.avatar_url =  CoreConfig.url.avatar_path + profile.avatar + '-90.jpg';
                 if (profile.avatar === false) {
                     profile.avatar = 'no-photo';
                 }

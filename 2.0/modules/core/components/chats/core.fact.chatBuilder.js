@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ChatStorage', 'SettingsManager', 'SessionsManager', 'ContactsManager', 'NotificationManager','PermissionsManager', function($rootScope, $log, $http, $document, $timeout, $firebaseObject, CoreConfig, UserManager, ChatStorage, SettingsManager, SessionsManager, ContactsManager, NotificationManager,PermissionsManager) {
+service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ChatStorage', 'SettingsManager', 'SessionsManager', 'ContactsManager', 'NotificationManager', 'PermissionsManager','UxManager', function($rootScope, $log, $http, $document, $timeout, $firebaseObject, CoreConfig, UserManager, ChatStorage, SettingsManager, SessionsManager, ContactsManager, NotificationManager, PermissionsManager, UxManager) {
     var that = this;
 
     this.builder = {};
@@ -9,7 +9,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
     this.builder.attr.last_created_chat = undefined;
 
     this.builder.session = {};
-    this.builder.session.models = ['session_key', 'type', 'active','order', 'contact_id', 'name', 'avatar', 'is_directory_chat', 'is_group_chat', 'is_open', 'is_sound', 'nudge'];
+    this.builder.session.models = ['session_key', 'type', 'active', 'order', 'contact_id', 'name', 'avatar', 'is_directory_chat', 'is_group_chat', 'is_open', 'is_sound', 'nudge'];
 
     this.fb = {};
     this.fb.location = {};
@@ -179,15 +179,13 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
 
             if (!session.is_group_chat && !session.is_directory_chat) {
                 ChatStorage[session.type].chat.list[session.session_key].contact = {};
-                ChatStorage[session.type].chat.list[session.session_key].contact.name = session.name;
-                ChatStorage[session.type].chat.list[session.session_key].contact.first_name = session.name.match(/\S+/g)[0];
-                ChatStorage[session.type].chat.list[session.session_key].contact.avatar = session.avatar;
-                ChatStorage[session.type].chat.list[session.session_key].contact.id = session.contact_id;
+                ChatStorage[session.type].chat.list[session.session_key].contact.profile = ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + session.contact_id]];
                 that.setContactAdditionalProfile(session.type, session.session_key, session.contact_id);
-            } else if(session.is_group_chat && !session.is_directory_chat){
+            } else if (session.is_group_chat && !session.is_directory_chat) {
                 ChatStorage[session.type].chat.list[session.session_key].contacts.active_list = {};
                 ChatStorage[session.type].chat.list[session.session_key].contacts.profiles = {};
-            } else if(session.is_group_chat && session.is_directory_chat){
+            } else if (session.is_directory_chat) {
+                ChatStorage[session.type].chat.list[session.session_key].description = session.description || 'Chat Description';
                 ChatStorage[session.type].chat.list[session.session_key].contacts.profiles = {};
             }
 
@@ -210,8 +208,9 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ChatStorage[session.type].session.list[session.session_key].fb.group.target = {};
             that.setContactChatOrderMap();
             $timeout(function() {
+                UxManager.ux.fx.evaluateChatModuleLayout();
                 NotificationManager.playSound('new_chat');
-            }, 250);
+            });
             return true;
         }
         return false;
@@ -222,11 +221,11 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             that.fb.location.additonal_profiles.child(contact_id).once('value', function(snapshot) {
                 var additional_profile = snapshot.val();
-                console.log('additional_profile: ',additional_profile);
+                console.log('additional_profile: ', additional_profile);
                 if (additional_profile) {
                     if (PermissionsManager.hasSupervisorRights()) {
                         ChatStorage[type].chat.list[session_key].contact.additional_profile = additional_profile;
-                    } else{
+                    } else {
                         delete additional_profile.platform;
                         ChatStorage[type].chat.list[session_key].contact.additional_profile = additional_profile;
                     }
@@ -236,40 +235,47 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         }
     };
 
-    this.setSessionKey = function(type, session_key) {
-        if (session.is_group_chat) {
-
-        } else {
-
+    this.setFirebaseLocationsForSession = function(session) {
+        if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
+            ChatStorage[session.type].session.list[session.session_key].fb.contact.location.session = new Firebase(CoreConfig.chat.url_root + session.contact_id + '/' + CoreConfig.chat.active_session_reference + UserManager.user.id.user.id + 'session_key/');
         }
-        if (scope.active_sessions['user_' + to_user.user_id] == true) {
-            console.log('retrieveSessionKey : ');
-            return false;
-        }
-        var to_user_session_key;
-        template.fb.contact.location.session = new Firebase(CoreConfig.chat.url_root + template.contact.id + '/' + CoreConfig.chat.active_session_reference + template.user.id + 'session_key/');
-        template.fb.contact.location.session.on('value', function(snapshot) {
-            if (angular.isDefined(snapshot.val())) {
-                ChatService.updateSessionStatus(scope, snapshot, chatSession.to_user_session_location, chatSession.index_position, chatSession.isGroupChat);
-            }
-        });
-        if (angular.isUndefined(to_user.session_key) || to_user.session_key === null) {
-            chatSession.to_user_session_location.once('value', function(snapshot) {
-                if (snapshot.val() === null) {
-                    var user_id = UserService._user_profile.user_id;
-                    var firekey = ChatService._group_active_session_location.push({
-                        admin: UserService._user_profile.user_id,
-                        topic: false
-                    });
-                    ChatService._new_session_key = firekey.name();
-                    scope.new_session_key = firekey.name();
-                } else {
-                    scope.new_session_key = snapshot.val();
+    };
+
+    this.setSessionInContactLocation = function(session) {
+        if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
+            if (session.is_group_chat) {
+
+            } else {
+                if (scope.active_sessions['user_' + to_user.user_id] == true) {
+                    console.log('retrieveSessionKey : ');
+                    return false;
                 }
-            });
-        } else {
-            chatSession.session_key = to_user.session_key;
+                var to_user_session_key;
+                ChatStorage[session.type].session.list[session.session_key].fb.contact.location.session.on('value', function(snapshot) {
+                    if (angular.isDefined(snapshot.val())) {
+                        ChatService.updateSessionStatus(scope, snapshot, chatSession.to_user_session_location, chatSession.index_position, chatSession.isGroupChat);
+                    }
+                });
+                if (angular.isUndefined(to_user.session_key) || to_user.session_key === null) {
+                    chatSession.to_user_session_location.once('value', function(snapshot) {
+                        if (snapshot.val() === null) {
+                            var user_id = UserService._user_profile.user_id;
+                            var firekey = ChatService._group_active_session_location.push({
+                                admin: UserService._user_profile.user_id,
+                                topic: false
+                            });
+                            ChatService._new_session_key = firekey.name();
+                            scope.new_session_key = firekey.name();
+                        } else {
+                            scope.new_session_key = snapshot.val();
+                        }
+                    });
+                } else {
+                    chatSession.session_key = to_user.session_key;
+                }
+            }
         }
+
     };
 
 

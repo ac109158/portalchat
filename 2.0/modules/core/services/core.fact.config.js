@@ -16,6 +16,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     this.url.firebase_database = 'https://portalchattest.firebaseio.com/';
     this.url.external = 'index.php?option=com_content&view=article&id=100&Itemid=1111';
     this.url.default_avatar = '/2.0/assets/img/icon-user-default.png';
+    this.url.avatar_path = '/components/com_callcenter/images/avatars/';
 
     //Defaults
 

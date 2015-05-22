@@ -1,4 +1,4 @@
-<div ng-cloak id="chat-module" window-resize class="cm-fixed-wrapper" style="font-size:{{module.global.font_size}}px; width:{{module.setting.main_panel.width}}px; height:{{module.setting.main_panel.height}}px;">
+<div ng-cloak id="chat-module" window-resize class="cm-fixed-wrapper" style="font-size:{{module.global.font_size}}px; width:{{module.setting.main_panel.width}}px; height:100%;">
     <div ng-if="module.state.is_ready">
         <div ng-if="!module.global.is_open && module.setting.is_external_window_instance == false" style="position:fixed; right:50px; bottom:50px; width:40px; height:40px; background:transparent; text-decoration:none;">
             <i ng-click="ui.fx.openChatModule();" class="cm-open-icon fa fa-comment fa-4x pointer" ng-class="{'Busy':alertToOpen == true}"></i>
@@ -25,7 +25,7 @@
                 </div>
             </div>
             <div id="cm-main-panel-content-wrapper">
-                <div id="cm-main-panel-upper-panel" class="well well-sm well-slim">
+                <div id="cm-main-panel-upper-panel">
                     <div ng-if="module.global.layout == 1">
                         <cm-main-panel-tracker-panel></cm-main-panel-tracker-panel>
                         <chat-module-nav-panel></chat-module-nav-panel>
@@ -40,7 +40,7 @@
                 <div ng-if="module.global.layout == 3" class="cm-main-panel-section">
                     <chat-module-nav-panel></chat-module-nav-panel>
                 </div> -->
-                <div style="position:relative; display: block; width: 100%; height: 800px; overflow-y:auto; overflow-x:hidden;" class="min-scroll">
+                <div id="cm-main-panel-lower-panel">
                     <div ng-if="module.tab.current.index_position == 0" id="contacts">
                         <contacts></contacts>
                     </div>

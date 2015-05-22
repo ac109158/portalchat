@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'UserManager', 'ContactsManager', 'SettingsManager', 'SessionsManager', 'NotificationManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'BrowserService', 'localStorageService', function($rootScope, $log, $timeout, CoreConfig, UserManager, ContactsManager, SettingsManager, SessionsManager, NotificationManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, BrowserService, localStorageService) {
+service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'UserManager', 'ContactsManager', 'SettingsManager', 'SessionsManager', 'NotificationManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'UxManager', 'BrowserService', 'localStorageService', function($rootScope, $log, $timeout, CoreConfig, UserManager, ContactsManager, SettingsManager, SessionsManager, NotificationManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, UxManager, BrowserService, localStorageService) {
     var that = this;
     this.fb = {};
     this.fb.chat = {};
@@ -135,18 +135,17 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         that.establishUserChat();
         ChatBuilder.load();
         $timeout(function() {
+            if (CoreConfig.monitorContactsBehavior) {
+                angular.forEach(ContactsManager.contacts.profiles.list, function(contact_profile) {
+                    ContactsManager.monitorContactBehaviour(contact_profile);
+                });
+            }
             $timeout(function() {
-                if (CoreConfig.monitorContactsBehavior) {
-                    angular.forEach(ContactsManager.contacts.profiles.list, function(contact_profile) {
-                        ContactsManager.monitorContactBehaviour(contact_profile);
-                    });
-                }
+                that.module.state.is_ready = true;
                 $timeout(function() {
-                    that.module.state.is_ready = true;
-                    $timeout(function() {
-                        $rootScope.$broadcast('update-chosen');
-                    });
-                }, 750);
+                    UxManager.ux.fx.evaluateChatModuleLayout();
+                    $rootScope.$broadcast('update-chosen');
+                });
             }, 750);
         }, 750);
         that.setDefaultDirectoryChats();
@@ -572,6 +571,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         }, 1000);
         SettingsManager.updateGlobalSetting('is_open', true, true);
         that.clearBrowserNotificationList();
+        $timeout(function(){
+            UxManager.ux.fx.evaluateChatModuleLayout();
+        });
     };
 
 
@@ -876,6 +878,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 that.unsetPanelContactListFocus();
                 that.setChatAsCurrent(that.module.tab.current.type, that.module.tab.current.session_key);
             }
+            $timeout(function(){
+                UxManager.ux.fx.evaluateChatModuleLayout();
+            });
         }
     };
 
@@ -994,23 +999,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
 
     this.evaluateChatModuleLayout = function() {
         console.log('here');
-        that.module.setting.main_panel.height = $window.innerHeight;
+        UxManager.ux.fx.evaluateChatModuleLayout();
         return;
-        if (Object.size(ChatStorage[contact].chat.list) - 1 >= scope.stored_directory_index) {
-            scope.setDirectoryChat(scope.stored_directory_index, false);
-        } else if (scope.activeChats.length > 0) {
-            scope.setDirectoryChat(0, false);
-        }
-        if (SettingsManager.global.layout != 2 && !(Object.size(ChatStorage[contact].chat.list))) {
-            if (SettingsManager.global.layout == 3) {
-                $rootScope.$broadcast('set-module-layout', 1);
-            }
-            $timeout(function() {
-                $rootScope.$evalAsync(function() {
-                    document.getElementById(that.module.current.directory.chat.index + '_link').click();
-                });
-            }, 750);
-        }
+
     };
 
     this.removeChat = function(type, session_key) {
