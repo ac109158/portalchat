@@ -39,7 +39,7 @@ angular.module('portalchat.core').factory('PermissionsManager', ['$rootScope', '
     };
 
     this.permissions.hasNudgePrivilege = function(){
-        if(that.group.super_admin.indexOf(UserManager.user.id) != -1){
+        if(that.group.super_admin.indexOf(UserManager.user.profile.id) != -1){
             return true;
         }
         return false;

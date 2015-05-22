@@ -35,7 +35,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
             }
             if (ChatStorage[type].chat.list[session_key].fb.group.location.session) {
-                ChatStorage[type].chat.list[session_key].fb.group.location.session.child('is_typing/' + UserManager.user.id).set(UserManager.user.avatar);
+                ChatStorage[type].chat.list[session_key].fb.group.location.session.child('is_typing/' + UserManager.user.profile.id).set(UserManager.user.avatar);
 
             }
             ChatStorage[type].chat.list[session_key].interval.is_user_typing = $timeout(function() {
@@ -373,7 +373,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
     this.setMessageReference = function(message, start) {
         if (parseInt(message.reference) >= parseInt(start)) {
             message.is_reference = true;
-            if (message.reference.author === UserManager.user.id) {
+            if (message.reference.author === UserManager.user.profile.id) {
                 message.is_self_referenced = true;
             } else {
                 message.is_self_referenced = false;
@@ -443,7 +443,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
     };
 
     this.isMessageFromUser = function(message) {
-        if (message.author === UserManager.user.id) {
+        if (message.author === UserManager.user.profile.id) {
             message.author_is_self = true;
             return;
         }
@@ -547,7 +547,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 }
 
                 var message = {
-                    author: UserManager.user.id,
+                    author: UserManager.user.profile.id,
                     authorName: UserManager.user.name,
                     to: ChatStorage[type].chat.list[session_key].to_user_id,
                     text: message_text,
@@ -597,7 +597,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             ChatStorage[type].chat.list[session_key].scroll.to_bottom = false;
             var fb_timestamp = Firebase.ServerValue.TIMESTAMP;
             var message = {
-                author: UserManager.user.id,
+                author: UserManager.user.profile.id,
                 authorName: UserManager.user.name,
                 avatarId: UserManager.user.avatar,
                 encryption: UserManager.user.encryption,
@@ -635,7 +635,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             ChatStorage[type].chat.list[session_key].scroll.to_bottom = false;
             var fb_timestamp = Firebase.ServerValue.TIMESTAMP;
             var message = {
-                author: UserManager.user.id,
+                author: UserManager.user.profile.id,
                 authorName: UserManager.user.name,
                 avatarId: UserManager.user.avatar,
                 encryption: UserManager.user.encryption,
@@ -675,7 +675,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             ChatStorage[type].chat.list[session_key].scroll.to_bottom = false;
             var fb_timestamp = Firebase.ServerValue.TIMESTAMP;
             var message = {
-                author: UserManager.user.id,
+                author: UserManager.user.profile.id,
                 authorName: UserManager.user.name,
                 avatarId: UserManager.user.avatar,
                 encryption: UserManager.user.encryption,
@@ -711,7 +711,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.addReferenceToChatMessage = function(type, session_key, message) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (message.author === UserManager.user.id) {
+            if (message.author === UserManager.user.profile.id) {
                 ChatStorage[type].chat.list[session_key].reference.name = ChatStorage[type].chat.list[session_key].user.self_name;
             } else if (!ChatStorage[type].chat.list[session_key].attr.is_group_chat) {
                 ChatStorage[type].chat.list[session_key].reference.name = ChatStorage[type].chat.list[session_key].contact.first_name;

@@ -119,14 +119,14 @@ that.__setContactUserChatPresence = function(contact) // creates a pointer to th
         ////////////////////////////////////////////////////////////
         $log.debug("Warning: A active_typing_user_location firesocket is  being created");
         ////////////////////////////////////////////////////////////
-        return new Firebase(that._url_root + CoreConfig.user.id + '/' + 'Typing-Presence/' + that._contact._user_id);
+        return new Firebase(that._url_root + UserManager.user.profile.id + '/' + 'Typing-Presence/' + that._contact._user_id);
     };
     this.set_active_typing_user_socket = function(scope) // The user will point to this  folder location under a uid child for each chat session. The chat session will watch this location for whenever the contact is typing a message
     {
         ////////////////////////////////////////////////////////////
         $log.debug("Warning: A active_typing_user_location firesocket is  being created");
         ////////////////////////////////////////////////////////////
-        return $firebase(new Firebase(that._url_root + CoreConfig.user.id + '/' + 'Typing-Presence/' + that._contact._user_id + '/' + 'is-typing/'));
+        return $firebase(new Firebase(that._url_root + UserManager.user.profile.id + '/' + 'Typing-Presence/' + that._contact._user_id + '/' + 'is-typing/'));
     };
 
     this.setUserChatPresence = function(chat_presence) // this function is used to set the chat_presence of a user to the firebase location, once it is chaged all user loking at it will know the the user chage in the users chat_presence
@@ -157,7 +157,7 @@ if (chat_presence === "Offline")
         ////////////////////////////////////////////////////////////
         $log.debug("Warning: A contact_message_location firesocket is  being created");
         ////////////////////////////////////////////////////////////
-        /*      var tuml_root = that._url_root + that._contact._user_id  + '/' + that._chat_message_storage_reference +  CoreConfig.user.id + '/' + that.__getDateReference(); */
+        /*      var tuml_root = that._url_root + that._contact._user_id  + '/' + that._chat_message_storage_reference +  UserManager.user.profile.id + '/' + that.__getDateReference(); */
         var tuml_root = that._url_root + that._contact._user_id + '/' + that._chat_message_storage_reference + that._sub_category_reference;
         var contact_message_location = new Firebase(tuml_root);
         return contact_message_location; /*         return $firebase(contact_message_location); */
@@ -177,7 +177,7 @@ if (chat_presence === "Offline")
             ////////////////////////////////////////////////////////////
             $log.debug("Warning: A fromUserMessageLocation is  being created");
             ////////////////////////////////////////////////////////////
-            return new Firebase(that._url_root + CoreConfig.user.id + '/' + that._chat_message_storage_reference + that._contact._user_id + '/');
+            return new Firebase(that._url_root + UserManager.user.profile.id + '/' + that._chat_message_storage_reference + that._contact._user_id + '/');
         }
     };
     this.establishUserChat = function(scope) //  Step 1 this function will initialize the that variables and set the user chat presence.
@@ -202,7 +202,7 @@ if (chat_presence === "Offline")
                     UserManager.user_group.push(CoreConfig.common.reference.user_prefix + UserManager._user_profile.admin.user_id);
                 }
 
-                CoreConfig.user.id + '/' = UserManager._user_profile.user_id + '/'; // user_id of user
+                UserManager.user.profile.id + '/' = UserManager._user_profile.user_id + '/'; // user_id of user
                 that.__set_active_sessions_user_location(scope); // looks at the active session folder of the user, and create chatSession for an calling card objects present
             }
         }, 250);

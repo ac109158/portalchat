@@ -35,7 +35,7 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
 
 
     this.load = function() {
-        if (UserManager.user.id) {
+        if (UserManager.user.profile.id) {
             that.initSessionVar();
             that.addVisiblityListener();
             that.setFirebaseLocations();
@@ -130,16 +130,16 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
     };
 
     this.setFirebaseLocations = function() {
-        if (UserManager.user.id) {
-            console.log(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.id + '/');
-            that.fb.location.settings = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.id + '/');
+        if (UserManager.user.profile.id) {
+            console.log(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.profile.id + '/');
+            that.fb.location.settings = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.profile.id + '/');
         }
     };
 
     this.setFirebaseTargets = function() {
-        if (UserManager.user.id) {
-            // that.fb.target.is_external_window = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + CoreConfig.user.id + '/is-external-window/'));
-            that.fb.target.is_module_open = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.id + '/module-open/'));
+        if (UserManager.user.profile.id) {
+            // that.fb.target.is_external_window = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.profile.id + '/is-external-window/'));
+            that.fb.target.is_module_open = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.profile.id + '/module-open/'));
             return true;
         }
         return false;

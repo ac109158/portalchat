@@ -7,7 +7,7 @@ angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', 
         };
 
         this.initApp = function() {
-            if (UserManager.user.id) {
+            if (UserManager.user.profile.id) {
                 $timeout(function() {
                     NotificationManager.load();
                     UtilityManager.load();

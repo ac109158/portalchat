@@ -1,4 +1,4 @@
-angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ContactsManager', function($rootScope, $log, $timeout, $firebaseObject, CoreConfig, UserManager, ContactsManager) {
+angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ContactsManager','PermissionsManager', function($rootScope, $log, $timeout, $firebaseObject, CoreConfig, UserManager, ContactsManager,PermissionsManager) {
     var that = this;
     this.isTimestamps = false;
 
@@ -10,7 +10,7 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
 
 
     this.load = function() {
-        if (CoreConfig.user && CoreConfig.user.id) {
+        if (CoreConfig.user && UserManager.user.profile.id) {
             that.setFirebaseLocation();
             $timeout(function() {
                 that.setOnlineTracking();
@@ -22,19 +22,19 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
 
     this.setFirebaseLocation = function() {
         that.fb.location.online_check = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.online_check_reference);
-        that.fb.location.user_check_in = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.online_check_reference + CoreConfig.user.id);
+        that.fb.location.user_check_in = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.online_check_reference + UserManager.user.profile.id);
         that.fb.location.user_check_in.onDisconnect().remove();
     };
 
 
     this.setOnlineTracking = function() {
         if (UserManager.user.presence != 'Offline') {
-            that.fb.location.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
+            that.fb.location.online_check.child(UserManager.user.profile.id).set(Firebase.ServerValue.TIMESTAMP);
             UserManager.user.timestamp = new Date().getTime();
         }
         that.user_check_in = setInterval(function() {
             if (UserManager.user.presence !== 'Offline') {
-                that.fb.location.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
+                that.fb.location.online_check.child(UserManager.user.profile.id).set(Firebase.ServerValue.TIMESTAMP);
                 UserManager.user.timestamp = new Date().getTime();
             }
         }, 30000);
@@ -43,7 +43,7 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
                 $timeout(function() {
                     if (UserManager.user.presence != 'Offline') {
                         $timeout(function() {
-                            that.fb.location.online_check.child(CoreConfig.user.id).set(Firebase.ServerValue.TIMESTAMP);
+                            that.fb.location.online_check.child(UserManager.user.profile.id).set(Firebase.ServerValue.TIMESTAMP);
                             UserManager.user.timestamp = new Date().getTime();
                         }, 1000);
                     } else if (UserManager.user.presence === 'Offline') {
@@ -70,10 +70,10 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
 
     this.updateTimestamp = function() {
         if (UserManager.fb.target.presence != 'Offline') {
-            if (UserManager.isManagerLevel()) {
+            if (PermissionsManager.hasAdminRights()) {
                 that.updateOnlineTimestamps();
             }
-        } else if (UserManagerfb.target.presence == 'Offline') {
+        } else if (UserManager.user.profile.presence.state == 'Offline') {
             that.user_online_check_location.remove();
         }
     };
@@ -87,7 +87,7 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
                 var contact_tag = CoreConfig.common.reference.user_prefix + user_id_key;
                 if (that.isTimestamps) {
                     i++;
-                    if (user_id_key == CoreConfig.user.id) {
+                    if (user_id_key == UserManager.user.profile.id) {
                         stamp_index = i;
                     }
                     if (angular.isDefined(ContactsManager.contacts.profiles.map[contact_tag]) && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]]) {

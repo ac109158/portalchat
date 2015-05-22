@@ -26,7 +26,7 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
         this.register_contact_state_queue = [];
 
         this.load = function() {
-            if (CoreConfig.user.id) {
+            if (UserManager.user.profile.id) {
                 that.setFirebaseLocations();
                 that.setProfiles();
                 that.watchForNewProfiles();
@@ -105,7 +105,7 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
         this.setContactProfile = function(profile) {
             if (profile) {
                 // profile.name = profile.name;
-                if (angular.isUndefined(profile.user_id) || profile.user_id === UserManager.user.id) {
+                if (angular.isUndefined(profile.user_id) || profile.user_id === UserManager.user.profile.id) {
                     return false;
                 }
                 if (profile.alias) {
@@ -222,7 +222,7 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
         };
 
         // this.sortProfile = function(profile, online) {
-        //     if (angular.isUndefined(profile.user_id) || profile.user_id === CoreConfig.user.id) {
+        //     if (angular.isUndefined(profile.user_id) || profile.user_id === UserManager.user.profile.id) {
         //         return false;
         //     }
         //     if (online) {
@@ -260,7 +260,7 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
             that.fb.location.profiles.startAt().on('child_added', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
                 var profile = snapshot.val();
                 // console.log('adding: ', profile);
-                if (angular.isUndefined(profile.user_id) || profile.user_id === CoreConfig.user.id) {
+                if (angular.isUndefined(profile.user_id) || profile.user_id === UserManager.user.profile.id) {
                     return false;
                 }
                 that.setContactProfile(profile);

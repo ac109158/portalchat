@@ -9,7 +9,7 @@ service('GroupChatManager', ['$log', '$timeout', 'CoreConfig', 'UserManager', 'C
 
         this.removeUserFromGroupChat = function(type, session_key) {
             if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-                ChatStorage[type].chat.list[session_key].fb.contacts.list.child(UserManager.user.id).remove();
+                ChatStorage[type].chat.list[session_key].fb.contacts.list.child(UserManager.user.profile.id).remove();
             }
         };
         this.getGroupChatRemainingContacts = function(type, session_key) {

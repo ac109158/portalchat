@@ -36,8 +36,8 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
     };
 
     this.setFirebaseLocations = function() {
-        if (CoreConfig.user.id) {
-            that.fb.user.location.sessions = new Firebase(CoreConfig.chat.url_root + CoreConfig.user.id + '/' + CoreConfig.session.root_reference);
+        if (UserManager.user.profile.id) {
+            that.fb.user.location.sessions = new Firebase(CoreConfig.chat.url_root + UserManager.user.profile.id + '/' + CoreConfig.session.root_reference);
             if (UserManager.user.isAdmin) {
                 that.fb.group.location.sessions = new Firebase(CoreConfig.group_chat.url_root + CoreConfig.group_chat.active_session_reference);
             }
@@ -45,9 +45,9 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
     };
 
     this.setFirebaseTargets = function() {
-        if (CoreConfig.user.id) {
-            // that.fb.target.is_external_window = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/is_external_window/'));
-            // that.fb.target.is_panel_open = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.users_reference + CoreConfig.users_settings_reference + CoreConfig.user.id + '/is_open/'));
+        if (UserManager.user.profile.id) {
+            // that.fb.target.is_external_window = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.users_reference + CoreConfig.users_settings_reference + UserManager.user.profile.id + '/is_external_window/'));
+            // that.fb.target.is_panel_open = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.users_reference + CoreConfig.users_settings_reference + UserManager.user.profile.id + '/is_open/'));
             return true;
         }
         return false;
@@ -97,7 +97,7 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
     };
 
     that.__setActiveSessionLocation = function(scope, contact, isGroupChat) { // this function will detect if this chatSession gets changed to a group chat and will call the necessary functions
-        var active_session_root = that._url_root + CoreConfig.user.id + '/' + that._active_session_reference + contact + '/';
+        var active_session_root = that._url_root + UserManager.user.profile.id + '/' + that._active_session_reference + contact + '/';
         var active_session_location = new Firebase(active_session_root);
         var index = null;
         var chat_log;
@@ -321,7 +321,7 @@ var n = Firebase.ServerValue.TIMESTAMP;
         ////////////////////////////////////////////////////////////
         $log.debug("Warning: A active_session_from_user_location firesocket is  being created");
         ////////////////////////////////////////////////////////////
-        return $firebase(new Firebase(that._url_root + CoreConfig.user.id + '/' + that._active_session_reference + that._contact._user_id + '/'));
+        return $firebase(new Firebase(that._url_root + UserManager.user.profile.id + '/' + that._active_session_reference + that._contact._user_id + '/'));
     };
 
     this.setContactChatsSessionPriority = function() {

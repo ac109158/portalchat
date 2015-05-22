@@ -84,8 +84,8 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         ChatModuleManager.setMainPanelTab(tab_index);
     };
 
-    this.ui.fx.setUserChatPresence = function() {
-        UserManager.setUserChatPresence();
+    this.ui.fx.setUserChatPresence = function(clear) {
+        UserManager.setUserChatPresence(clear);
     };
     this.ui.fx.updatePresenceMessagePost = function() {
         UserManager.updatePresenceMessagePost();

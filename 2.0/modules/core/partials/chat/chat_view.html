@@ -7,8 +7,8 @@
             <div id="cm-main-panel-header">
                 <!-- <img style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/> -->
                 <img class="pointer" style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="{{module.contact_list.setting.default_avatar}}" width=35 height=35/>
-                <span style="margin-left:5px; line-height:20px;" ng-bind="module.user.name"></span>
-                <span style="background:white; width:100px; border-radius:10px; margin-left:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em;" ng-class="{'Busy' : module.user.presence != 'Online' && module.user.presence != 'Offline' && module.user.online == true ,'Offline' : module.user.online == false || module.user.presence == 'Offline','Online' : module.user.presence == 'Online' && module.user.online == true}">{{module.user.presence}}</span>
+                <span style="margin-left:5px; line-height:20px;" ng-bind="module.user.profile.name"></span>
+                <span style="background:white; width:100px; border-radius:10px; margin-left:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em;" ng-class="{'Busy' : module.user.profile.presence.state != 'Online' && module.user.profile.presence.state != 'Offline' && module.user.profile.online == true ,'Offline' : module.user.profile.online == false || module.user.profile.presence.state == 'Offline','Online' : module.user.profile.presence.state == 'Online' && module.user.profile.online == true}">{{module.user.profile.presence.state}}</span>
                 <div class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.closeChatModule();">
                     <center><span class="fa fa-times fa-1x"></span></center>
                 </div>

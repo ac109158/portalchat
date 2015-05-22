@@ -9,26 +9,26 @@
         </div>
         <div <div style="width:60%; padding:4px; float:left">
             <div class="well well-sm well-slim">
-                <span class="cm-profile-span pointer" ng-bind="module.user.name"><br></span>
-                <span class="cm-profile-span pointer" ng-if="module.user.role" ng-bind="module.user.role"><br></span>
-                <span class="cm-profile-span pointer" ng-if="module.user.supervisors.pc" style="font-size:.8em;">PC: {{module.user.supervisors.pc.name}}<br></span>
-                <span class="cm-profile-span pointer" ng-if="module.user.supervisors.mc" style="font-size:.8em;">MC: {{module.user.supervisors.mc.name}}<br></span>
+                <span class="cm-profile-span pointer" ng-bind="module.user.profile.name"><br></span>
+                <span class="cm-profile-span pointer" ng-if="module.user.additonal_profile.role" ng-bind="module.user.additonal_profile.role"><br></span>
+                <span class="cm-profile-span pointer" ng-if="module.user.profile.additonal_profile.pc" style="font-size:.8em;">PC: {{module.user.profile.additonal_profile.pc.name}}<br></span>
+                <span class="cm-profile-span pointer" ng-if="module.user.profile.additonal_profile.mc" style="font-size:.8em;">MC: {{module.user.profile.additonal_profile.mc.name}}<br></span>
             </div>
         </div>
     </div>
     <div style="width:100%; display:block; float:left; padding:2px; margin-top:2px;">
         <div class="well well-sm well-slim">
             <span class="cm-profile-span-label">Phone</span>
-            <span class="cm-profile-span pointer">{{module.user.phone}}</span>
+            <span class="cm-profile-span pointer">{{module.user.additional_profile.phone}}</span>
             <span class="cm-profile-span-label">Email</span>
-            <span class="cm-profile-span pointer">{{module.user.email}}</span>
+            <span class="cm-profile-span pointer">{{module.user.additional_profile.email}}</span>
         </div>
     </div>
     <div style="position:relative; display:block; width:100%; min-height: 50px; float:left; padding:2px; margin:0px; clear:none; background:rgba(69,106,151,0.8); color:black;">
         <div style="width:100%; min-height:20px; background:rgba(255,255,255,.8); border-radius:2px; margin-bottom:2px; padding:2px;">
             <center>
                 <span>Chat Status: </span>
-                <select class="pointer" style="color:black;" ng-model="module.user.presence" ng-change="ui.fx.setUserChatPresence();">
+                <select class="pointer" style="color:black;" ng-model="module.user.profile.presence.state" ng-change="ui.fx.setUserChatPresence(true);">
                     <option value='Online'>Available</option>
                     <option value='Away'>Away</option>
                     <option value='Busy'>Busy</option>
@@ -39,16 +39,16 @@
                 </select>
             </center>
         </div>
-        <textarea ng-show="module.user.presence != 'Online'" class="pointer"style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px; color:black;" placeholder="Enter a detailed message for your current chat status if you would like..." ng-model="module.user.profile.main.presence.message" ng-enter-press="" ng-blur="ui.fx.updatePresenceMessage()"></textarea>
-        <textarea ng-show="module.user.presence == 'Online'" style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px; color:black;" placeholder="N/A"></textarea>
+        <textarea ng-show="module.user.profile.presence.state != 'Online'" class="pointer"style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px; color:black;" placeholder="Enter a detailed message for your current chat status if you would like..." ng-model="module.user.profile.presence.message" ng-enter-press="" ng-blur="ui.fx.setUserChatPresence(false)"></textarea>
+        <textarea ng-show="module.user.profile.presence.state == 'Online'" style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px; color:black;" placeholder="N/A"></textarea>
         <!--
-<div ng-show="module.user.presence != 'Online' && module.user.profile.main.presence.message.length" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
+<div ng-show="module.user.profile.presence.state != 'Online' && module.user.profile.presence.message.length" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
 					<center>Add Message to Profile: <input ng-change="updatePresenceMessageShow()" type="checkbox" ng-model="user_profile.presence.show_message"></center>
 				</div>
 -->
         <div style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.8); border-radius:2px;">
-        <center><span ng-class="{'text-muted': !module.user.profile.main.presence.message.length}">Post Message to Chats:</span>
-                <input  ng-class="{'pointer': module.user.presence != 'Online' && module.user.profile.main.presence.message.length}" ng-change="ui.fx.updatePresenceMessagePost()" type="checkbox" ng-model="module.user.profile.main.presence.post">
+        <center><span ng-class="{'text-muted': !module.user.profile.presence.message.length}">Post Message to Chats:</span>
+                <input  ng-class="{'pointer': module.user.profile.presence.state != 'Online' && module.user.profile.presence.message.length}" ng-change="ui.fx.setUserChatPresence(false)" type="checkbox" ng-model="module.user.profile.presence.post">
             </center>
         </div>
         <div class="cm-chat-spacer"></div>

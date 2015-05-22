@@ -152,18 +152,18 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     };
 
     this.setFirebaseLocations = function() {
-        if (UserManager.user.id) {
-            // console.log(CoreConfig.chat.url_root + CoreConfig.user.id + '/' + CoreConfig.session.root_reference);
-            that.fb.chat.location.sessions = new Firebase(CoreConfig.chat.url_root + CoreConfig.user.id + '/' + CoreConfig.session.root_reference);
+        if (UserManager.user.profile.id) {
+            // console.log(CoreConfig.chat.url_root + UserManager.user.profile.id + '/' + CoreConfig.session.root_reference);
+            that.fb.chat.location.sessions = new Firebase(CoreConfig.chat.url_root + UserManager.user.profile.id + '/' + CoreConfig.session.root_reference);
         }
     };
 
     this.setFirebaseTargets = function() {
-        if (UserManager.user.id) {}
+        if (UserManager.user.profile.id) {}
     };
 
     this.establishUserChat = function() { //  Step 1 this function will initialize the that variables and set the user chat presence.
-        if (CoreConfig.user && CoreConfig.user.id) {
+        if (CoreConfig.user && UserManager.user.profile.id) {
             ChatStorage.contact.session.list = [];
             ChatStorage.contact.session.map = {};
             // look at the active session folder of the user, and create chatSession for an calling card objects present
@@ -182,7 +182,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             that.module.state.allow_chat_request = false;
             var session = {};
             session.type = 'contact';
-            session.session_key = UserManager.user.id + ':' + contact.user_id;
+            session.session_key = UserManager.user.profile.id + ':' + contact.user_id;
             session.active = false;
             session.avatar = contact.avatar;
             session.name = contact.name;
@@ -203,7 +203,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     };
 
     this.registerContactChatSession = function(session, set_focus) {
-        if (session && angular.isObject(session) && session.session_key && session.user_id !== UserManager.user.id) {
+        if (session && angular.isObject(session) && session.session_key && session.user_id !== UserManager.user.profile.id) {
             var index;
             $log.debug('Requesting chat session');
             if (!(UtilityManager.engine.firebase.online)) {
