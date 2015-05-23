@@ -128,11 +128,13 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ChatStorage[session.type].chat.list[session.session_key].attr.is_text_focus = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_topic_focus = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_top_spacer = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.last_logged_chat = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.last_sent_user_message = '';
             ChatStorage[session.type].chat.list[session.session_key].attr.last_sent_contact_message = '';
             // priority/indexing
 
             ChatStorage[session.type].chat.list[session.session_key].priority = {};
+            ChatStorage[session.type].chat.list[session.session_key].priority.current = false;
             ChatStorage[session.type].chat.list[session.session_key].priority.first = 0;
             ChatStorage[session.type].chat.list[session.session_key].priority.next = 1;
 
@@ -174,8 +176,8 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ChatStorage[session.type].session.list[session.session_key].fb = {};
 
             if (!session.is_group_chat && !session.is_directory_chat) {
-
                 ChatStorage[session.type].chat.list[session.session_key].signals = {};
+                ChatStorage[session.type].chat.list[session.session_key].signals.type = session.type;
                 ChatStorage[session.type].chat.list[session.session_key].signals.active = session.active;
                 ChatStorage[session.type].chat.list[session.session_key].signals.nudge = false;
                 ChatStorage[session.type].chat.list[session.session_key].signals.is_typing = false;
@@ -230,7 +232,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             that.setContactChatOrderMap();
             $timeout(function() {
                 UxManager.ux.fx.evaluateChatModuleLayout();
-                NotificationManager.playSound('new_chat');
             });
             return true;
         }
@@ -256,6 +257,108 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         }
     };
 
+    this.clearContactSessionExpiredMessages = function(session, fb_ref_type) {
+        if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
+            var expiration_timestamp = session.timestamp - CoreConfig.module.setting.store_time;
+            ChatStorage[session.type].session.list[session.session_key].fb.user.location.messages.once('value', function(snapshot) {
+                var messages = snapshot.val();
+                if (messages) {
+                    angular.forEach(messages, function(message, key) {
+                        if (message.timestamp < expiration_timestamp) // delete message if it has exceeded its life span
+                        {
+                            ChatStorage[session.type].session.list[session.session_key].fb.user.location.messages.child(key).remove();
+                        }
+                    });
+                }
+            });
+            return true;
+        }
+        return false;
+    };
+
+
+
+    this.watchForChangedChatMessages = function(session, fb_ref_type) {
+        if (ChatStorage[session.type] && ChatStorage[session.type].session.list[session.session_key]) {
+            ChatStorage[session.type].session.list[session.session_key].fb.user.location.messages.on("child_changed", function(snapshot, previous) {
+                var key = snapshot.key();
+                var message = snapshot.val();
+                message.key = key;
+                if (message) {
+                    if (message.encryption) {
+                        message.session_key = sjcl.decrypt(CoreConfig.encrypt_pass, message.session_key);
+                        message.text = sjcl.decrypt(message.session_key, message.text);
+                    }
+                }
+                if (angular.isDefined(ChatStorage[session.type].chat.list[session.session_key].messages.map[message.key]) && ChatStorage[session.type].chat.list[session.session_key].messages.list[ChatStorage[session.type].chat.list[session.session_key].messages.map[message.key]]) {
+                    ChatStorage[session.type].chat.list[session.session_key].messages.list[ChatStorage[session.type].chat.list[session.session_key].messages.map[message.key]] = message;
+                }
+            });
+            return true;
+        }
+        return false;
+    };
+
+    this.setNewExistingChatMessages = function(session, fb_ref_type) {
+        if (ChatStorage[session.type] && ChatStorage[session.type].session.list[session.session_key]) {
+            var last_message, keys, messages;
+            ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.once("value", function(snapshot) {
+                keys = Object.keys(snapshot.val() || {});
+                messages = snapshot.val();
+                last_message = keys[keys.length - 1];
+                angular.forEach(messages, function(message) {
+                    if (message && message.key) {
+                        last_message = message.key;
+                        that.storeChatMessageInChatMessageList(session.type, session.session_key, message);
+                    }
+
+                });
+                $timeout(function() {
+                    ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.startAt(null, last_message).on('child_added', function(snapshot) { // detects a ref_location.push(Json) made to the reference location
+                        if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
+                            if (last_message) {
+                                last_message = false;
+                            } else {
+                                var key = snapshot.key();
+                                var message = snapshot.val();
+                                message.key = key;
+                                if (message && key != ChatStorage[session.type].chat.list[session.session_key].attr.last_logged_chat) {
+                                    that.storeChatMessageInChatMessageList(session.type, session.session_key, message);
+                                    UxManager.ux.fx.alertNewChat(session.type, session.session_key);
+                                    return;
+                                }
+                            }
+                            $log.debug('Looks like this is a tremor request recieving an message');
+                            return;
+                        }
+                    });
+                });
+            });
+            return true;
+        }
+        return false;
+    };
+
+
+    this.storeChatMessageInChatMessageList = function(type, session_key, message) {
+        ChatStorage[type].chat.list[session_key].attr.last_logged_chat = message.key;
+        if (message.encryption) {
+            message.session_key = sjcl.decrypt(CoreConfig.encrypt_pass, message.session_key);
+            message.text = sjcl.decrypt(message.session_key, message.text);
+        }
+        if (!ChatStorage[type].chat.list[session_key].priority.current) {
+            ChatStorage[type].chat.list[session_key].priority.current = true;
+            ChatStorage[type].chat.list[session_key].priority.first = message.priority;
+            ChatStorage[type].chat.list[session_key].priority.next = message.priority + 1;
+        } else if (ChatStorage[type].chat.list[session_key].priority.current > -1) {
+            ChatStorage[type].chat.list[session_key].priority.next = message.priority + 1;
+        } else {
+            ChatStorage[type].chat.list[session_key].priority.next++;
+        }
+        ChatStorage[type].chat.list[session_key].messages.map[message.key] = ChatStorage[type].chat.list[session_key].messages.list.length;
+        ChatStorage[type].chat.list[session_key].messages.list.push(message);
+    };
+
 
     this.buildChatForSession = function(session) { // this function builds out the details of an individual chat sesssion
         if (angular.isUndefined(session) || !session.session_key) {
@@ -264,21 +367,41 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ////////////////////////////////////////////////////////////
             return false;
         }
+        var fb_ref_type;
+        if (session.type === 'contact') {
+            if (session.is_group_chat) {
+                fb_ref_type = 'group';
+            } else {
+                fb_ref_type = 'user';
+            }
+        } else {
+            fb_ref_type = 'group';
+        }
         if (that.validateSessionModel(session)) {
             if (that.setDefaultChatTemplate(session)) {
-                SessionsManager.setUserChatSessionStorage(session.type, session.session_key);
-                SessionsManager.updateContactChatSignals(session.type, session.session_key);
-                // if(that.setSessionInContactLocation(session)){
-
-                // }
+                console.log('Pass: 1');
+                if (SessionsManager.setUserChatSessionStorage(session.type, session.session_key)) {
+                    console.log('Pass: 2');
+                    if (SessionsManager.updateContactChatSignals(session.type, session.session_key)) {
+                        console.log('Pass: 3');
+                        if (that.clearContactSessionExpiredMessages(session, fb_ref_type)) {
+                            console.log('Pass: 4');
+                            if (that.setNewExistingChatMessages(session, fb_ref_type)) {
+                                console.log('Pass: 5');
+                                if (that.watchForChangedChatMessages(session, fb_ref_type)) {
+                                    console.log('finished');
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
+        console.log("failed");
         return false;
 
         $timeout(function() {
-            if (angular.isUndefined(chat_session.session_key)) {
-                chat_session.session_key = scope.new_session_key;
-            }
             chat_session.messageListQuery = that.__returnMessageListQuery(scope, chat_session.time, chat_session.user_message_location, that._contact._user_id, chat_session.is_group_chat, store_length); // this creates a query of the messages pointed at the from_user storage location , messages must be written in both the user and contact chatbox pointer locations
             // set pointer to user-group, used to remove the session if no one is longer using it
             var session_root = that._group_url_root + that._group_active_session_reference + chat_session.session_key + '/';
@@ -756,350 +879,5 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
         }
     };
 
-    this.returnMessageListQuery = function(scope, time, refLocation, to_address, is_group_chat, store_length) // this will query the message storage loction for the chat_session and create callbacks for when a child is added or removed, it can  also limit the amount of chat message that can be stored
-        {
-            var query_limit_size, timestamp;
-            $log.debug("WARNING: GERNERATING A MESSAGE QUERY FOR " + refLocation.name());
-            if (angular.isUndefined(refLocation)) {
-                ////////////////////////////////////////////////////////////
-                $log.debug('Failure: location error: ' + refLocation);
-                ////////////////////////////////////////////////////////////
-                return false;
-            }
-            that._last_query_location = refLocation.name();
-            if (is_group_chat) {
-                query_limit_size = that._group_query_size;
-                timestamp = time - (Directorythat._store_time * store_length);
-            } else {
-                query_limit_size = that._single_query_size;
-                timestamp = time - that._store_time;
-            }
-            ////////////////////////////////////////////////////////////
-            $log.debug("Warning: A messageListQuery connection is  being created");
-            ////////////////////////////////////////////////////////////
-            refLocation.once('value', function(snapshot) {
-                var location_list = snapshot.val();
-                if (location_list) {
-                    angular.forEach(location_list, function(value, key) {
-                        if (value.time < timestamp) // delete message if it has exceeded its life span
-                        {
-                            directory_chat.group_message_location.child(key).remove();
-                        }
-                    });
-                }
-            });
-
-            var messageListQuery = refLocation;
-            messageListQuery = messageListQuery.endAt().limit(that._message_load_size);
-            messageListQuery.on('child_removed', function(snapshot) {
-                var messageInfo = snapshot.val();
-                if (that._storage_limit) {
-                    $log.debug('Message ' + messageInfo.text + ' from user ' + messageInfo.user_id + ' should no longer be displayed. ' + angular.toJson(messageInfo));
-                    var firekey = snapshot.name();
-                    $log.debug(snapshot.val());
-                    refLocation.child(firekey).set(null);
-                }
-            });
-            $timeout(function() {
-                var i;
-                messageListQuery.endAt().limit(1).on('value', function(snapshot) {
-                    var index = null;
-                    var obj = snapshot.val();
-                    var log = [];
-                    angular.forEach(obj, function(value, key) { // only a single object so for loop isnt expensive
-                        this.push(key);
-                    }, log);
-                    if (obj === null || that.last_chat_logged === log[0] || obj[log[0]] === null) {
-                        $log.debug('Value change is not needed');
-                        return false;
-                    }
-                    var data = obj[log[0]];
-                    if (data.text === null || data.author === UserManager._user_profile.user_id) {
-                        $log.debug('This is what you just wrote,  return false');
-                        return false;
-                    }
-                    if (data.encryption) {
-                        data.session_key = sjcl.decrypt(CoreConfig.encrypt_pass, data.session_key);
-                        data.text = sjcl.decrypt(data.session_key, data.text);
-                    }
-                    if (is_group_chat === false) {
-                        refLocation.parent().parent().parent().child('Active-Sessions').child(to_address).child('index_position').once('value', function(snapshot) {
-                            index = snapshot.val();
-                        });
-                    }
-                    if (index === null) {
-                        var active_chat_log = [];
-                        angular.forEach(that.active_chats, function(value, key) {
-                            if (angular.isDefined(value.session_key)) {
-                                this.push(value.session_key);
-                            }
-                        }, active_chat_log);
-                        index = active_chat_log.indexOf(data.session_key);
-                    }
-                    if (index > -1) //check to see if  the user_id  of the other persons is still in the users active sessions
-                    {
-                        if (that.active_chats[index] && that.active_chats[index].is_group_chat === false) {
-                            i = that.active_chats[index].chats.length; //or 10
-                            while (i--) {
-                                if (that.active_chats[index].chats[i].key === log[0]) {
-                                    that.active_chats[index].chats[i].text = data.text;
-                                    break;
-                                }
-                            }
-                            return;
-                        } else if (that.active_chats[index] && that.active_chats[index].is_group_chat === true) {
-                            i = that.active_chats[index].group_chats.length; //or 10
-                            while (i--) {
-                                if (that.active_chats[index].group_chats[i].key === log[0]) {
-                                    that.active_chats[index].group_chats[i].text = data.text;
-                                    break;
-                                }
-                            }
-                            scope.$apply();
-                            return;
-                        }
-                    } else {
-                        // $log.debug(data.session_key + ' was not in ' + angular.toJson(active_chat_log));
-                    }
-                });
-            }, 500);
-            $timeout(function() {
-                if (is_group_chat === false) {
-                    $timeout(function() {
-                        messageListQuery.on('child_added', function(snapshot) { // detects a ref_location.push(Json) made to the reference location
-                            if (snapshot.name() != that.last_chat_logged) {
-                                var lookup;
-                                var index;
-                                var data = snapshot.val();
-                                if (data.author === UserManager._user_profile.user_id) {
-                                    lookup = data.to;
-                                } else {
-                                    lookup = data.author;
-                                }
-                                refLocation.parent().parent().parent().child('Active-Sessions').child(lookup).child('index_position').once('value', function(snapshot) {
-                                    var snap = snapshot.val();
-                                    if (angular.isDefined(that.active_chats[snap]) && that.active_chats[snap].contact_id === lookup) {
-                                        index = snap;
-                                    }
-                                });
-                                if (data.time < timestamp) // delete message if it has exceeded its life span
-                                {
-                                    refLocation.child(snapshot.name()).remove();
-                                    return false;
-                                }
-                                that.last_chat_logged = data.key = snapshot.name();
-                                if (data.encryption) {
-                                    data.session_key = sjcl.decrypt(CoreConfig.encrypt_pass, data.session_key);
-                                    data.text = sjcl.decrypt(data.session_key, data.text);
-                                }
-                                if (index === null) { /*                                 console.log('used fallback'); */
-                                    var active_chat_log = [];
-                                    angular.forEach(that.active_chats, function(value, key) {
-                                        if (angular.isDefined(value.contact_id)) {
-                                            this.push(value.contact_id);
-                                        } else if (angular.isDefined(value.session_key)) {
-                                            this.push(value.session_key);
-                                        }
-                                    }, active_chat_log);
-                                    index = active_chat_log.indexOf(lookup); // reference to check inside of users active sessions. Intended to represent if a message came form someone else.
-                                }
-                                if (index > -1) //check to see if  the user_id  of the other persons is still in the users active sessions
-                                {
-                                    if (angular.isDefined(that.active_chats[index])) {
-                                        if (that.active_chats[index].first_priority === false) {
-                                            that.active_chats[index].first_priority = data.priority;
-                                        }
-                                        if (data.priority > -1) {
-                                            that.active_chats[index].next_priority = data.priority + 1;
-                                        } else {
-                                            that.active_chats[index].next_priority++;
-                                        }
-                                        that.active_chats[index].chats.push(data);
-                                        that.active_chats[index].chat_log.push(data.author); // we are logging the chat, so we can do some conditional formatting and css based of the an log array;
-                                    }
-                                    if (((parseInt(data.time) + 5000) > that.active_chats[index].time_reference) && data.author != UserManager._user_profile.user_id) {
-                                        scope.alertNewChat(index, false, data);
-                                    }
-                                    $timeout(function() {
-                                        if (that.last_chat_logged === data.key) {
-                                            that.last_chat_logged = '';
-                                        }
-                                    }, 50);
-                                } else { /*                                 console.log(lookup + ' was not in ' + angular.toJson(active_chat_log)); */
-                                    return false;
-                                }
-                            } else { /*                             console.log('Looks like this is a tremor request recieving an message'); */
-                                $log.debug('Looks like this is a tremor request recieving an message');
-                                return false;
-                            }
-                        });
-                        return messageListQuery;
-                    }, 1500);
-                } else if (is_group_chat === true) {
-                    $timeout(function() {
-                        messageListQuery.on('child_added', function(snapshot) { // detects a ref_location.push(Json) made to the reference location
-                            if (snapshot.name() != that.last_chat_logged) {
-                                var index = null;
-                                var data = snapshot.val();
-                                data.key = that.last_chat_logged = snapshot.name();
-                                if (data.encryption) {
-                                    data.session_key = sjcl.decrypt(CoreConfig.encrypt_pass, data.session_key);
-                                    data.text = sjcl.decrypt(data.session_key, data.text);
-                                }
-                                refLocation.parent().parent().parent().parent().child('Users').child(UserManager._user_profile.user_id).child('Active-Sessions').child(data.to).child('index_position').once('value', function(snapshot) {
-                                    var snap = snapshot.val();
-                                    if (that.active_chats[snap] && that.active_chats[snap].session_key === data.to) {
-                                        index = snap; /*                                    console.log('tada') */
-                                    }
-                                });
-                                if (index === null) // use fallback for loop
-                                {
-                                    var active_chat_log = [];
-                                    angular.forEach(that.active_chats, function(value, key) {
-                                        if (angular.isDefined(value.contact_id)) {
-                                            this.push(value.contact_id);
-                                        } else if (angular.isDefined(value.session_key)) {
-                                            this.push(value.session_key);
-                                        }
-                                    }, active_chat_log);
-                                    index = active_chat_log.indexOf(data.to); // reference to check inside of users active sessions. Intended to represent if a message came form someone else.
-                                }
-                                if (index > -1) //check to see if  the user_id  of the other persons is still in the users active sessions
-                                {
-                                    if (angular.isDefined(that.active_chats[index])) {
-                                        if (that.active_chats[index].first_priority === false) {
-                                            that.active_chats[index].first_priority = data.priority;
-                                        }
-                                        if (data.priority > -1) {
-                                            that.active_chats[index].next_priority = data.priority + 1;
-                                        } else {
-                                            that.active_chats[index].next_priority++;
-                                        }
-                                        that.active_chats[index].group_chat_log.push(data.author); // we are logging the chat, so we can do some conditional formatting and css based of the an log array;
-                                        that.active_chats[index].group_chats.push(data); /*                                     console.log(data);   */
-                                    }
-                                    if ((parseInt(data.time) + 5000) > that.active_chats[index].time_reference && data.author != UserManager._user_profile.user_id) {
-                                        scope.alertNewChat(index, false, data);
-                                    }
-                                    $timeout(function() {
-                                        if (that.last_chat_logged === data.key) {
-                                            that.last_chat_logged = '';
-                                        }
-                                    }, 200);
-                                }
-                            } else { /*                             console.log('Looks like this is a tremor request'); */
-                                $log.debug('Looks like this is a tremor request');
-                                return false;
-                            }
-                        });
-                        return messageListQuery;
-                    }, 1500);
-                } // end of else is group chat
-            }, 500);
-        };
-
-    this.pushChatSession = function(chatSession, contact, scope) { // nameRef.child('first').set('Fred');
-        if (angular.isUndefined(chatSession.session_key)) {
-            chatSession = null;
-            return false;
-        }
-        if (contact === false) {
-            if (chatSession.isGroupChat === true && that.active_sessions[chatSession.session_key] !== true && !(angular.equals(that._last_pushed_session, chatSession.session_key))) {
-                that._last_pushed_session = chatSession.session_key;
-                that.active_sessions[chatSession.session_key] = true;
-                var group_session_info = {
-                    directoryChat: chatSession.isDirectoryChat,
-                    groupChat: chatSession.isGroupChat,
-                    isOpen: contact.isOpen || true,
-                    isSound: chatSession.isSound,
-                    'session_key': chatSession.session_key,
-                    name: chatSession.chat_description,
-                    admin: chatSession.admin,
-                    'time': chatSession.time
-                };
-                that._active_sessions_user_location.child(chatSession.session_key).update(group_session_info);
-                $timeout(function() {
-                    if (chatSession.isTextFocus && that.active_chats.length >= scope.max_count) {
-                        scope.temp_chat = that.active_chats[scope.max_count - 1];
-                        that.active_chats[scope.max_count - 1] = chatSession;
-                        that.active_sessions[that.active_chats[scope.max_count - 1].session_key] = true;
-                        that.active_chats.push(scope.temp_chat);
-                    } else {
-                        that.active_chats.push(chatSession);
-                        scope.checkForTopic(chatSession);
-                        that.active_sessions[that.active_chats[that.active_chats.length - 1].session_key] = true;
-                    }
-                    $timeout(function() {
-                        if (!(that._is_playing_sound) && (chatSession.time + 5000) > new Date().getTime()) {
-                            if (scope.is_external_window.$value && scope.isExternalInstance === false) { /*                              console.log('Blocked SOund'); */ } else {
-                                NotificationService.__playSound(NotificationService._new_chat);
-                            }
-                            $timeout(function() {
-                                that._last_pushed_session = null;
-                                chatSession.loading = false;
-                            }, 500);
-                        }
-                        chatSession.allowTopic = true;
-                    }, 500);
-                }, 1000);
-            } else {
-                $log.debug("Chat Session is already active / not group chat");
-            }
-            $timeout(function() {
-                scope.resetTyping(chatSession);
-                scope.checkForTopic(chatSession);
-            }, 200);
-        } else {
-            if (that.active_sessions[CoreConfig.common.reference.user_prefix + contact.user_id] !== true && !(angular.equals(contact.user_id, that._last_pushed_session))) {
-                that._last_pushed_session = contact.user_id; /*              console.log('last_pushed was set as ' + chatSession.contact_id); */
-                var contact_info = {
-                    avatar: contact.avatar,
-                    groupChat: chatSession.isGroupChat,
-                    'session_key': chatSession.session_key,
-                    isOpen: chatSession.isopen || true,
-                    isSound: chatSession.isSound || true,
-                    name: contact.name,
-                    user_id: contact.user_id,
-                    time: chatSession.time
-                };
-                that._active_sessions_user_location.child(contact.user_id).update(contact_info);
-                that.active_sessions[CoreConfig.common.reference.user_prefix + contact.user_id] = true;
-                if (scope.layout === 2 && chatSession.isopen === false) {
-                    chatSession.isopen = true;
-                    $timeout(function() {
-                        chatSession.isopen = false;
-                        that._active_sessions_user_location.child(contact.user_id).update({
-                            isOpen: false
-                        });
-                    }, 500);
-                }
-                if (scope.layout != 2) {
-                    if (chatSession.isTextFocus) {
-                        that.active_chats.unshift(chatSession); /*                      console.log('inital push'); */
-                        scope.safeApply(function() {
-                            $timeout(function() {
-                                scope.setDirectoryChat(0, true);
-                            }, 50);
-                        });
-                    } else {
-                        that.active_chats.push(chatSession); /*                         document.getElementById('chat-module-queue-content').scrollTo(null,0); */
-                    }
-                } else if (scope.layout === 2 && chatSession.isTextFocus && that.active_chats.length >= scope.max_count) {
-                    scope.temp_chat = that.active_chats[scope.max_count - 1];
-                    that.active_chats[scope.max_count - 1] = chatSession;
-                    that.active_chats.push(scope.temp_chat);
-                    scope.temp_chat = null;
-                } else {
-                    that.active_chats.push(chatSession);
-                }
-                scope.checkForTopic(chatSession);
-                if (!(that._is_playing_sound) && (chatSession.time_reference + 5000) > new Date().getTime()) {
-                    NotificationService.__playSound(NotificationService._new_chat);
-                }
-            } else { /*                 console.log( "Chat Session is already active" ); */
-                $log.debug("Chat Session is already active");
-            }
-        }
-    };
     return this;
 }]);

@@ -23,14 +23,14 @@
 	</div>
 	<div id="chat-module-contacts-display" class="cm-main-panel-chat-panel-content min-scroll" style="height:{{cm_directory_chat_message_display_height + (vertical_adjust)}}px; overflow-y:auto; overflow-x:hidden;">
 		<div ng-show="directory_search.text.length == 0">
-			<div ng-show="smod">
+			<div ng-show="module.contacts.smod">
 				<div class="cm-main-panel-label" style="top:-5px;">
 					<div class="cm-main-label-decal one-edge-shadow">
 						<div ng-class="{'cm-main-label-decal-description': browser == 'Firefox','cm-main-label-decal-description-inset': browser != 'Firefox'}">Shift Manger On Duty</div>
 					</div>
 				</div>
-				<div ng-show="smod" ng-click="chat(smod)" class="cm-main-panel-contact cm-pointer">
-					<img ng-src="/components/com_callcenter/images/avatars/{{smod.avatar}}-90.jpg" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="smod.name"></span><div class="chat-status {{smod.state + '_Directory_Status'}}"></div>
+				<div ng-show="module.contacts.smod" ng-click="chatContact(module.contacts.smod)" class="cm-main-panel-contact cm-pointer">
+					<img ng-src="module.contacts.smod.avatar_url" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="module.contacts.smod.name"></span><div class="chat-status {{module.contacts.smod.state + '_Directory_Status'}}"></div>
 				</div>
 			</div>
 			<div ng-show="tod">

@@ -21,7 +21,7 @@
             </div>
         </div>
     </div>
-    <div id="cm-main-panel-contacts-search" class="pointer" style="position:relative; margin-top:2px;">
+    <div id="cm-main-panel-contacts-search" class="one-edge-shadow pointer" style="position:relative; margin-top:2px;">
         <div class="input-group input-group-sm">
             <span class="input-group-addon"><span class="glyphicon glyphicon-search"></span></span>
             <div class="btn btn-default" style="display: block;">
@@ -31,45 +31,33 @@
             </div>
         </div>
     </div>
+    <div ng-show="module.contacts.smod" class="cm-main-label-decal one-edge-shadow">
+        <div ng-class="{'cm-label-decal-description': module.platform.browser  == 'Firefox','cm-label-decal-description-inset': module.platform.browser  != 'Firefox'}">Shift Manger On Duty</div>
+    </div>
+    <div ng-click="ui.fx.chatContact(module.contacts.smod);" class="cm-main-panel-contact-online">
+        <img ng-src="{{module.contacts.smod.avatar_url}}" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="module.contacts.smod.name"></span>
+        <div class="chat-status cm-main-panel-contact-status {{module.contacts.smod.state}}"></div>
+    </div>
+    <div ng-show="module.contacts.tod" class="cm-main-label-decal one-edge-shadow">
+        <div ng-class="{'cm-label-decal-description': module.platform.browser  == 'Firefox','cm-label-decal-description-inset': module.platform.browser  != 'Firefox'}">Tech Manger On Duty</div>
+    </div>
+    <div ng-click="ui.fx.chatContact(module.contacts.tod);" class="cm-main-panel-contact-online">
+        <img ng-src="{{module.contacts.tod.avatar_url}}" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="module.contacts.tod.name"></span>
+        <div class="chat-status cm-main-panel-contact-status {{module.contacts.tod.state}}"></div>
+    </div>
+    <div class="cm-main-label-decal one-edge-shadow">
+        <div ng-class="{'cm-label-decal-description': module.platform.browser == 'Firefox','cm-label-decal-description-inset': module.platform.browser != 'Firefox'}">Online</div>
+    </div>
     <div id="cm-main-panel-contacts-display">
-        <div ng-show="directory_search.text.length == 0">
-            <div ng-show="smod">
-                <div class="cm-main-panel-label" style="top:-5px;">
-                    <div class="cm-main-label-decal one-edge-shadow">
-                        <div ng-class="{'cm-label-decal-description': module.platform.browser == 'Firefox','cm-label-decal-description-inset': module.platform.browser != 'Firefox'}">Shift Manger On Duty</div>
-                    </div>
-                </div>
-                <div ng-show="smod" ng-click="chat(smod)" class="cm-main-panel-contact cm-pointer">
-                    <img ng-src="/components/com_callcenter/images/avatars/{{smod.avatar}}-90.jpg" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="smod.name"></span>
-                    <div class="chat-status {{smod.state + '_Directory_Status'}}"></div>
-                </div>
-            </div>
-            <div ng-show="tod">
-                <div class="cm-main-panel-label">
-                    <div class="cm-main-label-decal one-edge-shadow">
-                        <div ng-class="{'cm-label-decal-description': module.platform.browser == 'Firefox','cm-label-decal-description-inset': module.platform.browser != 'Firefox'}">Tech Manger On Duty</div>
-                    </div>
-                </div>
-                <div ng-show="tod" ng-click="chat(tod)" class="cm-main-panel-contact cm-pointer">
-                    <img ng-src="/components/com_callcenter/images/avatars/{{tod.avatar}}-90.jpg" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="tod.name"></span>
-                    <div class="chat-status {{tod.state + '_Directory_Status'}}"></div>
-                </div>
-            </div>
-        </div>
-        <div class="cm-main-panel-label">
-            <div class="cm-main-label-decal one-edge-shadow">
-                <div ng-class="{'cm-label-decal-description': module.platform.browser == 'Firefox','cm-label-decal-description-inset': module.platform.browser != 'Firefox'}">Online</div>
-            </div>
-        </div>
         <div id="cm-main-panel-contacts-list" class="min-scroll">
             <div ng-repeat="contact in module.contacts.profiles.list | orderBy: 'name' | filter: module.contact_list.setting.filter">
-                <div ng-click="ui.fx.chatContact(contact);" class="cm-main-panel-contact-online" ng-class="{'cm-main-panel-active-selection':isCurrentDirectorySelection(contact.user_id)}">
-                    <!-- <img ng-src="/components/com_callcenter/images/avatars/{{contact.avatar}}-90.jpg" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="contact.name"></span> -->
-                    <img ng-src="{{module.contact_list.setting.default_avatar}}" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="contact.name"></span>
+                <div ng-click="ui.fx.chatContact(contact);" class="cm-main-panel-contact-online">
+                    <img ng-src="{{contact.avatar_url}}" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="contact.name"></span>
                     <div class="chat-status cm-main-panel-contact-status {{contact.state}}"></div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="topic-spacer"></div>
+    <div class="cm-chat-space"></div>
+    <div class="clearfix"></div>
 </div>

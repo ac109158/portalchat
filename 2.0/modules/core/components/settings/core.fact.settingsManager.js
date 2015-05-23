@@ -121,13 +121,11 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
             that.fb.location.settings.update({
                 'is_window_visible': that.global.is_window_visible
             });
-            console.log(that.global.is_window_visible);
         }
     };
 
     this.setFirebaseLocations = function() {
         if (UserManager.user.profile.id) {
-            console.log(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.profile.id + '/');
             that.fb.location.settings = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.profile.id + '/');
         }
     };
@@ -235,7 +233,7 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
         }
     };
 
-    this.detectLayout = function() { /*      console.log('detecting layout'); */
+    this.detectLayout = function() {
         if ($window.innerHeight > 900) {
             return 3;
         } else if ($window.innerHeight > 700) {

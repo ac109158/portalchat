@@ -203,7 +203,7 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
             function($locationProvider, $logProvider, $httpProvider) {
             $locationProvider.html5Mode(true);
                 $locationProvider.hashPrefix('!');
-                $logProvider.debugEnabled(false);
+                $logProvider.debugEnabled(true);
                 $httpProvider.defaults.timeout = 5000;
             }
         ]);

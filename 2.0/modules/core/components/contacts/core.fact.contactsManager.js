@@ -4,11 +4,12 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
         // Firebase.enableLogging(true);
         var that = this;
 
-        this.smod = false;
-        this.tod = false;
+
         this.page_loaded = false;
 
         this.contacts = {};
+        this.contacts.smod = false;
+        this.contacts.tod = false;
 
         this.contacts.profiles = {};
         this.contacts.profiles.list = [];
@@ -91,11 +92,9 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
             that.fb.location.public_settings.child('smod').on('value', function(snapshot) {
                 var smod = snapshot.val();
                 if (smod && smod.user) {
-                    that.smod = that.contacts.profiles.list[that.contacts.profiles.map[CoreConfig.common.reference.user_prefix + smod.user]];
-                    $rootScope.$broadcast('smodChange');
+                    that.contacts.smod = that.contacts.profiles.list[that.contacts.profiles.map[CoreConfig.common.reference.user_prefix + smod.user]];
                 } else {
-                    that.smod = false;
-                    $rootScope.$broadcast('smodChange');
+                    that.contacts.smod = false;
                 }
 
             });
@@ -103,11 +102,9 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
             that.fb.location.public_settings.child('tod').on('value', function(snapshot) {
                 var tod = snapshot.val();
                 if (tod && tod.user) {
-                    that.tod = that.contacts.profiles.list[that.contacts.profiles.map[CoreConfig.common.reference.user_prefix + tod.user]];
-                    $rootScope.$broadcast('todChange');
+                    that.contacts.tod = that.contacts.profiles.list[that.contacts.profiles.map[CoreConfig.common.reference.user_prefix + tod.user]];
                 } else {
-                    that.tod = false;
-                    $rootScope.$broadcast('todChange');
+                    that.contacts.tod = false;
                 }
 
             });
@@ -132,7 +129,8 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
                     delete profile.alias;
                 }
                 profile.first_name = profile.name.match(/\S+/g)[0];
-                profile.avatar_url = CoreConfig.url.avatar_path + profile.avatar + '-90.jpg';
+                // profile.avatar_url = CoreConfig.url.avatar_path + profile.avatar + '-90.jpg';
+                profile.avatar_url = CoreConfig.url.default_avatar;
                 if (profile.avatar === false) {
                     profile.avatar = 'no-photo';
                 }

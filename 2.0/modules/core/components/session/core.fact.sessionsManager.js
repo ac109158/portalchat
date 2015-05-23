@@ -74,19 +74,25 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
     this.setUserChatSessionStorage = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
             that.fb.location.storage.child(session_key.split(':')[0]).child(session_key.split(':')[1]).setWithPriority(ChatStorage[type].chat.list[session_key].session, ChatStorage[type].chat.list[session_key].session.order);
+            return true;
         }
+        return false;
     };
 
     this.updateContactChatSignals = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
             that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).update(ChatStorage[type].chat.list[session_key].signals);
+            return true;
         }
+        return false;
     };
 
     this.updateContactChatSession = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
             that.fb.location.sessions.child(session_key.split(':')[1] + ':' + session_key.split(':')[0]).update(ChatStorage[type].session.list[session_key].session);
+            return true;
         }
+        return false;
     };
 
 

@@ -93,7 +93,8 @@
 }
 
 .cm-label-decal-description-inset {
-    margin: 0px auto;
+    width: 100%;
+    margin: opx auto;
     text-align: center;
     font-weight: bold;
     line-height: 150%;
@@ -146,8 +147,8 @@
     margin: 0;
     padding: 0;
     right: 0;
-    padding-left: 2px;
-    padding-right: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
     /*pointer-events: none;*/
 
     background-color: rgba(0, 0, 0, .2);
@@ -187,10 +188,13 @@
 }
 
 .cm-main-label-decal {
+    width: 100%;
     min-height: 15px;
     border: 1px solid #ccc;
     background: white;
     margin-bottom: 2px;
+    padding:0;
+    margin: 2px 0 2px 0;
 }
 
 .cm-main-label-decal-description {
@@ -199,7 +203,6 @@
     font-weight: bold;
     color: grey;
     line-height: 150%;
-    padding: 0;
 }
 
 #cm-main-panel-header-panel {
@@ -270,6 +273,7 @@
     padding: 0;
     margin: 0;
     display: block;
+    width: 100%;
 }
 
 #cm-main-panel-upper-panel {
@@ -356,7 +360,6 @@
     border-radius: 10px/30px;
     cursor: pointer;
     margin: 0;
-    padding: 2px;
 }
 /*********************     tracker ^   *************************/
 
@@ -377,7 +380,7 @@
 
 .cm-main-panel-tracker-chat-truncate-title {
     position: relative;
-    width: 98%;
+    width: 100%;
     margin: 0 auto;
     white-space: nowrap;
     overflow: hidden;
@@ -402,6 +405,7 @@
     display: block;
     margin: 0;
     padding: 0;
+    width:100%;
 }
 
 #cm-main-panel-contacts-list {
@@ -411,15 +415,14 @@
     padding: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    min-height: 300px;
     z-index: 1;
 }
 
 .cm-main-panel-contact-online {
     padding: 2px 5px;
     height: 24px;
-    width: 100%;
-    margin-left: 1%;
+    width: 99%;
+    margin:0 auto;
     border-top: 1px solid rgba(255, 255, 255, 0.6);
     border-bottom: 1px solid rgba(255, 255, 255, 0.6);
     margin-bottom: 1px;
@@ -431,7 +434,8 @@
 .cm-main-panel-contact-offline {
     padding: 2px 2px;
     height: 24px;
-    width: 100%;
+    width: 99%;
+    margin:0 auto;
     border-top: 1px solid rgba(255, 255, 255, 0.3);
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
     margin-bottom: 1px;
