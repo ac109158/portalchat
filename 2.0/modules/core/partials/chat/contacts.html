@@ -62,7 +62,7 @@
             </div>
         </div>
         <div id="cm-main-panel-contacts-list" class="min-scroll">
-            <div ng-repeat="contact in module.contacts.profiles.list | orderBy: 'name' | filter: module.contact_list.setting.filter ">
+            <div ng-repeat="contact in module.contacts.profiles.list | orderBy: 'name' | filter: module.contact_list.setting.filter">
                 <div ng-click="ui.fx.chatContact(contact);" class="cm-main-panel-contact-online" ng-class="{'cm-main-panel-active-selection':isCurrentDirectorySelection(contact.user_id)}">
                     <!-- <img ng-src="/components/com_callcenter/images/avatars/{{contact.avatar}}-90.jpg" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="contact.name"></span> -->
                     <img ng-src="{{module.contact_list.setting.default_avatar}}" width=20 height=20/><span class="cm-main-panel-contact-name" ng-bind="contact.name"></span>

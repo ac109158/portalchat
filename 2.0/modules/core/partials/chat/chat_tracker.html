@@ -6,17 +6,17 @@
 
 	<div id="cm-main-panel-tracker-content" class="min-scroll" style="max-height:{{tracker_panel_size}}px;">
 <!-- 		<div directory-item-scroll="isLastUnread($index) || isDirectoryItem($index)" ng-repeat="chat in activeChats track by $index"> -->
-		<div ng-repeat="contact_chat in module.chats.contact.chat.list">
+		<div ng-repeat="contact_chat in module.chats.contact.chat.list | orderObjectBy: 'order'">
 			<div class="cm-main-panel-tracker-chat" >
 				<div ng-init=""class="cm-main-panel-tracker-chat-content" ng-click="setDirectoryChat($index, true); openChatModule();" ng-class="{'cm-main-panel-tracker-active-chat': $index == directory_index, 'cm-main-panel-tracker-new-chat': chat.isNewMessage == true && $index != directory_index}">
 					<div class="cm-main-panel-tracker-chat-truncate-title">
-						<i ng-show="contact_chat.attr.is_group_chat == false" class="glyphicon glyphicon-user pull-left" ng-class="{'Online' : contact_chat.contact.profile.presence == 'Online' && contact_chat.contact.profile.online == true }"></i>
-						<span class="pull-left" ng-show="contact_chat.attr.is_group_chat == true">
+						<i ng-show="contact_chat.session.is_group_chat == false" class="glyphicon glyphicon-user pull-left" ng-class="{'Online' : contact_chat.contact.profile.presence == 'Online' && contact_chat.contact.profile.online == true }"></i>
+						<span class="pull-left" ng-show="contact_chat.session.is_group_chat == true">
 							<i  class="fa fa-comments"></i>
-							<span ng-if="!contact_chat.attr.is_group_chat">({{contact_chat.group_count}})</span>
+							<span ng-if="!contact_chat.session.is_group_chat">({{contact_chat.group_count}})</span>
 						</span>
-						<span ng-show="contact_chat.contact.profile.presence != 'Busy'" style="position:relative; top:-2px; margin-left:2px;" ng-bind="contact_chat.tag.desription || contact_chat.chat_description || contact_chat.contact.profile.name" ng-class="{'Busy' : contact_chat.contact.profile.presence.state != 'Online' && contact_chat.attr.is_group_chat === false}"></span><!--Name of the Person the user is Chatting, hover when group chat to display of participating users -->
-						<span class="Busy" ng-show="contact_chat.contact.profile.presence == 'Busy' && contact_chat.attr.is_group_chat == false">{{contact_chat.contact.profile.first_name}} is Busy</span> <!-- Show only when User sets chat-presence to busy -->
+						<span ng-show="contact_chat.contact.profile.presence != 'Busy'" style="position:relative; top:-2px; margin-left:2px;" ng-bind="contact_chat.tag.desription || contact_chat.chat_description || contact_chat.contact.profile.name" ng-class="{'Busy' : contact_chat.contact.profile.presence.state != 'Online' && contact_chat.session.is_group_chat === false}"></span><!--Name of the Person the user is Chatting, hover when group chat to display of participating users -->
+						<span class="Busy" ng-show="contact_chat.contact.profile.presence == 'Busy' && contact_chat.session.is_group_chat == false">{{contact_chat.contact.profile.first_name}} is Busy</span> <!-- Show only when User sets chat-presence to busy -->
 						<span><i ng-show="$index != directory_index && contact_chat.contact.profile.is_typing == true" class="fa fa-spinner fa-spin cm-main-panel-tracker-typing"></i></span> <!-- Activates when someone is typing a message to the user -->
 					</div>
 					<span ng-show="$index != directory_index && contact_chat.ux.unread > 0" class="badge cm-main-panel-tracker-item-unread-count" ng-class="{'chat-new-message': contact_chat.isNewMessage == true}" ng-bind="contact_chat.ux.unread"></span> <!-- Displays the count of any messages received while the chat box was closed -->

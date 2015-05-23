@@ -13,7 +13,10 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
 
         $rootScope.$on('user-ready', function() {
             CoreManager.initApp();
-            init_scope();
+            $timeout(function() {
+                init_scope();
+            }, 750);
+
         });
 
         var init_scope = function() {
@@ -23,8 +26,8 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
             console.log($scope);
         };
 
-        $scope.$on('core-task-assignment', function(event, task){
-            if(task && task.id){
+        $scope.$on('core-task-assignment', function(event, task) {
+            if (task && task.id) {
                 CoreManager.assignTask(task);
             }
         });

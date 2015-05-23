@@ -71,7 +71,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         that.user.profile.presence.show_message = false;
         that.user.profile.presence.post = false;
 
-        that.user.additional_profile.position = model.position
+        that.user.additional_profile.position = model.position;
             // that.user.profile.ip = sjcl.encrypt(CoreConfig.encrypt_pass, that.user.ip) || false;
         that.user.additional_profile.ip = model.ip;
         that.user.additional_profile.role = model.role;
@@ -256,6 +256,8 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
             'ip': that.user.additional_profile.ip
         });
 
+        that.fb.location.online.update({'online': true});
+
         that.fb.location.additional_profile.child('checkOutTime').once('value', function(snapshot) {
             var lastCheckOut = snapshot.val();
             if (lastCheckOut) {
@@ -319,29 +321,7 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
                 that.fb.location.state.update({
                     'state': state
                 });
-            } else {
-                // console.log('update state was denied');
             }
-        }
-    };
-
-    this.getUserField = function(field) {
-        if (field && that.user[field]) {
-            return that.user[field];
-        }
-        return false;
-    };
-
-
-    this.removeByAttr = function(arr, attr, value) {
-        if (angular.isDefined(arr)) {
-            var i = arr.length;
-            while (i--) {
-                if (arr[i] && arr[i].hasOwnProperty(attr) && (arguments.length > 2 && arr[i][attr] === value)) {
-                    arr.splice(i, 1);
-                }
-            }
-            return arr;
         }
     };
 

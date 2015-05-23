@@ -61,12 +61,12 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     //chat
     this.chat = {};
     this.chat.internal_reference = "internal_chat";
-    this.chat.root_reference = "Chat-System/Users" + '/';
+    this.chat.root_reference = "Chat-System/";
     this.chat.url_root = that.url.firebase_database + this.chat.root_reference;
 
-    this.chat.active_session_reference = "Active-Sessions" + '/'; // folder reference to look monitoring users active chats
+    this.chat.active_session_reference = "Sessions" + '/'; // folder reference to look monitoring users active chats
     this.chat.is_typing_reference = 'is-typing';
-    this.chat.message_storage_reference = "Stored-Messages/Users" + '/'; // parent folder reference to store chat messages
+    this.chat.message_storage_reference = "Stored-Messages/"; // parent folder reference to store chat messages
 
 
     ////////////////////////////////////////////////////////////
@@ -74,9 +74,11 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
 
 
     this.session = {};
-    this.session.parent_session_reference = 'Chats' + '/';
-    this.session.url_root = that.fb_url + that.session.parent_session_reference;
-    this.session.root_reference = "Active-Sessions" + '/'; // folder reference
+    this.session.parent_session_reference = 'Sessions' + '/';
+    this.session.url_root = that.chat.url_root + that.session.parent_session_reference;
+    this.session.signals_root = that.session.url_root + 'Chat-Signals' + '/';
+    this.session.storage_root = that.session.url_root + 'Storage' + '/';
+    this.session.root_reference = "Sessions" + '/'; // folder reference
 
     //online
     this.online_check_reference = "Online-Check-In" + "/";
@@ -84,7 +86,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     this.group_chat = {};
     this.group_chat.parent_category_reference = "Chat-System/Group-Chats" + '/'; // parent folder name variable
     this.group_chat.url_root = that.fb_url + that.group_chat.parent_category_reference; // combine with global url variable
-    this.group_chat.active_session_reference = "Active-Sessions" + '/'; // folder reference
+    this.group_chat.active_session_reference = "Sessions" + '/'; // folder reference
     this.group_chat.message_location_reference = "user-messages" + '/'; // folder reference for chat messages during group chat sessions
 
     this.group_chat.active_users_reference = "active-users";

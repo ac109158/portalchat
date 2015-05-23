@@ -95,12 +95,12 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
                             ContactsManager.storeOfflineQueue(CoreConfig.common.reference.user_prefix + user_id_key);
                             $timeout(function() {
                                 if (ContactsManager.isOfflineQueued(contact_tag)) {
-                                    that.fb.location.online_check.child(user_id_key).remove();
-                                    ContactsManager.setContactOffline(contact_tag);
-                                    console.log('setting offline: ', user_id_key);
-                                    ContactsManager.fb.location.online.child(user_id_key).update({
-                                        'online': false
-                                    });
+                                    // that.fb.location.online_check.child(user_id_key).remove();
+                                    // ContactsManager.setContactOffline(contact_tag);
+                                    // console.log('setting offline: ', user_id_key);
+                                    // ContactsManager.fb.location.online.child(user_id_key).update({
+                                    //     'online': false
+                                    // });
                                 }
                             }, 4000);
                         }

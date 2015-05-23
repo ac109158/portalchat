@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject', '$firebaseArray', 'ChatStorage', 'UserManager', function($rootScope, $log, CoreConfig, $firebaseObject, $firebaseArray, ChatStorage, UserManager) {
+service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject', '$firebaseArray', 'ChatStorage', 'UserManager', 'PermissionsManager', function($rootScope, $log, CoreConfig, $firebaseObject, $firebaseArray, ChatStorage, UserManager, PermissionsManager) {
     var that = this;
 
     this.session = {};
@@ -8,20 +8,14 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
     this.update = {};
 
     this.fb = {}; // firebase domain
-    this.fb.user = {};
-    this.fb.user.location = {}; // location of values
-    this.fb.user.target = {}; // specific value in a location .. uses $value
+    this.fb.location = {};
 
-    this.fb.group = {};
-    this.fb.group.location = {}; // location of values
-    this.fb.group.target = {}; // specific value in a location .. uses $value
 
     this.load = function() {
         that.setFirebaseLocations();
         that.setFirebaseTargets();
-        console.log('sessionsManager loaded', that.fb.user.location.sessions.toString());
         if (UserManager.user.isAdmin) {
-            that.validateGroupChatSessions();
+            // that.validateGroupChatSessions();
         }
     };
 
@@ -37,8 +31,9 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
 
     this.setFirebaseLocations = function() {
         if (UserManager.user.profile.id) {
-            that.fb.user.location.sessions = new Firebase(CoreConfig.chat.url_root + UserManager.user.profile.id + '/' + CoreConfig.session.root_reference);
-            if (UserManager.user.isAdmin) {
+            that.fb.location.signals = new Firebase(CoreConfig.session.signals_root);
+            that.fb.location.storage = new Firebase(CoreConfig.session.storage_root);
+            if (PermissionsManager.hasAdminRights()) {
                 that.fb.group.location.sessions = new Firebase(CoreConfig.group_chat.url_root + CoreConfig.group_chat.active_session_reference);
             }
         }
@@ -70,31 +65,55 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
         }
     };
 
+    this.setUserChatSessionStorage = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
+            that.fb.location.storage.child(session_key.split(':')[0]).child(session_key.split(':')[1]).update(ChatStorage[type].session.list[session_key].session);
+        }
+    };
+    this.updateUserChatSessionStorage = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
+            that.fb.location.storage.child(session_key.split(':')[0]).child(session_key.split(':')[1]).update(ChatStorage[type].chat.list[session_key].session);
+        }
+    };
+
+    this.updateContactChatSignals = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
+            that.fb.location.signals.child(session_key.split(':')[0]).child(session_key.split(':')[1]).update(ChatStorage[type].chat.list[session_key].signals);
+        }
+    };
+
+    this.updateContactChatSession = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
+            that.fb.location.sessions.child(session_key.split(':')[1] + ':' + session_key.split(':')[0]).update(ChatStorage[type].session.list[session_key].session);
+        }
+    };
 
 
-    this.monitorUserSessionActivity = function() {
-        that.fb.chat.location.sessions.on('child_added', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
-            var session = snapshot.val();
-            if (angular.isUndefined(session)) {
-                $log.debug('New chat session detected -> Undefined');
-                return false;
-            } else if (angular.isUndefined(session.user_id) && angular.isUndefined(session.session_key)) {
-                $log.debug('Rejected: ' + angular.toJson(session));
-                return false;
-            } else if (ChatStorage.contact.session.list['user_' + String(session.user_id)] === true || ChatStorage.contact.session.list[String(session.session_key)] === true) {
-                $log.debug('Chat Session has already been created');
-                return false;
-            } else {
-                $log.debug('New chat session detected after sessions established -> create');
-                if (session.directoryChat) {
-                    that.getDirectoryChat(session.session_key);
-                } else {
-                    session.is_focus = false;
-                    that.registerChatRequest(session);
-                }
+    this.monitorUserSessionChatSignals = function() {
+        that.fb.location.signals.child(UserManager.user.profile.id).on('child_added', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
+            var contact_id = snapshot.ref().key();
+            var signals = snapshot.val();
+            console.log('chat_signals: ', contact_id, signals);
+            if (signals && signals.active) {
+
             }
         });
     };
+
+
+
+
+
+
+
+
+
+
+
+
+    //*************************************************************************//
+
+
 
     that.__setActiveSessionLocation = function(scope, contact, isGroupChat) { // this function will detect if this chatSession gets changed to a group chat and will call the necessary functions
         var active_session_root = that._url_root + UserManager.user.profile.id + '/' + that._active_session_reference + contact + '/';
@@ -326,9 +345,9 @@ var n = Firebase.ServerValue.TIMESTAMP;
 
     this.setContactChatsSessionPriority = function() {
         angular.forEach(ChatStorage.chat.list, function(contact_chat) {
-            that.fb.user.location.sessions.child(contact_chat.session_key).setPriority(contact_chat.order);
+            that.fb.location.sessions.child(contact_chat.session_key).setPriority(contact_chat.order);
             val.index_position = $scope.active_chats_index;
-            Cthat.fb.user.location.sessions.child(contact_chat.session_key).update({
+            Cthat.fb.location.sessions.child(contact_chat.session_key).update({
                 'index_position': contact_chat.order
             });
         });
@@ -338,7 +357,7 @@ var n = Firebase.ServerValue.TIMESTAMP;
         if (session_key && detail && value) {
             that.update = {};
             that.update[detail] = value;
-            that.fb.user.location.sessions.child(session_key).update(that.update);
+            that.fb.location.sessions.child(session_key).update(that.update);
         }
     };
     this.removeChatSession = function(type, session_key, removeScope, removeLocation) {

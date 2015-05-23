@@ -242,7 +242,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             if (angular.isDefined(ChatStorage.contact.chat.list[session_key].tag.description) && ChatStorage.contact.chat.list[session_key].tag.description.length > 2 && ChatStorage.contact.chat.list[session_key].tag.description.length <= 20) {
                 that.resetCommonDefaultSettings('contact', session_key);
                 ChatStorage.contact.chat.list[session_key].tag_description = String(ChatStorage.contact.chat.list[session_key].tag_description).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
-                if (ChatStorage.contact.chat.list[session_key].attr.is_group_ChatStorage.contact.chat.list[session_key]) {
+                if (ChatStorage.contact.chat.list[session_key].session.is_group_chatStorage.contact.chat.list[session_key]) {
                     ChatStorage.contact.chat.list[session_key].tag.description = 'Group - #' + ChatStorage.contact.chat.list[session_key].tag.description;
                 } else {
                     ChatStorage.contact.chat.list[session_key].tag.description = '#' + ChatStorage.contact.chat.list[session_key].tag.description;
@@ -474,7 +474,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                     return false;
                 }
             }
-            if (ChatStorage[type].chat.list[session_key].attr.is_group_chat) {
+            if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                 ChatStorage[type].chat.list[session_key].fb.group.location.messages.push(message);
                 chat.attr.last_sent_user_message = firekey.name();
                 ChatStorage[type].chat.list[session_key].fb.group.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_user_message).update({
@@ -609,7 +609,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 priority: ChatStorage[type].chat.list[session_key].priority.next,
                 'session_key': session_key
             };
-            if (ChatStorage[type].chat.list[session_key].attr.is_group_chat) {
+            if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                 var firekey = ChatStorage[type].chat.list[session_key].fb.group.location.messages.push(message);
                 chat.attr.last_sent_user_message = firekey.name();
                 ChatStorage[type].chat.list[session_key].fb.group.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
@@ -622,7 +622,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 ChatStorage[type].chat.list[session_key].last_sent_user_message = selfFireKey.name();
                 ChatStorage[type].chat.list[session_key].fb.user.location.messages.child(ChatStorage[type].chat.list[session_key].last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
             }
-            if (!ChatStorage[type].chat.list[session_key].attr.is_group_chat && !ChatStorage[type].chat.list[session_key].attr.is_directory_chat) {
+            if (!ChatStorage[type].chat.list[session_key].session.is_group_chat && !ChatStorage[type].chat.list[session_key].attr.is_directory_chat) {
                 SessionsManager.updateChatContactActiveSession(type, session_key);
             }
             that.toggleVideoPanel(type, session_key);
@@ -647,7 +647,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 priority: ChatStorage[type].chat.list[session_key].priority.next,
                 'session_key': session_key
             };
-            if (ChatStorage[type].chat.list[session_key].attr.is_group_chat) {
+            if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                 var firekey = ChatStorage[type].chat.list[session_key].fb.group.location.messages.push(message);
                 ChatStorage[type].chat.list[session_key].last_sent_user_message = firekey.name();
                 ChatStorage[type].chat.list[session_key].fb.group.location.messages.child(ChatStorage[type].chat.list[session_key].last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
@@ -662,7 +662,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
 
             }
-            if (!ChatStorage[type].chat.list[session_key].attr.is_group_chat && !ChatStorage[type].chat.list[session_key].attr.is_directory_chat) {
+            if (!ChatStorage[type].chat.list[session_key].session.is_group_chat && !ChatStorage[type].chat.list[session_key].attr.is_directory_chat) {
                 SessionsManager.updateChatContactActiveSession(type, session_key);
             }
             that.toggleAudioPanel(type, session_key);
@@ -687,7 +687,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 priority: ChatStorage[type].chat.list[session_key].priority.next,
                 'session_key': session_key
             };
-            if (ChatStorage[type].chat.list[session_key].attr.is_group_chat) {
+            if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                 var firekey = chat.group_message_location.push(message);
                 ChatStorage[type].chat.list[session_key].last_sent_user_message = firekey.name();
                 ChatStorage[type].chat.list[session_key].fb.group.location.messages.child(ChatStorage[type].chat.list[session_key].last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
@@ -701,7 +701,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 ChatStorage[type].chat.list[session_key].last_sent_user_message = selfFireKey.name();
                 ChatStorage[type].chat.list[session_key].fb.user.location.messages.child(ChatStorage[type].chat.list[session_key].last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
             }
-            if (!ChatStorage[type].chat.list[session_key].attr.is_group_chat && !ChatStorage[type].chat.list[session_key].attr.is_directory_chat) {
+            if (!ChatStorage[type].chat.list[session_key].session.is_group_chat && !ChatStorage[type].chat.list[session_key].attr.is_directory_chat) {
                 SessionsManager.updateChatContactActiveSession(type, session_key);
             }
             that.toggleImagePanel(type, session_key);
@@ -713,7 +713,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (message.author === UserManager.user.profile.id) {
                 ChatStorage[type].chat.list[session_key].reference.name = ChatStorage[type].chat.list[session_key].user.self_name;
-            } else if (!ChatStorage[type].chat.list[session_key].attr.is_group_chat) {
+            } else if (!ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                 ChatStorage[type].chat.list[session_key].reference.name = ChatStorage[type].chat.list[session_key].contact.first_name;
             } else {
                 var name_split = message.authorName.match(/\S+/g); // splits the contact's first and last name
@@ -981,7 +981,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 hour: "2-digit",
                 minute: "2-digit"
             });
-            if (ChatStorage[type].chat.list[session_key].attr.is_group_chat) {
+            if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                 chat_record.type = 'Group Chat';
             } else {
                 chat_record.type = "Personal";

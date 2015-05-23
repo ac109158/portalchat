@@ -9,7 +9,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
     this.builder.attr.last_created_chat = undefined;
 
     this.builder.session = {};
-    this.builder.session.models = ['session_key', 'type', 'active', 'order', 'contact_id', 'name', 'avatar', 'is_directory_chat', 'is_group_chat', 'is_open', 'is_sound', 'nudge'];
+    this.builder.session.models = ['session_key', 'type', 'active', 'order', 'contact_id', 'name', 'avatar', 'is_directory_chat', 'is_group_chat', 'is_open', 'is_sound'];
 
     this.fb = {};
     this.fb.location = {};
@@ -86,12 +86,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ChatStorage[session.type].chat.list[session.session_key].audio.url = '';
             ChatStorage[session.type].chat.list[session.session_key].audio.cid = '';
 
-            // topic values
-            ChatStorage[session.type].chat.list[session.session_key].topic = {};
-            ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
-            ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
-            ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
-            ChatStorage[session.type].chat.list[session.session_key].topic.set = '';
             //tagging
 
             ChatStorage[session.type].chat.list[session.session_key].tag = {};
@@ -121,23 +115,24 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ChatStorage[session.type].chat.list[session.session_key].invite.contact = ''; // this is used the track the name of the user that is to be invited into the group chat ie a string such as "Andy Cook";
             ChatStorage[session.type].chat.list[session.session_key].invite.set_contact = false; // this flag is used to determine that the host user has selected  a name to invite into the chat and that name has been verified to exist within the invite_list
             //states
+            ChatStorage[session.type].chat.list[session.session_key].session = {};
+            ChatStorage[session.type].chat.list[session.session_key].session.is_directory_chat = session.is_directory_chat;
+            ChatStorage[session.type].chat.list[session.session_key].session.is_group_chat = session.is_group_chat;
+            ChatStorage[session.type].chat.list[session.session_key].session.is_open = true;
+            ChatStorage[session.type].chat.list[session.session_key].session.is_sound = true;
+            ChatStorage[session.type].chat.list[session.session_key].session.is_active = ChatStorage[session.type].chat.list[session.session_key].active;
 
             ChatStorage[session.type].chat.list[session.session_key].attr = {};
             ChatStorage[session.type].chat.list[session.session_key].attr.is_init = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_converted = false;
-            ChatStorage[session.type].chat.list[session.session_key].attr.is_directory_chat = session.is_directory_chat;
-            ChatStorage[session.type].chat.list[session.session_key].attr.is_group_chat = session.is_group_chat;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_new_message = false;
-            ChatStorage[session.type].chat.list[session.session_key].attr.is_open = true;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_previous_messages = true;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_reloading = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_reloaded = false;
-            ChatStorage[session.type].chat.list[session.session_key].attr.is_sound = true;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_tag_focus = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_text_focus = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_topic_focus = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_top_spacer = false;
-            ChatStorage[session.type].chat.list[session.session_key].attr.is_active = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.last_sent_user_message = '';
             ChatStorage[session.type].chat.list[session.session_key].attr.last_sent_contact_message = '';
             // priority/indexing
@@ -146,11 +141,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ChatStorage[session.type].chat.list[session.session_key].priority.first = 0;
             ChatStorage[session.type].chat.list[session.session_key].priority.next = 1;
 
-
-
-
             ChatStorage[session.type].chat.list[session.session_key].ux = {};
-            ChatStorage[session.type].chat.list[session.session_key].ux.nudge = false;
             ChatStorage[session.type].chat.list[session.session_key].ux.is_header = true;
             ChatStorage[session.type].chat.list[session.session_key].ux.topic_height = 0;
             ChatStorage[session.type].chat.list[session.session_key].ux.time_reference = session.timestamp;
@@ -172,41 +163,76 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ChatStorage[session.type].chat.list[session.session_key].menu.media = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.invite = false; // this is used to toggle ability to invite user into the chat
 
+            ChatStorage[session.type].chat.list[session.session_key].interval = {};
+            ChatStorage[session.type].chat.list[session.session_key].interval.invite_menu_close = undefined;
+            ChatStorage[session.type].chat.list[session.session_key].interval.is_user_typing = undefined;
+
+
             ChatStorage[session.type].chat.list[session.session_key].user = UserManager.user;
             ChatStorage[session.type].chat.list[session.session_key].user.self_name = 'Me'; // variable for what the chat session should label messages that came from the user/self ex. "Me"
 
             ChatStorage[session.type].chat.list[session.session_key].contacts = {};
             ChatStorage[session.type].chat.list[session.session_key].contacts.participated_list = [UserManager.user.profile.id, session.contact_id];
 
-            if (!session.is_group_chat && !session.is_directory_chat) {
-                ChatStorage[session.type].chat.list[session.session_key].contact = {};
-                ChatStorage[session.type].chat.list[session.session_key].contact.profile = ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + session.contact_id]];
-                that.setContactAdditionalProfile(session.type, session.session_key, session.contact_id);
-            } else if (session.is_group_chat && !session.is_directory_chat) {
-                ChatStorage[session.type].chat.list[session.session_key].contacts.active_list = {};
-                ChatStorage[session.type].chat.list[session.session_key].contacts.profiles = {};
-            } else if (session.is_directory_chat) {
-                ChatStorage[session.type].chat.list[session.session_key].description = session.description || 'Chat Description';
-                ChatStorage[session.type].chat.list[session.session_key].contacts.profiles = {};
-            }
-
-
-            ChatStorage[session.type].chat.list[session.session_key].interval = {};
-            ChatStorage[session.type].chat.list[session.session_key].interval.invite_menu_close = undefined;
-            ChatStorage[session.type].chat.list[session.session_key].interval.is_user_typing = undefined;
 
             ChatStorage[session.type].session.list[session.session_key] = {};
             ChatStorage[session.type].session.list[session.session_key].fb = {};
-            ChatStorage[session.type].session.list[session.session_key].fb.user = {};
-            ChatStorage[session.type].session.list[session.session_key].fb.user.location = {};
-            ChatStorage[session.type].session.list[session.session_key].fb.contact = {};
-            ChatStorage[session.type].session.list[session.session_key].fb.contact.location = {};
-            ChatStorage[session.type].session.list[session.session_key].fb.group = {};
-            ChatStorage[session.type].session.list[session.session_key].fb.group.location = {};
 
-            ChatStorage[session.type].session.list[session.session_key].fb.user.target = {};
-            ChatStorage[session.type].session.list[session.session_key].fb.contact.target = {};
-            ChatStorage[session.type].session.list[session.session_key].fb.group.target = {};
+            if (!session.is_group_chat && !session.is_directory_chat) {
+
+                ChatStorage[session.type].chat.list[session.session_key].signals = {};
+                ChatStorage[session.type].chat.list[session.session_key].signals.active = ChatStorage[session.type].chat.list[session.session_key].active;
+                ChatStorage[session.type].chat.list[session.session_key].signals.nudge = false;
+                ChatStorage[session.type].chat.list[session.session_key].signals.is_typing = false;
+
+                ChatStorage[session.type].chat.list[session.session_key].contact = {};
+                ChatStorage[session.type].session.list[session.session_key].contact = {};
+
+                ChatStorage[session.type].session.list[session.session_key].fb.user = {};
+                ChatStorage[session.type].session.list[session.session_key].fb.user.location = {};
+
+                ChatStorage[session.type].chat.list[session.session_key].contact.profile = ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + session.contact_id]];
+                that.setContactAdditionalProfile(session.type, session.session_key, session.contact_id);
+
+                ChatStorage[session.type].session.list[session.session_key].fb.user = {};
+                ChatStorage[session.type].session.list[session.session_key].fb.user.location = {};
+                ChatStorage[session.type].session.list[session.session_key].fb.user.location.messages = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + UserManager.user.profile.id + '/' + session.contact_id);
+
+                ChatStorage[session.type].session.list[session.session_key].fb.contact = {};
+                ChatStorage[session.type].session.list[session.session_key].fb.contact.location = {};
+                ChatStorage[session.type].session.list[session.session_key].fb.contact.location.session = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.active_session_reference + session.contact_id + '/' + UserManager.user.profile.id);
+                ChatStorage[session.type].session.list[session.session_key].fb.contact.location.messages = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + session.contact_id + '/' + UserManager.user.profile.id);
+
+                ChatStorage[session.type].session.list[session.session_key].session = session;
+
+            } else if (session.is_group_chat && !session.is_directory_chat) {
+                ChatStorage[session.type].session.list[session.session_key].fb.group = {};
+                ChatStorage[session.type].session.list[session.session_key].fb.group.location = {};
+
+                ChatStorage[session.type].chat.list[session.session_key].contacts.active_list = {};
+                ChatStorage[session.type].chat.list[session.session_key].contacts.profiles = {};
+
+                // topic values
+                ChatStorage[session.type].chat.list[session.session_key].topic = {};
+                ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
+                ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
+                ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
+                ChatStorage[session.type].chat.list[session.session_key].topic.set = '';
+
+            } else if (session.is_directory_chat) {
+                ChatStorage[session.type].session.list[session.session_key].fb.group = {};
+                ChatStorage[session.type].session.list[session.session_key].fb.group.location = {};
+                ChatStorage[session.type].chat.list[session.session_key].description = session.description || 'Chat Description';
+                ChatStorage[session.type].chat.list[session.session_key].contacts.profiles = {};
+
+                // topic values
+                ChatStorage[session.type].chat.list[session.session_key].topic = {};
+                ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
+                ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
+                ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
+                ChatStorage[session.type].chat.list[session.session_key].topic.set = '';
+            }
+
             that.setContactChatOrderMap();
             $timeout(function() {
                 UxManager.ux.fx.evaluateChatModuleLayout();
@@ -236,75 +262,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         }
     };
 
-    this.setFirebaseLocationsForSession = function(session) {
-        if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
-            ChatStorage[session.type].session.list[session.session_key].fb.contact.location.session = new Firebase(CoreConfig.chat.url_root + session.contact_id + '/' + CoreConfig.chat.active_session_reference + UserManager.user.profile.id.user.id + 'session_key/');
-        }
-    };
-
-    this.setSessionInContactLocation = function(session) {
-        if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
-            if (session.is_group_chat) {
-
-            } else {
-                ChatStorage[session.type].session.list[session.session_key].fb.contact.location.session.on('value', function(snapshot) {
-                    if (angular.isDefined(snapshot.val())) {
-                        ChatService.updateSessionStatus(scope, snapshot, chatSession.to_user_session_location, chatSession.index_position, chatSession.isGroupChat);
-                    }
-                });
-                if (angular.isUndefined(to_user.session_key) || to_user.session_key === null) {
-                    chatSession.to_user_session_location.once('value', function(snapshot) {
-                        if (snapshot.val() === null) {
-                            var user_id = UserService._user_profile.user_id;
-                            var firekey = ChatService._group_active_session_location.push({
-                                admin: UserService._user_profile.user_id,
-                                topic: false
-                            });
-                            ChatService._new_session_key = firekey.name();
-                            scope.new_session_key = firekey.name();
-                        } else {
-                            scope.new_session_key = snapshot.val();
-                        }
-                    });
-                } else {
-                    chatSession.session_key = to_user.session_key;
-                }
-            }
-        }
-
-    };
-
-    this.updateSessionStatus = function(scope, data, location, index_position, isGroupChat) {
-        var index = null;
-        if (angular.isDefined(index_position) && angular.isDefined(scope.activeChats[index_position])) {
-            if (isGroupChat) {
-                if (scope.activeChats[index_position].session_key == location.parent().parent().parent().name()) {
-                    index = data.index_position;
-                }
-            } else {
-                if (scope.activeChats[index_position].to_user_id == location.parent().parent().parent().name()) {
-                    index = data.index_position;
-                }
-            }
-        }
-        if (index == null) {
-            var chat_log = [];
-            angular.forEach(scope.activeChats, function(value, key) {
-                if (angular.isDefined(value.to_user_id)) {
-                    this.push(value.to_user_id);
-                } else {
-                    this.push(value.session_key);
-                }
-            }, chat_log);
-            var index = chat_log.indexOf(location.parent().parent().parent().name());
-        }
-        if (index > -1) {
-            $log.debug('To user session key has changed to : ' + data.val());
-            scope.activeChats[index].to_user_session = data.val();
-        } else {
-            $log.debug(location.parent().parent().parent().name() + ' was not in ' + angular.toJson(chat_log));
-        }
-    };
 
 
     this.buildChatForSession = function(session) { // this function builds out the details of an individual chat sesssion
@@ -316,6 +273,9 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         }
         if (that.validateSessionModel(session)) {
             if (that.setDefaultChatTemplate(session)) {
+                SessionsManager.setUserChatSessionStorage(session.type, session.session_key);
+                SessionsManager.updateContactChatSignals(session.type, session.session_key);
+                console.log(ChatStorage[session.type]);
                 // if(that.setSessionInContactLocation(session)){
 
                 // }
@@ -323,33 +283,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         }
         return false;
 
-
-        that.__setToUserChatPresenceLocation(chat_session, session); // also sets the contact info, so must be called firest // fetches the contact chat state .. active, offline, busy, etc
-        /*      chat_session.contact_chat_presence = that.__setToUserChatPresence(contact); // also sets the contact info, so must be called firest // fetches the contact chat state .. active, offline, busy, etc */
-        chat_session.contact_message_location = that.__returnToUserMessageLocation(); // firebase location of the to user, so we know where to write chat message for this chat session.
-        chat_session.active_typing_contact_location = that.__set_active_typing_contact_location(); // firebase folder that is written true whenever the user is typing
-        chat_session.active_typing_contact_location.update({
-            'is-typing': false
-        });
-        chat_session.active_session_contact_location = that.__set_active_session_contact_location(); // firebase folder that the service writes the to users info into , so the the contact knows that there is a chat going on between them
-        chat_session.contact_online = UserManager.__setProfileOnlineLocationforUser(session.contact.user_id);
-        // define user info and firebse connections
-        chat_session.contact_id = UserManager.user.profile.id;
-        chat_session.user_avatar = UserManager._user_profile.avatar;
-        chat_session.user_message_location = that.__returnFromUserMessageLocation(); // firebase location of the from_user/self, so we know where to write chat message for this chat session.
-        chat_session.user_online = UserManager.__setProfileOnlineLocationforUser(UserManager.user.profile.id);
-        chat_session.user_chat_presence = UserManager.__setChatPresenceforUser(UserManager.user.profile.id);
-        chat_session.active_typing_user_location = that.__set_active_typing_user_location(); // this is a fireabse folder location where other users write true under their own uid to let the user know that they are typing
-        chat_session.active_typing_user_location.update({
-            'is-typing': false
-        });
-        chat_session.active_typing_user_location.onDisconnect().remove();
-        chat_session.active_typing_user_socket = that.__set_active_typing_user_socket(); // this is a fireabse folder location where other users write true under their own uid to let the user know that they are typing
-        chat_session.user_log[UserManager.user.profile.id] = {
-            avatar: UserManager._user_profile.avatar,
-            name: UserManager._user_profile.name,
-            user_id: UserManager.user.profile.id
-        };
         $timeout(function() {
             if (angular.isUndefined(chat_session.session_key)) {
                 chat_session.session_key = scope.new_session_key;

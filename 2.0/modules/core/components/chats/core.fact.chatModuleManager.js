@@ -136,18 +136,20 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         ChatBuilder.load();
         $timeout(function() {
             if (CoreConfig.monitorContactsBehavior) {
-                angular.forEach(ContactsManager.contacts.profiles.list, function(contact_profile) {
-                    ContactsManager.monitorContactBehaviour(contact_profile);
-                });
+                ContactsManager.monitorContactsBehaviour();
             }
             $timeout(function() {
                 that.module.state.is_ready = true;
                 $timeout(function() {
-                    UxManager.ux.fx.evaluateChatModuleLayout();
+                    SessionsManager.monitorUserSessionChatSignals();
+                    that.module.contacts = ContactsManager.contacts;
                     $rootScope.$broadcast('update-chosen');
+                    $timeout(function() {
+                        UxManager.ux.fx.evaluateChatModuleLayout();
+                    }, 1000);
                 });
-            }, 750);
-        }, 750);
+            });
+        });
         that.setDefaultDirectoryChats();
     };
 
@@ -189,11 +191,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             session.contact_id = contact.user_id;
             session.is_directory_chat = false;
             session.is_group_chat = false;
-            session.is_typing = false;
             session.is_open = true;
             session.timestamp = new Date().getTime();
             session.is_sound = true;
-            session.nudge = false;
             session.order = 0;
             that.registerContactChatSession(session);
             $timeout(function() {
@@ -571,7 +571,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         }, 1000);
         SettingsManager.updateGlobalSetting('is_open', true, true);
         that.clearBrowserNotificationList();
-        $timeout(function(){
+        $timeout(function() {
             UxManager.ux.fx.evaluateChatModuleLayout();
         });
     };
@@ -770,7 +770,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         SettingsManager.updateGlobalSetting('last_panel_tab', 'contacts', true);
 
         $timeout(function() {
-            that.module.contacts.is_text_focus = true;
+            that.module.contact_list.is_text_focus = true;
         }, 250);
 
     };
@@ -829,9 +829,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
     };
 
     this.unsetPanelContactListFocus = function() {
-        that.module.contacts.search_text = '';
-        that.module.contacts.filtered = [];
-        that.module.contacts.is_text_focus = false;
+        that.module.contact_list.search_text = '';
+        that.module.contact_list.filtered = [];
+        that.module.contact_list.is_text_focus = false;
     };
 
     this.isCurrentDirectoryChat = function(session_key) {
@@ -878,7 +878,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 that.unsetPanelContactListFocus();
                 that.setChatAsCurrent(that.module.tab.current.type, that.module.tab.current.session_key);
             }
-            $timeout(function(){
+            $timeout(function() {
                 UxManager.ux.fx.evaluateChatModuleLayout();
             });
         }
@@ -1039,7 +1039,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         if (contact.user_id === ContactsManager.smod.id || contact.user_id === ContactsManager.tod.id) {
             return false;
         }
-        if (!that.module.contacts.setting.show_offline) {
+        if (!that.module.contact_list.setting.show_offline) {
             if (user.state === "Offline") {
                 return false;
             }
