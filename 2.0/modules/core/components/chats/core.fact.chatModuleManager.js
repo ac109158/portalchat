@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'UserManager', 'ContactsManager', 'SettingsManager', 'SessionsManager', 'NotificationManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'UxManager', 'BrowserService', 'localStorageService', function($rootScope, $log, $timeout, CoreConfig, UserManager, ContactsManager, SettingsManager, SessionsManager, NotificationManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, UxManager, BrowserService, localStorageService) {
+service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'CoreConfig', 'UserManager', 'ContactsManager', 'SettingsManager', 'SessionsManager', 'NotificationManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'UxManager', 'BrowserService', 'localStorageService', function($rootScope, $log, $window, $timeout, CoreConfig, UserManager, ContactsManager, SettingsManager, SessionsManager, NotificationManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, UxManager, BrowserService, localStorageService) {
     var that = this;
     this.fb = {};
     this.fb.chat = {};
@@ -141,16 +141,23 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             $timeout(function() {
                 that.module.state.is_ready = true;
                 $timeout(function() {
-                    SessionsManager.monitorUserSessionChatSignals();
-                    that.module.contacts = ContactsManager.contacts;
                     $rootScope.$broadcast('update-chosen');
                     $timeout(function() {
                         UxManager.ux.fx.evaluateChatModuleLayout();
+                        that.addUnloadListener();
                     }, 1000);
                 });
             });
         });
         that.setDefaultDirectoryChats();
+    };
+
+    this.addUnloadListener = function() {
+        console.log('here');
+        $window.onbeforeunload = function(e) {
+            SettingsManager.unload();
+            SessionsManager.unload();
+        };
     };
 
     this.setFirebaseLocations = function() {
@@ -166,9 +173,45 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
 
     this.establishUserChat = function() { //  Step 1 this function will initialize the that variables and set the user chat presence.
         if (CoreConfig.user && UserManager.user.profile.id) {
+            NotificationManager.mute();
             ChatStorage.contact.session.list = [];
             ChatStorage.contact.session.map = {};
             // look at the active session folder of the user, and create chatSession for an calling card objects present
+            SessionsManager.fb.location.storage.child(UserManager.user.profile.id).once('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
+                var sessions = snapshot.val();
+                angular.forEach(sessions, function(session) {
+                    ChatBuilder.buildChatForSession(session);
+                });
+                $timeout(function() {
+                    var discard_last_child = true;
+                    SessionsManager.fb.location.signals.child(UserManager.user.profile.id).once("value", function(snap) {
+                        var keys = Object.keys(snap.val() || {});
+                        angular.forEach(keys, function(key) {
+                            that.createSessionifNotExists('contact', UserManager.user.profile.id + ':' + key);
+                        });
+                        var last_child = keys[keys.length - 1];
+                        console.log('last_child:', last_child);
+                        if (angular.isUndefined(last_child)) {
+                            discard_last_child = false;
+                        }
+                        SessionsManager.fb.location.signals.child(UserManager.user.profile.id).startAt(null, last_child).on("child_added", function(snapshot) {
+                            var contact_id = snapshot.ref().key();
+                            var signals = snapshot.val();
+                            if (signals) {
+                                if (discard_last_child) {
+                                    discard_last_child = false;
+                                } else {
+                                    console.log('we need to prime a chat', contact_id, signals);
+                                }
+                            }
+                        });
+                    });
+                }, 750);
+
+            });
+            $timeout(function() {
+                NotificationManager.unmute();
+            }, 500);
         }
         $log.debug('Finished that.establishUserChat');
         return true;
@@ -177,6 +220,15 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
         that.chatContact(that.module.contact_list.selected);
         that.module.contact_list.selected = undefined;
     };
+
+    this.createSessionifNotExists = function(type, session_key) {
+        if (ChatStorage[type].chat.list[session_key]) {
+            console.log('Already exists;', type, session_key);
+        } else {
+            console.log('prime a session: ', type, session_key);
+        }
+    };
+
 
     this.chatContact = function(contact) {
         if (contact && contact.user_id && that.module.state.allow_chat_request) {
@@ -194,10 +246,13 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             session.is_open = true;
             session.timestamp = new Date().getTime();
             session.is_sound = true;
-            session.order = 0;
+            session.order = -1;
             that.registerContactChatSession(session);
             $timeout(function() {
                 that.module.state.allow_chat_request = true;
+                if(ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
+                    ChatStorage[session.type].chat.list[session.session_key].session.active = true;
+                }
             }, 1000);
         }
     };
@@ -608,8 +663,8 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
             }
             var el = ChatManager.isChatScrollAtBottom(type, session_key);
             if (internal) {
-                if (ChatStorage[type].chat.list[session_key].attr.is_open === true || that.module.current.session_key === session_key) {
-                    if (ChatStorage[type].chat.list[session_key].attr.is_sound === true) {
+                if (ChatStorage[type].chat.list[session_key].session.is_open === true || that.module.current.session_key === session_key) {
+                    if (ChatStorage[type].chat.list[session_key].session.is_sound === true) {
                         $timeout(function() {
                             NotificationManager.playSound('close'); //  this condition should only sound when we are engaged in a chat , and prevents sounds on page reloads
                         }, 50);
@@ -623,7 +678,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                 }
             } else {
                 if (!SettingsManager.global.is_external_window) {
-                    if (ChatStorage[type].chat.list[session_key].attr.is_sound === true) {
+                    if (ChatStorage[type].chat.list[session_key].session.is_sound === true) {
                         NotificationManager.playSound('new_chat'); //  this condition should only sound when we are engaged in a chat , and prevents sounds on page reloads
                     }
                     if (!SettingsManager.global.is_window_visible) {
@@ -648,9 +703,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                             that.module.priority.queue.unshift(index);
                         }
                     } else if (SettingsManager.global.layout === 2) {
-                        if (ChatStorage[type].chat.list[session_key].order >= that.module.current.contact.chat.setting.start_overlow_count || ChatStorage[type].chat.list[session_key].attr.is_open === false || ChatStorage[type].chat.list[session_key].attr.is_text_focus === false) {
+                        if (ChatStorage[type].chat.list[session_key].order >= that.module.current.contact.chat.setting.start_overlow_count || ChatStorage[type].chat.list[session_key].session.is_open === false || ChatStorage[type].chat.list[session_key].attr.is_text_focus === false) {
                             ChatStorage[type].chat.list[session_key].ux.unread++;
-                            if (ChatStorage[type].chat.list[session_key].attr.is_open === false) {
+                            if (ChatStorage[type].chat.list[session_key].session.is_open === false) {
                                 ChatStorage[type].chat.list[session_key].header_color = that.module.setting.closed_header_alert_color;
                             } else if (ChatStorage[type].chat.list[session_key].attr.is_text_focus === false) {
                                 ChatStorage[type].chat.list[session_key].header_color = that.module.setting.open_header_alert_color;
@@ -663,7 +718,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$timeout', 'CoreConfig', 'U
                         }
                     }
                 } else if (SettingsManager.global.is_external_window && CoreConfig.module.setting.is_external_window_instance) {
-                    if (ChatStorage[type].chat.list[session_key].attr.is_sound === true) {
+                    if (ChatStorage[type].chat.list[session_key].session.is_sound === true) {
                         NotificationManager.playSound('new_chat'); //  this condition should only sound when we are engaged in a chat , and prevents sounds on page reloads
                     }
                     if (SettingsManager.global.show_external_notifications && message) {

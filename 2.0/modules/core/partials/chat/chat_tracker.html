@@ -6,7 +6,7 @@
 
 	<div id="cm-main-panel-tracker-content" class="min-scroll" style="max-height:{{tracker_panel_size}}px;">
 <!-- 		<div directory-item-scroll="isLastUnread($index) || isDirectoryItem($index)" ng-repeat="chat in activeChats track by $index"> -->
-		<div ng-repeat="contact_chat in module.chats.contact.chat.list | orderObjectBy: 'order'">
+		<div ng-repeat="contact_chat in module.chats.contact.chat.list | orderObjectBy: 'session.order'">
 			<div class="cm-main-panel-tracker-chat" >
 				<div ng-init=""class="cm-main-panel-tracker-chat-content" ng-click="setDirectoryChat($index, true); openChatModule();" ng-class="{'cm-main-panel-tracker-active-chat': $index == directory_index, 'cm-main-panel-tracker-new-chat': chat.isNewMessage == true && $index != directory_index}">
 					<div class="cm-main-panel-tracker-chat-truncate-title">

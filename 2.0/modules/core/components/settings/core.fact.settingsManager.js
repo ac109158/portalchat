@@ -43,8 +43,6 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
             $timeout(function() {
                 that.setExternalWindow();
                 that.setFirebaseSettings();
-                that.addUnloadListener();
-
             });
 
             return true;
@@ -70,13 +68,11 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
         }
     };
 
-    this.addUnloadListener = function() {
-        $window.onbeforeunload = function(e) {
-            if (that.global.session_id === localStorageService.get('is_existing_chat')) {
-                localStorageService.remove('is_existing_chat');
-            }
-            that.fb.location.settings.update(that.global);
-        };
+    this.unload = function() {
+        if (that.global.session_id === localStorageService.get('is_existing_chat')) {
+            localStorageService.remove('is_existing_chat');
+        }
+        that.fb.location.settings.update(that.global);
     };
 
     this.addVisiblityListener = function() {
@@ -155,6 +151,7 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
     };
 
     this.setExternalWindow = function() {
+        var discard_init_load = true;
         if (String(window.location.href).split('?')[1] === String(CoreConfig.url.external).split('?')[1]) {
             that.global.is_open = true;
             that.fb.location.settings.update({
@@ -166,24 +163,32 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
         }
 
         that.fb.location.settings.child('is_external_window').on('value', function(snapshot) {
-            if (snapshot.val()) {
-                that.global.is_external_window = true;
-                $rootScope.$broadcast('setting-change', {
-                    is_external_window: true
-                });
-                if (status && CoreConfig.module.setting.is_external_window_instance) {
-                    CoreConfig.module.setting.main_panel.width = angular.copy($window.innerWidth);
-                } else {
-                    CoreConfig.module.setting.main_panel.width = CoreConfig.module.setting.main_panel.default_width;
-                }
+            if (discard_init_load) {
+                discard_init_load = false;
             } else {
-                that.global.is_external_window = false;
-                $rootScope.$broadcast('core-task-assignment', {id:'close-external-window-instance', param:null});
-                $rootScope.$broadcast('setting-change', {
-                    is_external_window: false
-                });
-                console.log('we need to restablish the chat for the main browser window ');
+                if (snapshot.val()) {
+                    that.global.is_external_window = true;
+                    $rootScope.$broadcast('setting-change', {
+                        is_external_window: true
+                    });
+                    if (status && CoreConfig.module.setting.is_external_window_instance) {
+                        CoreConfig.module.setting.main_panel.width = angular.copy($window.innerWidth);
+                    } else {
+                        CoreConfig.module.setting.main_panel.width = CoreConfig.module.setting.main_panel.default_width;
+                    }
+                } else {
+                    that.global.is_external_window = false;
+                    $rootScope.$broadcast('core-task-assignment', {
+                        id: 'close-external-window-instance',
+                        param: null
+                    });
+                    $rootScope.$broadcast('setting-change', {
+                        is_external_window: false
+                    });
+                    console.log('we need to restablish the chat for the main browser window ');
+                }
             }
+
         });
 
 

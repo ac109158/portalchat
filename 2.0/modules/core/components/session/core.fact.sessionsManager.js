@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject', '$firebaseArray', 'ChatStorage', 'UserManager', 'PermissionsManager', function($rootScope, $log, CoreConfig, $firebaseObject, $firebaseArray, ChatStorage, UserManager, PermissionsManager) {
+service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$firebaseObject', '$firebaseArray', 'ChatStorage', 'UserManager', 'PermissionsManager', function($rootScope, $window, $log, CoreConfig, $firebaseObject, $firebaseArray, ChatStorage, UserManager, PermissionsManager) {
     var that = this;
 
     this.session = {};
@@ -18,6 +18,12 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
             // that.validateGroupChatSessions();
         }
     };
+    this.unload = function() {
+        angular.forEach(Object.keys(ChatStorage.contact.chat.list), function(key) {
+            that.updateUserChatSessionStorage(contact, key);
+        });
+    };
+
 
     this.mapObjectWithKey = function(object, object_key_field) {
         var map = {};
@@ -67,18 +73,13 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
 
     this.setUserChatSessionStorage = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
-            that.fb.location.storage.child(session_key.split(':')[0]).child(session_key.split(':')[1]).update(ChatStorage[type].session.list[session_key].session);
-        }
-    };
-    this.updateUserChatSessionStorage = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
-            that.fb.location.storage.child(session_key.split(':')[0]).child(session_key.split(':')[1]).update(ChatStorage[type].chat.list[session_key].session);
+            that.fb.location.storage.child(session_key.split(':')[0]).child(session_key.split(':')[1]).setWithPriority(ChatStorage[type].chat.list[session_key].session, ChatStorage[type].chat.list[session_key].session.order);
         }
     };
 
     this.updateContactChatSignals = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
-            that.fb.location.signals.child(session_key.split(':')[0]).child(session_key.split(':')[1]).update(ChatStorage[type].chat.list[session_key].signals);
+            that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).update(ChatStorage[type].chat.list[session_key].signals);
         }
     };
 
@@ -90,13 +91,28 @@ service('SessionsManager', ['$rootScope', '$log', 'CoreConfig', '$firebaseObject
 
 
     this.monitorUserSessionChatSignals = function() {
-        that.fb.location.signals.child(UserManager.user.profile.id).on('child_added', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
-            var contact_id = snapshot.ref().key();
-            var signals = snapshot.val();
-            console.log('chat_signals: ', contact_id, signals);
-            if (signals && signals.active) {
-
+        var discard_last_child = true;
+        that.fb.location.signals.child(UserManager.user.profile.id).once("value", function(snap) {
+            var keys = Object.keys(snap.val() || {});
+            angular.forEach(keys, function(key){
+                ChatBuilder.createSessionifNotExists('contact', UserManager.profile.id + ':' + key);
+            });
+            var last_child = keys[keys.length - 1];
+            console.log('last_child:',last_child);
+            if(angular.isUndefined(last_child)){
+                discard_last_child = false;
             }
+            that.fb.location.signals.child(UserManager.user.profile.id).startAt(null, last_child).on("child_added", function(snapshot) {
+                var contact_id = snapshot.ref().key();
+                var signals = snapshot.val();
+                if (signals && signals.active) {
+                    if(discard_last_child){
+                        discard_last_child = false;
+                    } else{
+                        console.log('we need to prime a chat', contact_id, signals);
+                    }
+                }
+            });
         });
     };
 

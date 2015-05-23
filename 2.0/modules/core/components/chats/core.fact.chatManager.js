@@ -135,8 +135,8 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.toggleChatMenu = function(type, session_key, menu, value) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && ChatStorage[type].chat.list[session_key].menu && angular.isDefined(ChatStorage[type].chat.list[session_key].menu[menu])) {
-            if (!ChatStorage[type].chat.list[session_key].attr.is_open) {
-                ChatStorage[type].chat.list[session_key].attr.is_open = true;
+            if (!ChatStorage[type].chat.list[session_key].session.is_open) {
+                ChatStorage[type].chat.list[session_key].session.is_open = true;
             }
             if (angular.isDefined(value)) {
                 ChatStorage[type].chat.list[session_key].menu[menu] = value;
@@ -215,8 +215,8 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.toggleChatOpen = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            ChatStorage[type].chat.list[session_key].attr.is_open = !ChatStorage[type].chat.list[session_key].attr.is_open;
-            if (ChatStorage[type].chat.list[session_key].attr.is_open === true) {
+            ChatStorage[type].chat.list[session_key].session.is_open = !ChatStorage[type].chat.list[session_key].session.is_open;
+            if (ChatStorage[type].chat.list[session_key].session.is_open === true) {
                 ChatStorage[type].chat.list[session_key].ux.header_color = CoreConfig.chat.ui.header_color;
                 ChatStorage[type].chat.list[session_key].ux.unread = 0;
                 ChatStorage[type].chat.list[session_key].attr.is_text_focus = true;
@@ -224,7 +224,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             } else {
                 that.resetCommonDefaultSettings(type, session_key);
             }
-            SessionManager.updateSessionDetail(session_key, 'is_open', ChatStorage[type].chat.list[session_key].attr.is_open);
+            SessionManager.updateSessionDetail(session_key, 'is_open', ChatStorage[type].chat.list[session_key].session.is_open);
         }
     };
 

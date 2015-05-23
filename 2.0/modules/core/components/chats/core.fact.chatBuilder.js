@@ -49,17 +49,16 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
 
     this.setDefaultChatTemplate = function(session) {
         if (session) {
-            if (session.order === 0) {
+            if (session.order === -1) {
+                session.order = 0;
                 angular.forEach(Object.keys(ChatStorage[session.type].chat.list), function(key) {
-                    ChatStorage[session.type].chat.list[key].order++;
+                    ChatStorage[session.type].chat.list[key].session.order++;
+                    SessionsManager.setUserChatSessionStorage(session.type, key);
                 });
             } else {
                 session.order = Object.size(ChatStorage[session.type].chat.list);
             }
             ChatStorage[session.type].chat.list[session.session_key] = {};
-            ChatStorage[session.type].chat.list[session.session_key].session_key = session.session_key;
-            ChatStorage[session.type].chat.list[session.session_key].order = session.order;
-            ChatStorage[session.type].chat.list[session.session_key].active = session.active;
 
             ChatStorage[session.type].chat.list[session.session_key].message = {};
             ChatStorage[session.type].chat.list[session.session_key].message.text = '';
@@ -115,12 +114,8 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ChatStorage[session.type].chat.list[session.session_key].invite.contact = ''; // this is used the track the name of the user that is to be invited into the group chat ie a string such as "Andy Cook";
             ChatStorage[session.type].chat.list[session.session_key].invite.set_contact = false; // this flag is used to determine that the host user has selected  a name to invite into the chat and that name has been verified to exist within the invite_list
             //states
-            ChatStorage[session.type].chat.list[session.session_key].session = {};
-            ChatStorage[session.type].chat.list[session.session_key].session.is_directory_chat = session.is_directory_chat;
-            ChatStorage[session.type].chat.list[session.session_key].session.is_group_chat = session.is_group_chat;
-            ChatStorage[session.type].chat.list[session.session_key].session.is_open = true;
-            ChatStorage[session.type].chat.list[session.session_key].session.is_sound = true;
-            ChatStorage[session.type].chat.list[session.session_key].session.is_active = ChatStorage[session.type].chat.list[session.session_key].active;
+            ChatStorage[session.type].chat.list[session.session_key].session = session;
+
 
             ChatStorage[session.type].chat.list[session.session_key].attr = {};
             ChatStorage[session.type].chat.list[session.session_key].attr.is_init = false;
@@ -181,7 +176,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             if (!session.is_group_chat && !session.is_directory_chat) {
 
                 ChatStorage[session.type].chat.list[session.session_key].signals = {};
-                ChatStorage[session.type].chat.list[session.session_key].signals.active = ChatStorage[session.type].chat.list[session.session_key].active;
+                ChatStorage[session.type].chat.list[session.session_key].signals.active = session.active;
                 ChatStorage[session.type].chat.list[session.session_key].signals.nudge = false;
                 ChatStorage[session.type].chat.list[session.session_key].signals.is_typing = false;
 
@@ -203,7 +198,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
                 ChatStorage[session.type].session.list[session.session_key].fb.contact.location.session = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.active_session_reference + session.contact_id + '/' + UserManager.user.profile.id);
                 ChatStorage[session.type].session.list[session.session_key].fb.contact.location.messages = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + session.contact_id + '/' + UserManager.user.profile.id);
 
-                ChatStorage[session.type].session.list[session.session_key].session = session;
 
             } else if (session.is_group_chat && !session.is_directory_chat) {
                 ChatStorage[session.type].session.list[session.session_key].fb.group = {};
@@ -263,7 +257,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
     };
 
 
-
     this.buildChatForSession = function(session) { // this function builds out the details of an individual chat sesssion
         if (angular.isUndefined(session) || !session.session_key) {
             ///////////////////////////////////////////////////////////
@@ -275,7 +268,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             if (that.setDefaultChatTemplate(session)) {
                 SessionsManager.setUserChatSessionStorage(session.type, session.session_key);
                 SessionsManager.updateContactChatSignals(session.type, session.session_key);
-                console.log(ChatStorage[session.type]);
                 // if(that.setSessionInContactLocation(session)){
 
                 // }
