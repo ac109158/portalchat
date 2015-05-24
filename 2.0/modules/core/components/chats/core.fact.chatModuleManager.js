@@ -92,32 +92,14 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
     this.module.current.directory = {};
     this.module.current.directory.chat = {};
-    this.module.current.directory.chat.stored_session_key = null;
-    this.module.current.directory.chat.session_key = undefined;
-
-    this.module.current.directory.chat.setting = {};
-    this.module.current.directory.chat.setting.default_index = 'contacts';
-    this.module.current.directory.chat.setting.allow_host_ping = true;
-
+    this.module.current.directory.stored_session_key = null;
+    this.module.current.directory.session_key = undefined;
 
     this.module.current.contact = {};
     this.module.current.contact.chat = {};
-    this.module.current.contact.chat.session_key = undefined;
-    this.module.current.contact.chat.stored_session_key = undefined;
-    this.module.current.contact.chat.active = undefined;
-    this.module.current.contact.chat.current_request = '';
-    this.module.current.contact.chat.temp = '';
-    this.module.current.contact.chat.unactive = {};
-    // this.module.current.contact.chat.unactive.list = ChatStorage.contact.chat.list.slice(that.contact.chat.max_count).reverse();
-    this.module.current.contact.chat.unactive.show = true;
-    this.module.current.contact.chat.unactive.count = 0;
+    this.module.current.contact.session_key = undefined;
+    this.module.current.contact.stored_session_key = undefined;
     this.module.current.contact.is_invite = undefined;
-
-    this.module.current.contact.chat.setting = {};
-    this.module.current.contact.chat.setting.allow_host_ping = true;
-    this.module.current.contact.chat.setting.start_overlow_count = 6;
-
-
 
     this.module.menu = {};
     this.module.menu.profile = false;
@@ -194,7 +176,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                         if (angular.isUndefined(last_child)) {
                             discard_last_child = false;
                         }
-                        SessionsManager.fb.location.signals.child(UserManager.user.profile.id).on("child_changed", function(snapshot) {
+                        SessionsManager.fb.location.signals.child(UserManager.user.profile.id).on("child_changed", function(snapshot, previous) {
                             var contact_id = snapshot.ref().key();
                             var signals = snapshot.val();
                             if (signals) {
@@ -255,6 +237,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     this.getContactChatSessionDetails = function(contact) {
         if (contact && contact.user_id && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + contact.user_id]]) {
             var session = {};
+            session.admin = true;
             session.type = 'contact';
             session.session_key = UserManager.user.profile.id + ':' + contact.user_id;
             session.active = false;
@@ -278,11 +261,15 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             console.log(contact);
             that.module.state.allow_chat_request = false;
             var session = that.getContactChatSessionDetails(contact);
-            that.registerContactChatSession(angular.copy(session), true);
-            $timeout(function() {
-                that.module.state.allow_chat_request = true;
-                that.activateUserContactChatSession('contact', session.session_key);
-            }, 250);
+            if (that.registerContactChatSession(angular.copy(session))) {
+                $timeout(function() {
+                    that.module.state.allow_chat_request = true;
+                    that.activateUserContactChatSession(session.type, session.session_key);
+                    that.setMainPanelTab(3);
+                    that.setChatAsCurrent(session.type, session.session_key);
+                    NotificationManager.playSound('action');
+                }, 250);
+            }
         }
     };
 
@@ -293,7 +280,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         }
     };
 
-    this.registerContactChatSession = function(session, set_focus) {
+    this.registerContactChatSession = function(session) {
         if (session && angular.isObject(session) && session.session_key && session.user_id !== UserManager.user.profile.id) {
             var index;
             $log.debug('Requesting chat session');
@@ -302,22 +289,16 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 return false;
             } else if (that.module.attr.last_requested_chat === session.session_key) {
                 $log.debug('This appears to be a duplicate rquest, return false'); /*           console.log('requested: ' + that.last_requested_chat + ' session.user_id: ' + session.user_id); */
-                that.module.attr.last_requested_chat = false;
-                return false;
+                that.module.attr.last_requested_chat = undefined;
+                return true;
             }
             that.module.attr.last_requested_chat = session.session_key;
             if (ChatStorage.contact.chat.list[session.session_key]) {
-                if (session.active && set_focus) {
-                    that.setChatAsCurrent('contact', session.session_key);
-                }
+                that.module.attr.last_requested_chat = undefined;
                 $log.debug('Chat is already in chat list');
-                return;
+                return true;
             }
-
-            $log.debug('all checks passed, build chat', session);
-            console.log('all checks passed, build chat', session);
-            ChatBuilder.buildChatForSession(session); // (that, contact, isopen, isfocus)
-            return true;
+            return ChatBuilder.buildChatForSession(session);
         }
     };
 
@@ -601,6 +582,17 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
     this.toggleMainPanelMenu = function(menu, value) {
         if (that.module.menu && angular.isDefined(that.module.menu[menu])) {
+            if (that.module.current.contact.chat.menu) {
+                angular.forEach(that.module.current.contact.chat.menu, function(value, key) {
+                    that.module.current.contact.chat.menu[key] = false;
+                });
+            }
+            if (that.module.current.directory.chat.menu) {
+                angular.forEach(that.module.directory.chat.menu, function(value, key) {
+                    that.module.current.directory.chat.menu[key] = false;
+                });
+            }
+
             angular.forEach(that.module.menu, function(value, key) {
                 if (key != menu) {
                     that.module.menu[key] = false;
@@ -616,6 +608,13 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 that.module.menu[key] = false;
             });
         }
+    };
+
+    this.toggleChatMenu = function(type, session_key, menu, value) {
+        angular.forEach(that.module.menu, function(value, key) {
+            that.module.menu[key] = false;
+        });
+        ChatManager.toggleChatMenu(type, session_key, menu, value);
     };
     this.toggleContactListShowOffline = function(value) {
         $rootScope.$evalAsync(function() {
@@ -739,7 +738,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                             that.module.priority.queue.unshift(index);
                         }
                     } else if (SettingsManager.global.layout === 2) {
-                        if (ChatStorage[type].chat.list[session_key].order >= that.module.current.contact.chat.setting.start_overlow_count || ChatStorage[type].chat.list[session_key].session.is_open === false || ChatStorage[type].chat.list[session_key].attr.is_text_focus === false) {
+                        if (ChatStorage[type].chat.list[session_key].order >= that.module.setting.start_overlow_count || ChatStorage[type].chat.list[session_key].session.is_open === false || ChatStorage[type].chat.list[session_key].attr.is_text_focus === false) {
                             ChatStorage[type].chat.list[session_key].ux.unread++;
                             if (ChatStorage[type].chat.list[session_key].session.is_open === false) {
                                 ChatStorage[type].chat.list[session_key].header_color = that.module.setting.closed_header_alert_color;
@@ -810,6 +809,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
 
     this.setChatAsCurrent = function(type, session_key) {
+        console.log('setChatAsCurrent: ', type, session_key);
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (type === 'directory') {
                 if (ChatStorage[type].chat.list[session_key].messages.list.length > CoreConfig.chat.setting.max_message_count) {
@@ -822,22 +822,26 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                         ChatStorage[type].chat.list[session_key].priority.first = chat.group_chats[i].priority;
                     }
                 }
-                if (that.module.current.directory.chat.session_key) {
-                    ChatStorage.contact.chat.list[that.module.current.directory.chat.session_key].attr.is_active = false;
+                if (that.module.current.directory.session_key) {
+                    ChatStorage.contact.chat.list[that.module.current.directory.session_key].attr.is_active = false;
                 }
-                that.module.current.directory.chat.session_key = session_key;
-                that.module.current.directory.chat.stored_session_key = session_key;
+                that.module.current.directory.session_key = session_key;
+                that.module.current.directory.stored_session_key = session_key;
                 ChatStorage.directory.chat.list[session_key].attr.is_active = true;
                 SettingsManager.updateGlobalSetting('last_panel_tab', session_key, true);
             }
             if (type === 'contact') {
-                if (that.module.current.contact.chat.session_key) {
-                    ChatStorage.contact.chat.list[that.module.current.contact.chat.session_key].attr.is_active = false;
+                console.log('here');
+                if (that.module.current.contact.session_key) {
+                    ChatStorage.contact.chat.list[that.module.current.contact.session_key].attr.is_active = false;
                 }
-                that.module.current.contact.chat.session_key = session_key;
-                that.module.current.contact.chat.stored_session_key = session_key;
+                that.module.current.contact.session_key = session_key;
+                that.module.current.contact.stored_session_key = session_key;
                 ChatStorage[type].chat.list[session_key].attr.is_active = true;
                 ChatStorage[type].chat.list[session_key].session.active = true;
+                that.module.current.contact.chat = ChatStorage[type].chat.list[session_key];
+                console.log('current contact: ', that.module.current.contact.chat);
+
                 SettingsManager.updateGlobalSetting('last_contact_chat', session_key, true);
             }
             ChatManager.resetCommonDefaultSettings(type, session_key);
@@ -851,12 +855,12 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     this.setPanelContactListIntoFocus = function() {
         that.resetDirectoryChatListFocusSettings();
         if (SettingsManager.global.layout != 2) {
-            if (that.module.current.contact.chat.session_key) {
-                ChatManager.resetCommonFocusSettings('contact', that.module.current.contact.chat.session_key);
+            if (that.module.current.contact.session_key) {
+                ChatManager.resetCommonFocusSettings('contact', that.module.current.contact.session_key);
             }
         }
-        that.module.current.directory.chat.session_key = undefined;
-        that.module.current.contact.chat.session_key = undefined;
+        that.module.current.directory.session_key = undefined;
+        that.module.current.contact.session_key = undefined;
 
         SettingsManager.updateGlobalSetting('last_panel_tab', 'contacts', true);
 
@@ -868,6 +872,24 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     this.getUserPermissionForBrowserNotifications = function() {
         Notification.requestPermission();
     };
+    this.sendChatMessage = function(type, session_key, media) {
+        if(!media){
+            ChatManager.sendChatMessage(type, session_key);
+        } else{
+            if(media === 'audio'){
+
+            } else if(media === 'image'){
+
+            } else if(media === 'video'){
+
+            }
+        }
+    };
+
+    this.showContactThatUserIsTyping = function(type, session_key){
+        ChatManager.showContactThatUserIsTyping(type, session_key);
+    };
+
     this.sendChatMessageAsBrowserNotification = function(type, session_key, message, heading) {
         var title;
         if (heading) {
@@ -924,7 +946,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
 
     this.isCurrentDirectoryChat = function(session_key) {
-        if (that.module.current.directory.chat.session_key && that.module.current.directory.chat.session_key === session_key) {
+        if (that.module.current.directory.session_key && that.module.current.directory.session_key === session_key) {
             return true;
         }
         return false;
@@ -956,10 +978,11 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
 
     this.setMainPanelTab = function(tab_index_position) {
+        console.log('setMainPanelTab: ', tab_index_position)
         if (parseInt(tab_index_position, 10) > -1 && that.module.tab.current.index_position != tab_index_position) {
             that.module.tab.current = that.module.tab.list[tab_index_position];
             if (that.module.tab.current.type === 'contact') {
-                that.module.tab.current.session_key = that.module.current.contact.chat.stored_session_key;
+                that.module.tab.current.session_key = that.module.current.contact.stored_session_key;
             }
             if (that.module.tab.current.session_key === 'contacts') {
                 that.setPanelContactListIntoFocus();

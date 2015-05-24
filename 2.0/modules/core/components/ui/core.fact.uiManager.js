@@ -52,6 +52,13 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         ChatModuleManager.chatContact(contact);
     };
 
+    this.ui.fx.sendChatMessage = function(type, session_key, media){
+        ChatModuleManager.sendChatMessage(type, session_key, media);
+    };
+    this.ui.fx.showContactThatUserIsTyping = function(type, session_key){
+        ChatModuleManager.showContactThatUserIsTyping(type, session_key);
+    };
+
     this.ui.fx.updateSoundLevel = function(level) {
         if (parseInt(level) && level > -1 && level <= CoreConfig.max.sound_level ) {
             NotificationManager.updateSoundLevel(level);
@@ -72,6 +79,12 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     this.ui.fx.toggleMainPanelMenu = function(menu, value) {
         ChatModuleManager.toggleMainPanelMenu(menu, value);
     };
+
+    this.ui.fx.toggleChatMenu = function(type, session_key, menu, value) {
+        console.log(type, session_key, menu, value);
+        ChatModuleManager.toggleChatMenu(type, session_key, menu, value);
+    };
+
     this.ui.fx.toggleContactListShowOffline = function(value){
         ChatModuleManager.toggleContactListShowOffline(value);
     };

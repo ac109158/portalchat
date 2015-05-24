@@ -8,6 +8,7 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
     this.update = {};
 
     this.fb = {}; // firebase domain
+    this.fb.group = {}; // firebase domain
     this.fb.location = {};
 
 
@@ -40,7 +41,7 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
             that.fb.location.signals = new Firebase(CoreConfig.session.signals_root);
             that.fb.location.storage = new Firebase(CoreConfig.session.storage_root);
             if (PermissionsManager.hasAdminRights()) {
-                that.fb.group.location.sessions = new Firebase(CoreConfig.group_chat.url_root + CoreConfig.group_chat.active_session_reference);
+                // that.fb.group.location.sessions = new Firebase(CoreConfig.group_chat.url_root + CoreConfig.group_chat.active_session_reference);
             }
         }
     };

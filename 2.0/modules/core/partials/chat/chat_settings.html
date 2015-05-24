@@ -1,0 +1,78 @@
+<div class="cm-chat-setting-menu">
+        <!-- Pop up of list of Option for User -->
+    <div ng-show="chat.menu.options == true" class="cm-main-panel-chat-user-option-wrapper">
+        <div ng-if="!chat.session.is_directory_chat" >
+        <div ng-if="ux.fx.hasSuperAdminRights();" href="#" class="cm-chat-user-option pointer" ng-click="nudgeUser(directory_chat)">
+            <i class="fa fa-bolt"></i>
+            <span class="pointer">Nudge User</span>
+        </div>
+        </div>
+
+
+        <div ng-if="ux.fx.hasSuperAdminRights();"class="cm-chat-user-option pointer"  ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'audio', true);"> <!-- Option to add topic to chat -->
+            <span href="#" class="fa fa-play-circle"></span>
+            <span class="option-text">Add Audio</span>
+        </div>
+
+        <div class="cm-chat-user-option pointer"  ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'image', true);" > <!-- Option to add topic to chat -->
+            <span href="#" class="fa fa-camera"></span>
+            <span class="option-text">Add Image</span>
+        </div>
+
+        <div class="cm-chat-user-option pointer"  ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'video', true);" > <!-- Option to add topic to chat -->
+            <span href="#" class="fa fa-youtube-square"></span>
+            <span class="option-text">Add Video</span>
+        </div>
+
+<!--
+        <div class="cm-chat-user-option pointer" ng-click="removeChatSession(directory_chat)">
+            <span href="#" class="glyphicon glyphicon-remove "></span>
+            <span class="pointer" ng-show="chat.session.is_group_chat === false">Close Chat</span>
+            <span class="pointer" ng-show="chat.session.is_group_chat === true">Leave Chat</span>
+        </div>
+-->
+
+<!--
+        <div href="#" class="cm-chat-user-option pointer" ng-click="toggleChatSound(directory_chat)">
+            <span href="#" class="no-select" ng-class="{'glyphicon glyphicon-volume-up' : chat.session.is_sound == false || chat.session.is_sound == 'false', 'glyphicon glyphicon-volume-off' : chat.session.is_sound == true || chat.session.is_sound == 'true'}"></span>
+            <span class="pointer" ng-show="chat.session.is_sound == false || chat.session.is_sound == 'false'" >Sound On</span>
+            <span class="pointer" ng-show="chat.session.is_sound == true || chat.session.is_sound == 'true'" href="#">Sound Off</span>
+        </div>
+-->
+        <div ng-if="!chat.session.is_directory_chat" >
+        <div href="#" class="cm-chat-user-option pointer" ng-show="chat.session.is_group_chat || module.setting.allow_group_chats && chat.contact.profile.online == true &&  chat.contact.presence.state != 'Offline'" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'invite');"> <!-- Option to invite another user to chat -->
+            <i class="fa fa-users"></i>
+            <span class="pointer">Add User</span>
+        </div>
+        </div>
+
+        <div ng-if="chat.tag.desription == false"  class="cm-chat-user-option pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'tag', true);" > <!-- Option to tag the name of the chat box -->
+            <span href="#" class=" glyphicon glyphicon-tag"></span>
+            <span>Tag Chat</span>
+        </div>
+
+        <div ng-if="chat.tag.desription != false && !chat.session.is_directory_chat"  class="cm-chat-user-option pointer"  ng-click="removeTag(directory_chat)" > <!-- Option to tag the name of the chat box -->
+            <span href="#" class=" glyphicon glyphicon-tag"></span>
+            <span class="pointer">Remove Tag</span>
+        </div>
+
+        <div ng-if="chat.topic.description == false && chat.admin && chat.session.is_group_chat == true" class="cm-chat-user-option pointer"  ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'topic', true);" > <!-- Option to add topic to chat -->
+            <span href="#" class="glyphicon glyphicon-star"></span>
+            <span class="pointer">Add Topic</span>
+        </div>
+
+<!--
+        <div ng-if="chat.viewProfile"  class="cm-chat-user-option"  ng-click="closeProfile(directory_chat)" >
+            <span href="#" class="glyphicon glyphicon-star"></span>
+            <span class="pointer">Close Profile</span>
+        </div>
+-->
+
+        <div class="cm-chat-user-option" ng-click="sendChatReceipt(directory_chat)" > <!-- Option to send chat history to user email -->
+            <span href="#" class=" glyphicon glyphicon-envelope"></span>
+            <span class="pointer">Chat Receipt</span>
+        </div>
+    </div> <!-- end of user option pop up -->
+
+    <div class="clearfix"></div>
+</div>

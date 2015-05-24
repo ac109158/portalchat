@@ -1,0 +1,57 @@
+<div id="cm-user-profile" class="min-scroll">
+    <div>
+        <span class="cm-profile-span-label" style="color:white;">Profile</span>
+    </div>
+    <div style="width:100%; display:block; min-height:20px;">
+        <div style="width:40%; padding:2px; float:left">
+            <!-- <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="/components/com_callcenter/images/avatars/{{avatar}}-90.jpg" alt="..."> -->
+            <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="{{module.contact_list.setting.default_avatar}}" alt="...">
+        </div>
+        <div <div style="width:60%; padding:4px; float:left">
+            <div class="well well-sm well-slim">
+                <span class="cm-profile-span pointer" ng-bind="chat.contact.profile.name"></span>
+                <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.role">{{chat.contact.additional_profile.role}}</span>
+                <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.pc" style="font-size:.8em;">PC: {{chat.contact.additonal_profile.pc.name}}<br></span>
+                <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.mc" style="font-size:.8em;">MC: {{chat.contact.additonal_profile.mc.name}}<br></span>
+            </div>
+        </div>
+    </div>
+    <div style="width:100%; display:block; float:left; padding:2px; margin-top:2px;">
+        <div class="well well-sm well-slim">
+            <span class="cm-profile-span-label">Phone</span>
+            <span class="cm-profile-span pointer">{{chat.contact.additional_profile.phone}}</span>
+            <span class="cm-profile-span-label">Email</span>
+            <span class="cm-profile-span pointer">{{chat.contact.additional_profile.email}}</span>
+        </div>
+        <div ng-show="chat.contact.profile.online && chat.contact.additional_profile.city && chat.contact.additional_profile.state || chat.contact.profile.online && chat.contact.additional_profile.checkInTime" class="well well-sm well-slim">
+            <span class="cm-profile-span-label">Sign-In</span>
+            <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.city && chat.contact.additional_profile.state" class="cm-profile-span">{{chat.contact.additional_profile.city +', ' + chat.contact.additional_profile.state}}</span>
+            <span ng-show="chat.contact.additional_profile.office" class="cm-profile-span">{{chat.contact.additional_profile.office}}</span>
+            <span ng-show="chat.contact.additional_profile.checkInTime" ng-show="chat.contact.additional_profile.checkInTime" class="cm-profile-span">{{chat.contact.additional_profile.checkInTime | date:'MM/dd @ h:mma'}}</span>
+        </div>
+        <div ng-show="!chat.contact.profile.online && chat.contact.additional_profile.city && chat.contact.additional_profile.state || !chat.contact.profile.online && chat.contact.additional_profile.checkOutTime" class="well well-sm well-slim">
+            <span class="cm-profile-span-label">Sign-Out</span>
+            <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.city && chat.contact.additional_profile.state" class="cm-profile-span">{{chat.contact.additional_profile.city +', ' + chat.contact.additional_profile.state}}</span>
+            <span ng-show="chat.contact.additional_profile.office" class="cm-profile-span">{{chat.contact.additional_profile.office}}</span>
+            <span ng-show="chat.contact.additional_profile.checkOutTime" class="cm-profile-span">{{chat.contact.additional_profile.checkOutTime | date:'MM/dd @ h:mma'}}</span>
+        </div>
+        <div ng-if="ux.fx.hasAdminRights()">
+            <div ng-show="chat.contact.additional_profile.platform" class="well well-sm well-slim">
+                <span class="cm-profile-span-label">Platform</span>
+                <span class="cm-profile-span">Browser: {{chat.contact.additional_profile.platform.browser + ' | ' + chat.contact.additional_profile.platform.browserVersion}}</span>
+                <span class="cm-profile-span">Operating System: {{chat.contact.additional_profile.platform.os + ' | ' +  chat.contact.additional_profile.platform.osVersion}}</span>
+                <span class="cm-profile-span">Flash: {{chat.contact.additional_profile.platform.flashVersion == 'no check' ? 'N/A' : chat.contact.additional_profile.platform.flashVersion}}</span>
+                <span class="cm-profile-span">Cookies: {{chat.contact.additional_profile.platform.cookies == true ? 'Enabled' : 'Disabled'}}</span>
+                <span ng-if="!chat.contact.additional_profile.platform.mobile" class="cm-profile-span">Device: {{'Computer' + ' | ' + chat.contact.additional_profile.platform.screen}}</span>
+                <span ng-if="chat.contact.additional_profile.platform.mobile" class="cm-profile-span">Device: {{'Mobile | ' + chat.contact.additional_profile.platform.screen}}</span>
+                <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.isp" class="cm-profile-span">ISP: {{chat.contact.additional_profile.isp}}</span>
+                <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.platform.ip && user == 113" class="cm-profile-span">IP: {{chat.contact.additional_profile.platform.ip}}</span>
+            </div>
+
+            <div ng-show="chat.contact.additional_profile.lng != null && chat.contact.additional_profile.lat != null" class="well well-sm well-slim">
+                <img ng-src="https://maps.googleapis.com/maps/api/staticmap?center={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&markers={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&zoom=8&size=300x300&sensor=false" style="max-width:100%; max-height:100%;" alt="Aproximate location of your internet connection">
+            </div>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+</div>

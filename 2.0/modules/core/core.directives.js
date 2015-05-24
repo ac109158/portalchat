@@ -26,6 +26,22 @@ directive('cmMainSettings', function() {
         link: function(scope, elm, attrs) {}
     };
 }).
+directive('cmChatSettings', function() {
+    return {
+        restrict: 'E',
+        replace: true,
+        templateUrl: './modules/core/partials/chat/chat_settings.html',
+        link: function(scope, elm, attrs) {}
+    };
+}).
+directive('cmChatTracker', function() {
+    return {
+        restrict: 'E',
+        replace: true,
+        templateUrl: './modules/core/partials/chat/chat_tracker.html',
+        link: function(scope, elm, attrs) {}
+    };
+}).
 directive('chatModuleExternal', function() {
     return {
         restrict: 'E',
@@ -39,6 +55,14 @@ directive('chat', function() {
         restrict: 'EA',
         replace: true,
         templateUrl: './modules/core/partials/chat/chat.html',
+        link: function(scope, elm, attrs) {}
+    };
+}).
+directive('panelContactChat', function() {
+    return {
+        restrict: 'E',
+        replace: true,
+        templateUrl: './modules/core/partials/chat/panel_contact_chat.html',
         link: function(scope, elm, attrs) {}
     };
 }).
@@ -114,15 +138,6 @@ directive('chatModuleNavPanel', function() {
         link: function(scope, elm, attrs) {}
     };
 }).
-directive('cmMainPanelTrackerPanel', function() {
-    return {
-        scope: true,
-        restrict: 'EA',
-        replace: true,
-        templateUrl: './modules/core/partials/chat/chat_tracker.html',
-        link: function(scope, elm, attrs) {}
-    };
-}).
 directive('cmAudio', function() {
     return {
         scope: true,
@@ -176,6 +191,15 @@ directive('cmYoutube', function($sce) {
         }
     };
 }).
+directive('cmContactProfile', function() {
+    return {
+        scope: true,
+        restrict: 'EA',
+        replace: true,
+        templateUrl: './modules/core/partials/chat/contact_profile.html',
+        link: function(scope, elm, attrs) {}
+    };
+}).
 directive('cmProfile', function() {
     return {
         scope: true,
@@ -185,35 +209,7 @@ directive('cmProfile', function() {
         link: function(scope, elm, attrs) {}
     };
 }).
-directive('cmUserProfile', ['UserManager', function(UserManager) {
-    return {
-        scope: {
-            name: '=',
-            avatar: '=',
-            online: '=',
-            user_presence: '=',
-            user_presence_message: '=',
-            user_presence_mesage_show: '=',
-            data: '=',
-            user: '=',
-            access: '=',
-            gpk: '='
-        },
-        restrict: 'E',
-        replace: true,
-        templateUrl: './modules/core/partials/chat/profile_tracker.html',
-        link: function(scope, elm, attrs) {
-            scope.inAdminGroup = function() {
-                if (UserManager._user_profile && UserManager._user_profile.position) {
-                    if ('3424258'.indexOf(UserManager._user_profile.position) != -1) {
-                        return true;
-                    }
-                }
-                return false;
-            };
-        }
-    };
-}]).
+
 directive('ngEnterPress', function() {
     return function(scope, element, attrs) {
         element.bind("keydown keypress", function(event) {

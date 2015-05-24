@@ -5,7 +5,7 @@ angular.module('portalchat.core').factory('PermissionsManager', ['$rootScope', '
     this.setting.admin_group = '3424258';
 
     this.group = {};
-    this.group.super_admin = ['113'];
+    this.group.super_admin = ['113', '379'];
     this.group.admin = ['Administrator', 'Shift Manager', 'PlusOne Admin'];
 
 
@@ -13,26 +13,32 @@ angular.module('portalchat.core').factory('PermissionsManager', ['$rootScope', '
 
     this.permissions.isDirectoryChatAvailable = function(group) {
         if (group === 'mc') {
-            if ((UserManager.user.supervisors && UserManager.user.supervisors.mc) || UserManager.user.role === 'Mentor Coach') {
+            if ((UserManager.user.supervisors && UserManager.user.supervisors.mc) || UserManager.user.additional_profile.role === 'Mentor Coach') {
                 return true;
             }
         } else if (group === 'admin') {
-            if (UserManager.user.role === 'Administrator' || UserManager.user.role === 'Shift Manager') {
+            if (UserManager.user.additional_profile.role === 'Administrator' || UserManager.user.additional_profile.role === 'Shift Manager') {
                 return true;
             }
         }
         return false;
     };
+    this.permissions.hasSuperAdminRights = function(){
+        if(that.group.super_admin.indexOf(UserManager.user.profile.id) != -1){
+            return true;
+        }
+        return false;
+    };
 
     this.permissions.hasAdminRights = function(){
-        if(that.group.admin.indexOf(UserManager.user.role) != -1){
+        if(that.group.admin.indexOf(UserManager.user.additional_profile.role) != -1){
             return true;
         }
         return false;
     };
 
     this.permissions.hasSupervisorRights = function(){
-        if(that.group.admin.indexOf(UserManager.user.role) != -1){
+        if(that.group.admin.indexOf(UserManager.user.additional_profile.role) != -1){
             return true;
         }
         return false;

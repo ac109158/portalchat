@@ -150,6 +150,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
 
             ChatStorage[session.type].chat.list[session.session_key].menu = {};
             ChatStorage[session.type].chat.list[session.session_key].menu.options = false;
+            ChatStorage[session.type].chat.list[session.session_key].menu.profile = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.tag = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.topic = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.emoticons = false; // toggle flag tht determines if the emotion dox should be displayed to the user
@@ -205,11 +206,14 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
                 ChatStorage[session.type].session.list[session.session_key].fb.group = {};
                 ChatStorage[session.type].session.list[session.session_key].fb.group.location = {};
 
-                ChatStorage[session.type].chat.list[session.session_key].contacts.active_list = {};
+                ChatStorage[session.type].chat.list[session.session_key].contacts.active = {};
+                ChatStorage[session.type].chat.list[session.session_key].contacts.active.list = [];
+                ChatStorage[session.type].chat.list[session.session_key].contacts.active.map = {};
                 ChatStorage[session.type].chat.list[session.session_key].contacts.profiles = {};
 
                 // topic values
                 ChatStorage[session.type].chat.list[session.session_key].topic = {};
+                ChatStorage[session.type].chat.list[session.session_key].topic.allow = true;
                 ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
                 ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
                 ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
@@ -239,11 +243,9 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
     };
 
     this.setContactAdditionalProfile = function(type, session_key, contact_id) {
-        console.log('setContactAdditionalProfile: ', type, session_key, contact_id);
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             that.fb.location.additonal_profiles.child(contact_id).once('value', function(snapshot) {
                 var additional_profile = snapshot.val();
-                console.log('additional_profile: ', additional_profile);
                 if (additional_profile) {
                     if (PermissionsManager.hasSupervisorRights()) {
                         ChatStorage[type].chat.list[session_key].contact.additional_profile = additional_profile;
@@ -379,18 +381,12 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         }
         if (that.validateSessionModel(session)) {
             if (that.setDefaultChatTemplate(session)) {
-                console.log('Pass: 1');
                 if (SessionsManager.setUserChatSessionStorage(session.type, session.session_key)) {
-                    console.log('Pass: 2');
                     if (SessionsManager.updateContactChatSignals(session.type, session.session_key)) {
-                        console.log('Pass: 3');
                         if (that.clearContactSessionExpiredMessages(session, fb_ref_type)) {
-                            console.log('Pass: 4');
                             if (that.setNewExistingChatMessages(session, fb_ref_type)) {
-                                console.log('Pass: 5');
                                 if (that.watchForChangedChatMessages(session, fb_ref_type)) {
-                                    console.log('finished');
-                                    return;
+                                    return true;
                                 }
                             }
                         }
@@ -402,9 +398,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         return false;
 
         $timeout(function() {
-            chat_session.messageListQuery = that.__returnMessageListQuery(scope, chat_session.time, chat_session.user_message_location, that._contact._user_id, chat_session.is_group_chat, store_length); // this creates a query of the messages pointed at the from_user storage location , messages must be written in both the user and contact chatbox pointer locations
-            // set pointer to user-group, used to remove the session if no one is longer using it
-            var session_root = that._group_url_root + that._group_active_session_reference + chat_session.session_key + '/';
             chat_session.firebase_location = new Firebase(session_root);
             if (chat_session.topic_location.$value === null) {
                 chat_session.firebase_location.update({
@@ -412,8 +405,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
                 });
             }
             chat_session.group_user_location = chat_session.firebase_location.child(that._group_active_users_reference);
-            $log.debug('session_key is : ' + chat_session.session_key);
-            that.__pushChatSession(chat_session, session); // pushes the chat session into the scope of the view
             /*          clearInterval(build_delay); */
         }, 500);
     };

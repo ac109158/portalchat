@@ -130,6 +130,8 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
         'contact': 3
     };
     this.module.setting = {};
+    this.module.setting.allow_ping_host = true;
+    this.module.setting.allow_group_chats = true;
     this.module.setting.presence_states = [{value:'Online', title:'Available'}, {value:'Away', title:'Away'}, {value:'Busy', title:'Busy'},{value:'At Lunch', title:'At Lunch'},{value:'On Break', title:'On Break'},{value:'Training', title:'Training'}]; // optional chat stattes
     this.module.setting.header_color = "#00335B"; // default color of the chat header
     this.module.setting.closed_header_alert_color = '#ce6000'; // alternate color of the chat header

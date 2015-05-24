@@ -27,7 +27,7 @@
             <div id="cm-main-panel-content-wrapper">
                 <div id="cm-main-panel-upper-panel">
                     <div ng-if="module.global.layout == 1">
-                        <cm-main-panel-tracker-panel></cm-main-panel-tracker-panel>
+                        <cm-chat-tracker></cm-chat-tracker>
                         <chat-module-nav-panel></chat-module-nav-panel>
                     </div>
                 </div>
@@ -49,13 +49,11 @@
                     </div>
                     <div ng-if="module.tab.current.index_position == 2" id="sm_tech_chat">
                         <tech-chat></tech-chat>
-                    </div>
-                    <div ng-if="module.tab.current.index_position == 3 && position == 33 || module.tab.current.index_position == 4 && mc" id="mc_group_chat">
-                        <mc-chat></mc-chat>
-                    </div>
-                    <div ng-if="module.tab.current.index_position == 4 && module.global.layout == 1 || module.tab.current.index_position == 4 && module.global.layout == null" ng-show="activeChats.length > 0" id="directory_chat">
-                        <directory-chat></directory-chat>
                     </div> -->
+
+                    <div ng-if="module.tab.current.index_position == 3">
+                        <panel-contact-chat></panel-contact-chat>
+                    </div>
                 </div>
             </div>
         </div>
