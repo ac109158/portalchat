@@ -18,6 +18,8 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.ux.main_panel.content.wrapper.lower_panel = {};
 
     this.ux.main_panel.content.wrapper.lower_panel.contacts_list = {};
+    this.ux.main_panel.content.wrapper.lower_panel.messages_list = {};
+    this.ux.main_panel.content.wrapper.lower_panel.message_section = {};
 
 
     this.ux.fx = {};
@@ -38,7 +40,6 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
                     that.ux.main_panel.content.wrapper.lower_panel.contacts_list.top = document.getElementById("cm-main-panel-contacts-list").offsetTop;
                     that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height = that.ux.main_panel.content.wrapper.lower_panel.height - that.ux.main_panel.content.wrapper.lower_panel.contacts_list.top - 10;
                     document.getElementById("cm-main-panel-contacts-list").style.height = that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height + "px";
-                    console.log(document.getElementById("cm-main-panel-contacts-list").style.height);
                 }
             });
         }
@@ -48,6 +49,9 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.ux.fx.evaluateChatModuleLayout = function() {
         that.setChatModuleSectionHeights();
         console.log(that.ux);
+    };
+    this.ux.fx.alertNewChat = function(){
+        NotificationManager.playSound('new_chat');
     };
 
     this.ux.fx.isBrowserOffline = function() {

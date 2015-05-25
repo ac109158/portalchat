@@ -128,6 +128,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ChatStorage[session.type].chat.list[session.session_key].attr.is_text_focus = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_topic_focus = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_top_spacer = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.is_bottom_lock = true;
             ChatStorage[session.type].chat.list[session.session_key].attr.last_logged_chat = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.last_sent_user_message = '';
             ChatStorage[session.type].chat.list[session.session_key].attr.last_sent_contact_message = '';
@@ -136,7 +137,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             ChatStorage[session.type].chat.list[session.session_key].priority = {};
             ChatStorage[session.type].chat.list[session.session_key].priority.current = false;
             ChatStorage[session.type].chat.list[session.session_key].priority.first = 0;
-            ChatStorage[session.type].chat.list[session.session_key].priority.next = 1;
+            ChatStorage[session.type].chat.list[session.session_key].priority.next = 0;
 
             ChatStorage[session.type].chat.list[session.session_key].ux = {};
             ChatStorage[session.type].chat.list[session.session_key].ux.is_header = true;
@@ -179,18 +180,18 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             if (!session.is_group_chat && !session.is_directory_chat) {
                 ChatStorage[session.type].chat.list[session.session_key].signals = {};
                 ChatStorage[session.type].chat.list[session.session_key].signals.type = session.type;
-                ChatStorage[session.type].chat.list[session.session_key].signals.active = session.active;
+                ChatStorage[session.type].chat.list[session.session_key].signals.active = false;
                 ChatStorage[session.type].chat.list[session.session_key].signals.nudge = false;
                 ChatStorage[session.type].chat.list[session.session_key].signals.is_typing = false;
 
                 ChatStorage[session.type].chat.list[session.session_key].contact = {};
                 ChatStorage[session.type].session.list[session.session_key].contact = {};
+                ChatStorage[session.type].session.list[session.session_key].contact.signals = {};
+                ChatStorage[session.type].chat.list[session.session_key].contact.profile = ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + session.contact_id]];
+                that.setContactAdditionalProfile(session.type, session.session_key, session.contact_id);
 
                 ChatStorage[session.type].session.list[session.session_key].fb.user = {};
                 ChatStorage[session.type].session.list[session.session_key].fb.user.location = {};
-
-                ChatStorage[session.type].chat.list[session.session_key].contact.profile = ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + session.contact_id]];
-                that.setContactAdditionalProfile(session.type, session.session_key, session.contact_id);
 
                 ChatStorage[session.type].session.list[session.session_key].fb.user = {};
                 ChatStorage[session.type].session.list[session.session_key].fb.user.location = {};
@@ -247,6 +248,9 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
             that.fb.location.additonal_profiles.child(contact_id).once('value', function(snapshot) {
                 var additional_profile = snapshot.val();
                 if (additional_profile) {
+                    if(additional_profile.mc && additional_profile.mc.name){
+                        additional_profile.mc.name = additional_profile.mc.name.replace('*', '');
+                    }
                     if (PermissionsManager.hasSupervisorRights()) {
                         ChatStorage[type].chat.list[session_key].contact.additional_profile = additional_profile;
                     } else {

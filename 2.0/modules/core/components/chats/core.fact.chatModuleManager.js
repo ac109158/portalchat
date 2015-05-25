@@ -176,11 +176,19 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                         if (angular.isUndefined(last_child)) {
                             discard_last_child = false;
                         }
-                        SessionsManager.fb.location.signals.child(UserManager.user.profile.id).on("child_changed", function(snapshot, previous) {
-                            var contact_id = snapshot.ref().key();
+
+                        SessionsManager.fb.location.signals.child(UserManager.user.profile.id).on("child_changed", function(snapshot) {
+                            var key = snapshot.key();
                             var signals = snapshot.val();
-                            if (signals) {
-                                console.log('Chat signal has been sent', contact_id, signals);
+                            var session_key = UserManager.user.profile.id + ':' + key;
+                            console.log('recieved contatact signals', session_key, signals);
+                            if (signals && signals.type && signals.active) {
+                                if (ChatStorage[signals.type] && ChatStorage[signals.type].chat.list[session_key]) {
+                                    if (!ChatStorage[signals.type].chat.list[session_key].session.active) {
+                                        ChatStorage[signals.type].chat.list[session_key].session.active = true;
+                                    }
+                                    ChatStorage[signals.type].chat.list[session_key].contacts.signals = signals;
+                                }
                             }
                         });
                         SessionsManager.fb.location.signals.child(UserManager.user.profile.id).startAt(null, last_child).on("child_added", function(snapshot) {
@@ -873,20 +881,20 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         Notification.requestPermission();
     };
     this.sendChatMessage = function(type, session_key, media) {
-        if(!media){
+        if (!media) {
             ChatManager.sendChatMessage(type, session_key);
-        } else{
-            if(media === 'audio'){
+        } else {
+            if (media === 'audio') {
 
-            } else if(media === 'image'){
+            } else if (media === 'image') {
 
-            } else if(media === 'video'){
+            } else if (media === 'video') {
 
             }
         }
     };
 
-    this.showContactThatUserIsTyping = function(type, session_key){
+    this.showContactThatUserIsTyping = function(type, session_key) {
         ChatManager.showContactThatUserIsTyping(type, session_key);
     };
 
@@ -992,7 +1000,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             }
             $timeout(function() {
                 UxManager.ux.fx.evaluateChatModuleLayout();
-            });
+            },500);
         }
     };
 

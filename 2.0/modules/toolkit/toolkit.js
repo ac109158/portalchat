@@ -485,34 +485,37 @@
                 if (isNaN(searchThreshold) || searchThreshold === Infinity) {
                     searchThreshold = undefined;
                 }
+                if (iElm) {
+                    iElm.chosen({
+                        width: '100%',
+                        max_selected_options: maxSelection,
+                        disable_search_threshold: searchThreshold,
+                        search_contains: true
+                    });
 
-                iElm.chosen({
-                    width: '100%',
-                    max_selected_options: maxSelection,
-                    disable_search_threshold: searchThreshold,
-                    search_contains: true
-                });
+                    iElm.on('change', function() {
+                        iElm.trigger('chosen:updated');
+                    });
 
-                iElm.on('change', function() {
-                    iElm.trigger('chosen:updated');
-                });
+                    $scope.$watch('[' + watchCollection.join(',') + ']', function() {
+                        iElm.trigger('chosen:updated');
+                    }, true);
 
-                $scope.$watch('[' + watchCollection.join(',') + ']', function() {
-                    iElm.trigger('chosen:updated');
-                }, true);
+                    // assign event handlers
+                    EVENTS.forEach(function(event) {
+                        var eventNameAlias = Object.keys(event)[0];
 
-                // assign event handlers
-                EVENTS.forEach(function(event) {
-                    var eventNameAlias = Object.keys(event)[0];
+                        if (typeof $scope[eventNameAlias] === 'function') { // check if the handler is a function
+                            iElm.on(event[eventNameAlias], function(event) {
+                                $scope.$apply(function() {
+                                    $scope[eventNameAlias](event);
+                                });
+                            }); // listen to the event triggered by chosen
+                        }
+                    });
+                }
 
-                    if (typeof $scope[eventNameAlias] === 'function') { // check if the handler is a function
-                        iElm.on(event[eventNameAlias], function(event) {
-                            $scope.$apply(function() {
-                                $scope[eventNameAlias](event);
-                            });
-                        }); // listen to the event triggered by chosen
-                    }
-                });
+
             };
 
             // return the directive

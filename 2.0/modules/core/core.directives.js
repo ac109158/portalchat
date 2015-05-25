@@ -50,17 +50,14 @@ directive('chatModuleExternal', function() {
         link: function(scope, elm, attrs) {}
     };
 }).
-directive('chat', function() {
-    return {
-        restrict: 'EA',
-        replace: true,
-        templateUrl: './modules/core/partials/chat/chat.html',
-        link: function(scope, elm, attrs) {}
-    };
-}).
 directive('panelContactChat', function() {
     return {
         restrict: 'E',
+        scope: {
+            chat: '=',
+            ux: '=',
+            ui: '=',
+        },
         replace: true,
         templateUrl: './modules/core/partials/chat/panel_contact_chat.html',
         link: function(scope, elm, attrs) {}
@@ -297,39 +294,6 @@ directive('ngKeydown', function() {
             // function name into an actual function
             var functionToCall = scope.$eval(attrs.ngKeydown);
         }
-    };
-}).
-directive('typeaheadUsers', function($timeout) {
-    return {
-        restrict: 'AEC',
-        scope: {
-            items: '=',
-            prompt: '@',
-            title: '@',
-            subtitle: '@',
-            avatar: '@',
-            model: '=',
-            onSelect: '&'
-        },
-        link: function(scope, elem, attrs) {
-            scope.handleSelection = function(selectedItem) {
-                scope.model = selectedItem;
-                scope.current = 0;
-                scope.selected = true;
-                $timeout(function() {
-                    scope.onSelect();
-                }, 200);
-            };
-            scope.current = 0;
-            scope.selected = true; // hides the list initially
-            scope.isCurrent = function(index) {
-                return scope.current == index;
-            };
-            scope.setCurrent = function(index) {
-                scope.current = index;
-            };
-        },
-        templateUrl: './modules/core/partials/chat/typeahead.html'
     };
 }).
 directive('windowResize', function($rootScope, $window, $timeout) {

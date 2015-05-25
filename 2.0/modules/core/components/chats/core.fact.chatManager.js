@@ -7,20 +7,17 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.showContactThatUserIsTyping = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (!ChatStorage[type].chat.list[session_key].message.text) {
+            if (!ChatStorage[type].chat.list[session_key].message.text || !ChatStorage[type].chat.list[session_key].signals.active) {
                 return false;
             }
             if (angular.isDefined(ChatStorage[type].chat.list[session_key].interval.is_user_typing)) {
                 $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
             }
-            if (ChatStorage[type].session.list[session_key].fb.contact.location.typing_presence)
-                ChatStorage[type].session.list[session_key].fb.contact.location.typing_presence.update({
-                    'is_typing': true
-                });
+            ChatStorage[type].chat.list[session_key].signals.is_typing = true;
+            SessionsManager.updateContactChatSignals(type, session_key);
             ChatStorage[type].chat.list[session_key].interval.is_user_typing = $timeout(function() {
-                ChatStorage[type].session.list[session_key].fb.contact.location.typing_presence.update({
-                    'is_typing': false
-                });
+                ChatStorage[type].chat.list[session_key].signals.is_typing = false;
+                SessionsManager.updateContactChatSignals(type, session_key);
                 $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
             }, 2000);
         }
@@ -94,7 +91,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             ChatStorage[type].chat.list[session_key].invite.contact = '';
             ChatStorage[type].chat.list[session_key].invite.set_contact = false;
 
-            ChatStorage[type].chat.list[session_key].reference.key = false;
+            ChatStorage[type].chat.list[session_key].reference.key = null;
             ChatStorage[type].chat.list[session_key].reference.author = null;
             ChatStorage[type].chat.list[session_key].reference.name = null;
             ChatStorage[type].chat.list[session_key].reference.text = null;
@@ -481,7 +478,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             }
             if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                 ChatStorage[type].chat.list[session_key].fb.group.location.messages.push(message);
-                chat.attr.last_sent_user_message = firekey.name();
+                chat.attr.last_sent_user_message = firekey.key();
                 ChatStorage[type].chat.list[session_key].fb.group.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_user_message).update({
                     text: encrypted_text || updated_text
                 });
@@ -521,7 +518,6 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.sendChatMessage = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            var chat_delay;
             /*      console.log(ChatStorage[type].chat.list[session_key].message.text); */
             if (angular.isUndefined(ChatStorage[type].chat.list[session_key].message.text) || ChatStorage[type].chat.list[session_key].message.text === null) {
                 that.setNextContactChatIntoFocus(session_key);
@@ -531,13 +527,13 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             } else if (angular.isDefined(ChatStorage[type].chat.list[session_key].message.text) && ChatStorage[type].chat.list[session_key].message.text !== '' && ChatStorage[type].chat.list[session_key].message.text.length < 1000) {
 
                 /*          var message_text = String(ChatStorage[type].chat.list[session_key].message.text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string */
+
                 ChatStorage[type].chat.list[session_key].scroll.to_bottom = false;
                 var message_text = ChatStorage[type].chat.list[session_key].message.text;
                 ChatStorage[type].chat.list[session_key].message.text = null;
                 ChatStorage[type].chat.list[session_key].ux.unread = 0;
                 $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
                 /*          var d = new Date(); */
-                var n = Firebase.ServerValue.TIMESTAMP;
 
                 if (UserManager.user.profile.encryption === true) {
                     session_key = sjcl.encrypt(CoreConfig.encrypt_pass, session_key);
@@ -546,34 +542,27 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
                 var message = {
                     author: UserManager.user.profile.id,
-                    authorName: UserManager.user.profile.name,
-                    to: ChatStorage[type].chat.list[session_key].contact.profile.user_id,
                     text: message_text,
-                    encryption: UserManager.user.profile.encryption || false,
-                    offline: !(ChatStorage[type].chat.list[session_key].contact.profile.online),
-                    reference: ChatStorage[type].chat.list[session_key].reference.key,
-                    referenceAuthor: ChatStorage[type].chat.list[session_key].reference.author,
-                    referenceName: ChatStorage[type].chat.list[session_key].reference.name,
-                    referenceText: ChatStorage[type].chat.list[session_key].reference.text,
-                    time: n,
-                    priority: ChatStorage[type].chat.list[session_key].priority.next,
-                    'session_key': session_key
+                    encryption: UserManager.user.profile.encryption || null,
+                    offline: !(ChatStorage[type].chat.list[session_key].contact.profile.online) || null,
+                    reference: ChatStorage[type].chat.list[session_key].reference,
+                    timestamp: Firebase.ServerValue.TIMESTAMP,
+                    priority: ChatStorage[type].chat.list[session_key].priority.next
                 };
-
+                message.session_key = session_key.split(':')[1] + ':' + session_key.split(':')[0];
                 var contactFbKey = ChatStorage[type].session.list[session_key].fb.contact.location.messages.push(message); // messages have to be written in both spots with an individual chat, storage is the reason for doing this
-                ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = contactFbKey.name();
+                ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = contactFbKey.key();
                 ChatStorage[type].session.list[session_key].fb.contact.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
 
-
+                message.session_key = session_key;
                 var selfFireKey = ChatStorage[type].session.list[session_key].fb.user.location.messages.push(message); // assign this task after sending to the to_user location !important
-                ChatStorage[type].chat.list[session_key].attr.last_sent_user_message = selfFireKey.name();
+                ChatStorage[type].chat.list[session_key].attr.last_sent_user_message = selfFireKey.key();
                 ChatStorage[type].session.list[session_key].fb.user.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
-                ChatStorage[type].session.list[session_key].fb.contact.location.is_typing.update({
-                    'is-typing': false
-                });
-                SessionsManager.updateChatContactActiveSession(type, session_key);
+                // SessionsManager.updateChatContactActiveSession(type, session_key);
                 // UtilityManager.pingHost();
                 $timeout(function() {
+                    ChatStorage[type].chat.list[session_key].signals.active = true;
+                    SessionsManager.updateContactChatSignals(type, session_key);
                     ChatStorage[type].chat.list[session_key].reference.key = null;
                     ChatStorage[type].chat.list[session_key].reference.author = null;
                     ChatStorage[type].chat.list[session_key].reference.name = null;
@@ -582,7 +571,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                         ChatStorage[type].chat.list[session_key].scroll.to_top = false;
                     }
                     ChatStorage[type].chat.list[session_key].scroll.to_bottom = true;
-                }, (chat_delay + 250));
+                });
                 // $scope.directory_index = chat.attr.index_position;
 
             }
@@ -607,15 +596,15 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             };
             if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                 var firekey = ChatStorage[type].chat.list[session_key].fb.group.location.messages.push(message);
-                chat.attr.last_sent_user_message = firekey.name();
+                chat.attr.last_sent_user_message = firekey.key();
                 ChatStorage[type].chat.list[session_key].fb.group.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
             } else {
                 var contactFirekey = ChatStorage[type].chat.list[session_key].fb.contact.location.messages.push(message); // messages have to be written in both spots with an individual chat, storage is the reason for doing this
-                ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = contactFirekey.name();
+                ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = contactFirekey.key();
                 ChatStorage[type].chat.list[session_key].fb.contact.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
 
                 var selfFireKey = ChatStorage[type].chat.list[session_key].fb.user.location.messages.push(message); // assign this task after sending to the to_user location !important
-                ChatStorage[type].chat.list[session_key].last_sent_user_message = selfFireKey.name();
+                ChatStorage[type].chat.list[session_key].last_sent_user_message = selfFireKey.key();
                 ChatStorage[type].chat.list[session_key].fb.user.location.messages.child(ChatStorage[type].chat.list[session_key].last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
             }
             if (!ChatStorage[type].chat.list[session_key].session.is_group_chat && !ChatStorage[type].chat.list[session_key].attr.is_directory_chat) {
@@ -645,15 +634,15 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             };
             if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                 var firekey = ChatStorage[type].chat.list[session_key].fb.group.location.messages.push(message);
-                ChatStorage[type].chat.list[session_key].last_sent_user_message = firekey.name();
+                ChatStorage[type].chat.list[session_key].last_sent_user_message = firekey.key();
                 ChatStorage[type].chat.list[session_key].fb.group.location.messages.child(ChatStorage[type].chat.list[session_key].last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
             } else {
                 var toFirekey = ChatStorage[type].chat.list[session_key].fb.contact.location.messages.push(message); // messages have to be written in both spots with an individual chat, storage is the reason for doing this
-                ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = toFirekey.name();
+                ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = toFirekey.key();
                 ChatStorage[type].chat.list[session_key].fb.contact.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
 
                 var selfFireKey = ChatStorage[type].chat.list[session_key].fb.user.location.messages.push(message); // assign this task after sending to the to_user location !important
-                ChatStorage[type].chat.list[session_key].last_sent_user_message = selfFireKey.name();
+                ChatStorage[type].chat.list[session_key].last_sent_user_message = selfFireKey.key();
                 ChatStorage[type].chat.list[session_key].fb.user.location.messages.child(ChatStorage[type].chat.list[session_key].last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
 
 
@@ -685,16 +674,16 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             };
             if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                 var firekey = chat.group_message_location.push(message);
-                ChatStorage[type].chat.list[session_key].last_sent_user_message = firekey.name();
+                ChatStorage[type].chat.list[session_key].last_sent_user_message = firekey.key();
                 ChatStorage[type].chat.list[session_key].fb.group.location.messages.child(ChatStorage[type].chat.list[session_key].last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
 
             } else {
                 var toFirekey = ChatStorage[type].chat.list[session_key].fb.contact.location.messages.push(message); // messages have to be written in both spots with an individual chat, storage is the reason for doing this
-                ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = toFirekey.name();
+                ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = toFirekey.key();
                 ChatStorage[type].chat.list[session_key].fb.contact.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
 
                 var selfFireKey = ChatStorage[type].chat.list[session_key].fb.user.location.messages.push(message); // assign this task after sending to the to_user location !important
-                ChatStorage[type].chat.list[session_key].last_sent_user_message = selfFireKey.name();
+                ChatStorage[type].chat.list[session_key].last_sent_user_message = selfFireKey.key();
                 ChatStorage[type].chat.list[session_key].fb.user.location.messages.child(ChatStorage[type].chat.list[session_key].last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
             }
             if (!ChatStorage[type].chat.list[session_key].session.is_group_chat && !ChatStorage[type].chat.list[session_key].attr.is_directory_chat) {

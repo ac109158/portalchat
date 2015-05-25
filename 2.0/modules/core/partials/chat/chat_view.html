@@ -18,10 +18,10 @@
             </div>
             <div id="cm-main-panel-header-panel">
                 <div ng-show="module.menu.setting" style="position:absolute; right:0;">
-                    <cm-main-settings></cm-main-settings>
+                    <cm-main-settings class="cm-menu-panel"></cm-main-settings>
                 </div>
                 <div ng-show="module.menu.profile" style="position:absolute;">
-                    <cm-profile></cm-profile>
+                    <cm-profile class="cm-menu-panel"></cm-profile>
                 </div>
             </div>
             <div id="cm-main-panel-content-wrapper">
@@ -51,8 +51,8 @@
                         <tech-chat></tech-chat>
                     </div> -->
 
-                    <div ng-if="module.tab.current.index_position == 3">
-                        <panel-contact-chat></panel-contact-chat>
+                    <div ng-if="module.tab.current.index_position == 3" style="position:relative; display: block; width: 100%; margin: 0; padding: 0; height:100%;">
+                        <panel-contact-chat chat="module.current.contact.chat" ui="ui" ux="ux"></panel-contact-chat>
                     </div>
                 </div>
             </div>

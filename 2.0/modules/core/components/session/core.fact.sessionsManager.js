@@ -97,39 +97,6 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
     };
 
 
-    this.monitorUserSessionChatSignals = function() {
-        var discard_last_child = true;
-        that.fb.location.signals.child(UserManager.user.profile.id).once("value", function(snap) {
-            var keys = Object.keys(snap.val() || {});
-            angular.forEach(keys, function(key){
-                ChatBuilder.createSessionifNotExists('contact', UserManager.profile.id + ':' + key);
-            });
-            var last_child = keys[keys.length - 1];
-            console.log('last_child:',last_child);
-            if(angular.isUndefined(last_child)){
-                discard_last_child = false;
-            }
-            that.fb.location.signals.child(UserManager.user.profile.id).startAt(null, last_child).on("child_added", function(snapshot) {
-                var contact_id = snapshot.ref().key();
-                var signals = snapshot.val();
-                if (signals && signals.active) {
-                    if(discard_last_child){
-                        discard_last_child = false;
-                    } else{
-                        console.log('we need to prime a chat', contact_id, signals);
-                    }
-                }
-            });
-        });
-    };
-
-
-
-
-
-
-
-
 
 
 
@@ -279,11 +246,11 @@ var n = Firebase.ServerValue.TIMESTAMP;
         var chat_log;
         if (angular.isDefined(index_position) && angular.isDefined(that.active_chats[index_position])) {
             if (isGroupChat) {
-                if (that.active_chats[index_position].session_key === location.parent().parent().parent().name()) {
+                if (that.active_chats[index_position].session_key === location.parent().parent().parent().key()) {
                     index = data.index_position;
                 }
             } else {
-                if (that.active_chats[index_position].contact_id === location.parent().parent().parent().name()) {
+                if (that.active_chats[index_position].contact_id === location.parent().parent().parent().key()) {
                     index = data.index_position;
                 }
             }
@@ -297,13 +264,13 @@ var n = Firebase.ServerValue.TIMESTAMP;
                     this.push(value.session_key);
                 }
             }, chat_log);
-            index = chat_log.indexOf(location.parent().parent().parent().name());
+            index = chat_log.indexOf(location.parent().parent().parent().key());
         }
         if (index > -1) {
             $log.debug('To user session key has changed to : ' + data.val());
             that.active_chats[index].contact_session = data.val();
         } else {
-            $log.debug(location.parent().parent().parent().name() + ' was not in ' + angular.toJson(chat_log));
+            $log.debug(location.parent().parent().parent().key() + ' was not in ' + angular.toJson(chat_log));
         }
     };
 

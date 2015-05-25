@@ -129,6 +129,11 @@
     color: #eb7b00;
 }
 
+.cm-menu-panel {
+    border: 2px solid #456a97;
+    z-index: 5;
+}
+
 .cm-fixed-wrapper {
     position: fixed;
     right: 0;
@@ -157,12 +162,45 @@
     background-position: fixed;
 }
 
+ul.nav.nav-tabs a {
+    height: 15px;
+    line-height: 5px;
+}
+
+ul.nav.nav-tabs a:hover {
+    background: transparent;
+}
+
 #cm-main-panel-nav {
     position: relative;
     padding-bottom: 0px;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 0px;
 }
+
+
+
+#cm-main-panel-nav ul {
+    position: relative;
+    margin:0;
+    width:100%;
+}
+#cm-main-panel-nav ul li{
+    position: relative;
+    margin:0;
+    width:25%;
+    display: inline-table;
+}
+
+#cm-main-panel-nav ul li a {
+    position: relative;
+    padding: 5px 1px 0px 1px;
+    text-align: center;
+    height: 30px;
+    border: none;
+}
+
+
 
 .cm-contact-filter-menu {
     position: absolute;
@@ -196,6 +234,7 @@
     padding: 0;
     margin: 2px 0 2px 0;
 }
+
 
 .cm-main-label-decal-description {
     margin: 0 auto;
@@ -232,24 +271,21 @@
     right: 0;
     display: block;
     width: 100%;
-    background: #456a97;
-    border-top: 1px solid white;
+    background: white;
+    color: #456a97;
     clear: both;
     min-height: 50px;
     z-index: 1;
 }
+
 .cm-chat-setting-menu {
-    position: relative;
+    position: absolute;
     padding: 5px 2px 5px 5px;
     right: 0;
-    top:4px;
-    display: block;
-    width: 100%;
+    top: 34px;
+    min-width: 100px;
     background: white;
-    border-top: 1px solid white;
-    clear: both;
     min-height: 50px;
-    z-index: 1;
 }
 
 #cm-user-profile {
@@ -258,7 +294,7 @@
     width: 100%;
     padding: 5px 2px;
     margin: 0px auto;
-    background: #456a97;
+    background: white;
     border-top: 1px solid white;
     clear: both;
     min-height: 50px;
@@ -501,24 +537,36 @@
 /*********************     Contacts ^   *************************/
 /*********************     Directory Chat v  *************************/
 
-#cm-contact-chat {
+.cm-contact-chat {
+    position: relative;
     display: block;
     margin: 0;
     padding: 0;
     width: 100%;
+    min-height: 100%;
 }
 
 .cm-contact-chat-header {
-    display: block;
+    position: absolute;
+    top: 0;
     margin: 0;
     padding: 0;
     width: 100%;
-    min-height: 35px;
+    height: 35px;
     background: white;
+    background-color: #456a97;
+}
+
+.cm-contact-chat-status-top{
+    position: absolute;
+    top: 35px;
+    height: 35px;
+    width: 100%;
+    background:pink;
 }
 
 .cm-contact-chat-header-panel {
-    position: relative;
+    position: absolute;
     display: block;
     min-height: 0;
     background-color: white;
@@ -526,5 +574,67 @@
     width: 100%;
     margin: 0;
     clear: both;
+}
+
+.cm-contact-chat-panel {
+    position: absolute;
+    top: 70px;
+    bottom: 55px;
+    width: 100%;
+    background: white;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    background: rgba(255, 255, 255.2);
+}
+
+.cm-contact-message-list {
+    position: absolute;
+    top: 0px;
+    bottom: 70px;
+    width: 100%;
+    padding: 10px 2px;
+    background: white;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    background: rgba(0, 0, 0, .4);
+}
+.cm-contact-chat-status-bottom{
+    position: absolute;
+    bottom: 90px;
+    height: 35px;
+    width: 100%;
+    background:red;
+}
+
+.cm-contact-chat-full-menu {
+    position: absolute;
+    top: 35px;
+    bottom: 10px;
+    width: 100%;
+    background: white;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    background: rgba(255, 255, 255.2);
+}
+
+.cm-contact-chat-message-input {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 35px;
+    bottom: 35px;
+    background: rgba(255, 255, 255.2);
+    resize: none;
+}
+
+.cm-contact-chat-message-reference {
+    postion: absolute;
+    margin: 0;
+    padding: 0;
+    bottom: 0;
+    width: 100%;
+    height: 35px;
+    background: rgba(255, 255, 255.2);
 }
 /*********************     Directory Chat ^  *************************/

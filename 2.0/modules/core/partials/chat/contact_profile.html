@@ -5,14 +5,14 @@
     <div style="width:100%; display:block; min-height:20px;">
         <div style="width:40%; padding:2px; float:left">
             <!-- <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="/components/com_callcenter/images/avatars/{{avatar}}-90.jpg" alt="..."> -->
-            <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="{{module.contact_list.setting.default_avatar}}" alt="...">
+            <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="{{chat.contact.profile.avatar_url}}" alt="...">
         </div>
         <div <div style="width:60%; padding:4px; float:left">
             <div class="well well-sm well-slim">
                 <span class="cm-profile-span pointer" ng-bind="chat.contact.profile.name"></span>
                 <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.role">{{chat.contact.additional_profile.role}}</span>
-                <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.pc" style="font-size:.8em;">PC: {{chat.contact.additonal_profile.pc.name}}<br></span>
-                <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.mc" style="font-size:.8em;">MC: {{chat.contact.additonal_profile.mc.name}}<br></span>
+                <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.pc" style="font-size:.8em;">PC: {{chat.contact.additional_profile.pc.name}}<br></span>
+                <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.mc" style="font-size:.8em;">MC: {{chat.contact.additional_profile.mc.name}}<br></span>
             </div>
         </div>
     </div>

@@ -148,6 +148,7 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
             that.watchForContactProfileChange();
             that.monitorContactsOnlineChange();
             that.monitorContactsStateChange();
+            that.monitorContactsPresenceChange();
             return true;
         };
 
@@ -181,12 +182,13 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
 
         this.monitorContactsPresenceChange = function() {
             that.fb.location.presence.on('child_changed', function(child_snapshot, prev_child_snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
-                that.registerContactOnlineChange(CoreConfig.common.reference.user_prefix + child_snapshot.key(), child_snapshot.val());
+                that.registerContactPresenceChange(CoreConfig.common.reference.user_prefix + child_snapshot.key(), child_snapshot.val());
             });
         };
 
 
         this.registerContactPresenceChange = function(contact_tag, presence) {
+            console.log('registerContactPresenceChange: ', contact_tag, presence);
             if (contact_tag != CoreConfig.common.reference.user_prefix + UserManager.user.profile.id) {
                 if (contact_tag && presence) {
                     if (angular.isDefined(that.contacts.profiles.map[contact_tag]) && that.contacts.profiles.list[that.contacts.profiles.map[contact_tag]]) {

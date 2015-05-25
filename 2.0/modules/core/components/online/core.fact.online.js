@@ -61,7 +61,7 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
 
     this.resetTimeout = function(interval) {
         that.online_update = $timeout(function() {
-            if (UserManager.fb.target.online.$value != 'Offline') {
+            if (UserManager.user.profile.online != 'Offline') {
                 that.updateTimestamp();
             }
             $timeout.cancel(that.online_update);

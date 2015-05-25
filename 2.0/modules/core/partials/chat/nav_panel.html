@@ -1,6 +1,6 @@
 <div id="cm-main-panel-nav">
     <div class="cm-chat-spacer"></div>
-    <ul class="nav nav-tabs nav-justified slim" style="width:98%; margin:0px auto; padding-left:0em;">
+    <ul class="nav nav-tabs nav-justified slim" style="width:98%; min-width: 250px; margin:0px auto; padding-left:0em;">
         <li ng-repeat="tab in module.tab.list"><a ng-click="ui.fx.setMainPanelTab(tab.index_position);" class="cm-main-panel-content-link" id="{{tab.session_key}}_link"><div ng-show="tab.unread"  class="badge directory-listing-unread-count" ng-bind="tab.unread"></div><i class="cm-nav-icon {{tab.icon_class}}" ng-class="{'cm-active-tab': module.tab.current.index_position == tab.index_position}"></i></a></li>
     </ul>
 </div>
