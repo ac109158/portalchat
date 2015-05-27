@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ChatStorage', 'SettingsManager', 'SessionsManager', 'ContactsManager', 'NotificationManager', 'PermissionsManager', 'UxManager', function($rootScope, $log, $http, $document, $timeout, $firebaseObject, CoreConfig, UserManager, ChatStorage, SettingsManager, SessionsManager, ContactsManager, NotificationManager, PermissionsManager, UxManager) {
+service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$document', '$timeout', '$firebaseObject', 'CoreConfig', 'UserManager', 'ChatStorage', 'SettingsManager', 'SessionsManager', 'ContactsManager', 'NotificationManager', 'PermissionsManager', 'UxManager', function($rootScope, $log, $sce, $compile, $http, $document, $timeout, $firebaseObject, CoreConfig, UserManager, ChatStorage, SettingsManager, SessionsManager, ContactsManager, NotificationManager, PermissionsManager, UxManager) {
     var that = this;
 
     this.builder = {};
@@ -363,7 +363,9 @@ service('ChatBuilder', ['$rootScope', '$log', '$http', '$document', '$timeout', 
         }
         ChatStorage[type].chat.list[session_key].messages.map[message.key] = ChatStorage[type].chat.list[session_key].messages.list.length;
         ChatStorage[type].chat.list[session_key].messages.list.push(message);
+
     };
+
 
 
     this.buildChatForSession = function(session) { // this function builds out the details of an individual chat sesssion

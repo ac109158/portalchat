@@ -91,7 +91,7 @@ angular.module('portalchat.core').factory('OnlineManager', ['$rootScope', '$log'
                         stamp_index = i;
                     }
                     if (angular.isDefined(ContactsManager.contacts.profiles.map[contact_tag]) && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]]) {
-                        if (value > ContactsManager.contacts.profiles[contact_tag].last_check_in) {} else {
+                        if (value > ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]].last_check_in) {} else {
                             ContactsManager.storeOfflineQueue(CoreConfig.common.reference.user_prefix + user_id_key);
                             $timeout(function() {
                                 if (ContactsManager.isOfflineQueued(contact_tag)) {

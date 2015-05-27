@@ -155,10 +155,9 @@
     padding-left: 5px;
     padding-right: 5px;
     /*pointer-events: none;*/
-
-    background-color: rgba(0, 0, 0, .2);
     /*  background:url('/modules/mod_chat/app/img/background_05.png');  */
 
+    background-color: #ccc;
     background-position: fixed;
 }
 
@@ -178,17 +177,16 @@ ul.nav.nav-tabs a:hover {
     border-radius: 0px;
 }
 
-
-
 #cm-main-panel-nav ul {
     position: relative;
-    margin:0;
-    width:100%;
+    margin: 0;
+    width: 100%;
 }
-#cm-main-panel-nav ul li{
+
+#cm-main-panel-nav ul li {
     position: relative;
-    margin:0;
-    width:25%;
+    margin: 0;
+    width: 25%;
     display: inline-table;
 }
 
@@ -199,8 +197,6 @@ ul.nav.nav-tabs a:hover {
     height: 30px;
     border: none;
 }
-
-
 
 .cm-contact-filter-menu {
     position: absolute;
@@ -234,7 +230,6 @@ ul.nav.nav-tabs a:hover {
     padding: 0;
     margin: 2px 0 2px 0;
 }
-
 
 .cm-main-label-decal-description {
     margin: 0 auto;
@@ -535,7 +530,7 @@ ul.nav.nav-tabs a:hover {
     appearance: none;
 }
 /*********************     Contacts ^   *************************/
-/*********************     Directory Chat v  *************************/
+/*********************     Chat v  *************************/
 
 .cm-contact-chat {
     position: relative;
@@ -544,6 +539,7 @@ ul.nav.nav-tabs a:hover {
     padding: 0;
     width: 100%;
     min-height: 100%;
+    background-color: white;
 }
 
 .cm-contact-chat-header {
@@ -557,12 +553,12 @@ ul.nav.nav-tabs a:hover {
     background-color: #456a97;
 }
 
-.cm-contact-chat-status-top{
+.cm-contact-chat-status-top {
     position: absolute;
     top: 35px;
     height: 35px;
     width: 100%;
-    background:pink;
+    background: pink;
 }
 
 .cm-contact-chat-header-panel {
@@ -596,14 +592,14 @@ ul.nav.nav-tabs a:hover {
     background: white;
     overflow-y: scroll;
     overflow-x: hidden;
-    background: rgba(0, 0, 0, .4);
 }
-.cm-contact-chat-status-bottom{
+
+.cm-contact-chat-status-bottom {
     position: absolute;
     bottom: 90px;
     height: 35px;
     width: 100%;
-    background:red;
+    background: red;
 }
 
 .cm-contact-chat-full-menu {
@@ -637,4 +633,120 @@ ul.nav.nav-tabs a:hover {
     height: 35px;
     background: rgba(255, 255, 255.2);
 }
-/*********************     Directory Chat ^  *************************/
+/*********************     Chat  *************************/
+
+.cm-chat-message-wrapper-ext {
+    position: relative;
+    background: white;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    min-height: 15px;
+    clear: both;
+}
+.cm-chat-message-wrapper-full {
+    position: relative;
+    background: white;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    min-height: 40px;
+    clear: both;
+    margin-top:10px;
+}
+
+.cm-chat-message-author-break{
+    border-bottom: 1px solid grey;
+}
+
+.cm-chat-message-user-avatar-wrapper {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    left: 0;
+    width: 40px;
+    border-left:1px solid grey;
+    border-top:1px solid grey;
+    border-bottom:1px solid grey;
+    padding: 2px;
+}
+
+.cm-chat-message-avatar {
+    max-width:98%;
+    max-height:98%;
+
+}
+
+.cm-chat-message-contact-avatar-wrapper {
+    position: absolute;
+    margin: 0;
+    padding: 0px;
+    min-height: 100%;
+    right: 0;
+    width: 40px;
+    border-right:1px solid grey;
+    border-top:1px solid grey;
+    border-bottom:1px solid grey;
+    padding:2px;
+}
+
+.cm-chat-message-user-content-wrapper {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    left: 40px;
+    right: 0;
+    border-left: 1px solid grey;
+    border-right: 1px solid grey;
+    background-color: rgba(98, 149, 140, .4);
+    color: rgba(98, 149, 140, 1);
+}
+
+.cm-chat-message-contact-content-wrapper {
+    position: absolute;
+    margin: 0;
+    padding: 2px;
+    min-height: 100%;
+    left: 0;
+    right: 40px;
+    border-left: 1px solid grey;
+    border-right: 1px solid grey;
+    background-color: rgba(98, 162, 189, .3);
+    color: rgba(98, 162, 189, 1);
+}
+
+.cm-cm-chat-message-contact-top {
+    border-top: 1px solid grey;
+}
+
+.cm-chat-message-user-header-bar {
+    position: relative;
+    display:block;
+    margin: 0;
+    padding: 2px 5px;
+    width:100%;
+    min-height: 22px;
+    clear:both;
+    font-size: .8em;
+    font-weight: bold;
+    background-color: rgba(98, 149, 140, .4);
+    color:white;
+}
+
+.cm-chat-message-contact-header-bar {
+    position: relative;
+    display:block;
+    margin: 0;
+    padding: 2px 5px;
+    width:100%;
+    min-height: 18px;
+    clear:both;
+    font-size: .8em;
+    font-weight: bold;
+    background-color: rgba(98, 162, 189, 1);
+    color:white;
+}

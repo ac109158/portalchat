@@ -61,6 +61,8 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         that.user.profile.id = model.user_id;
         that.user.profile.name = model.name;
         that.user.profile.avatar = model.avatar || false;
+        // that.user.profile.avatar_url = CoreConfig.url.avatar_path + that.user.profile.avatar + '-90.jpg';
+        that.user.profile.avatar_url = CoreConfig.url.default_avatar;
 
         that.user.profile.online = false;
         that.user.profile.state = "Offline";
