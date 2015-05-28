@@ -322,7 +322,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                 $timeout(function() {
                     ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.startAt(null, last_message).on('child_added', function(snapshot) { // detects a ref_location.push(Json) made to the reference location
                         if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
-                            if (last_message) {
+                            if ( false && last_message) {
                                 last_message = false;
                             } else {
                                 var key = snapshot.key();
@@ -365,6 +365,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
         ChatStorage[type].chat.list[session_key].messages.list.push(message);
 
     };
+
 
 
 

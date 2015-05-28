@@ -558,7 +558,7 @@ ul.nav.nav-tabs a:hover {
     top: 35px;
     height: 35px;
     width: 100%;
-    background: pink;
+    background: rgba(0, 0, 0, .5);
 }
 
 .cm-contact-chat-header-panel {
@@ -580,7 +580,7 @@ ul.nav.nav-tabs a:hover {
     background: white;
     overflow-y: scroll;
     overflow-x: hidden;
-    background: rgba(255, 255, 255.2);
+    background: rgba(255, 255, 255.5);
 }
 
 .cm-contact-message-list {
@@ -599,7 +599,7 @@ ul.nav.nav-tabs a:hover {
     bottom: 90px;
     height: 35px;
     width: 100%;
-    background: red;
+    background: rgba(0, 0, 0, .5);
 }
 
 .cm-contact-chat-full-menu {
@@ -635,6 +635,17 @@ ul.nav.nav-tabs a:hover {
 }
 /*********************     Chat  *************************/
 
+.cm-chat-message-wrapper-full {
+    margin-top: 5px;
+    position: relative;
+    background: white;
+    display: block;
+    width: 100%;
+    padding: 0;
+    min-height: 40px;
+    clear: both;
+}
+
 .cm-chat-message-wrapper-ext {
     position: relative;
     background: white;
@@ -645,108 +656,164 @@ ul.nav.nav-tabs a:hover {
     min-height: 15px;
     clear: both;
 }
-.cm-chat-message-wrapper-full {
-    position: relative;
-    background: white;
-    display: block;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    min-height: 40px;
-    clear: both;
-    margin-top:10px;
-}
 
-.cm-chat-message-author-break{
+.cm-chat-message-author-break {
+    padding-bottom: 5px;
     border-bottom: 1px solid grey;
+    -webkit-box-shadow: 0 2px 1.5px -1.5px black;
+    -moz-box-shadow: 0 2px 1.5px -1.5px black;
+    box-shadow: 0 2px 1.5px -1.5px black;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 
 .cm-chat-message-user-avatar-wrapper {
     position: absolute;
     margin: 0;
     padding: 0;
-    min-height: 100%;
-    left: 0;
+    height: 40px;
     width: 40px;
-    border-left:1px solid grey;
-    border-top:1px solid grey;
-    border-bottom:1px solid grey;
-    padding: 2px;
-}
-
-.cm-chat-message-avatar {
-    max-width:98%;
-    max-height:98%;
-
+    -webkit-box-shadow: 1px 0 .75px .75px grey;
+    -moz-box-shadow: 1px 0 .75px .75px grey;
+    box-shadow: 1px 0 .75px .75px grey;
+    z-index: 2;
 }
 
 .cm-chat-message-contact-avatar-wrapper {
     position: absolute;
     margin: 0;
-    padding: 0px;
-    min-height: 100%;
-    right: 0;
+    padding: 0;
+    height: 40px;
     width: 40px;
-    border-right:1px solid grey;
-    border-top:1px solid grey;
-    border-bottom:1px solid grey;
-    padding:2px;
+    right: 0;
+    -webkit-box-shadow: -2px 0 .75px .75px grey;
+    -moz-box-shadow: -2px 0 .75px .75px grey;
+    box-shadow: -2px 0 .75px .75px grey;
+    z-index: 2;
 }
 
-.cm-chat-message-user-content-wrapper {
-    position: absolute;
+.cm-chat-message-avatar {
+    margin: auto;
+    max-width: 40px;
+    max-height: 40px;
+}
+
+.cm-chat-message-user-content-wrapper-full {
+    position: relative;
+    padding: 0;
+    margin-left: 40px;
+    min-height: 40px;
+    width: auto;
+    border-top: 1px solid grey;
+    border-left: 1px solid grey;
+    border-right: 1px solid grey;
+    background-color: rgba(98, 149, 140, .4);
+    color: rgba(98, 149, 140, 1);
+    padding-top: 22px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.cm-chat-message-user-content-wrapper-ext {
+    position: relative;
     margin: 0;
     padding: 0;
-    min-height: 100%;
-    left: 40px;
-    right: 0;
+    min-height: 20px;
+    margin-left: 40px;
+    width: auto;
     border-left: 1px solid grey;
     border-right: 1px solid grey;
     background-color: rgba(98, 149, 140, .4);
     color: rgba(98, 149, 140, 1);
 }
 
-.cm-chat-message-contact-content-wrapper {
-    position: absolute;
+.cm-chat-message-contact-content-wrapper-full {
+    position: relative;
     margin: 0;
-    padding: 2px;
-    min-height: 100%;
-    left: 0;
-    right: 40px;
+    padding: 2px 2px 5px 2px;
+    min-height: 40px;
+    margin-right: 40px;
+    width: auto;
+    border-top: 1px solid grey;
+    border-left: 1px solid grey;
+    border-right: 1px solid grey;
+    background-color: rgba(98, 162, 189, .3);
+    color: rgba(98, 162, 189, 1);
+    padding-top: 22px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.cm-chat-message-contact-content-wrapper-ext {
+    position: relative;
+    margin: 0;
+    padding: 2px 2px 5px 2px;
+    min-height: 20px;
+    width: auto;
+    margin-right: 40px;
     border-left: 1px solid grey;
     border-right: 1px solid grey;
     background-color: rgba(98, 162, 189, .3);
     color: rgba(98, 162, 189, 1);
 }
 
-.cm-cm-chat-message-contact-top {
-    border-top: 1px solid grey;
-}
-
 .cm-chat-message-user-header-bar {
-    position: relative;
-    display:block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
     margin: 0;
     padding: 2px 5px;
-    width:100%;
-    min-height: 22px;
-    clear:both;
+    width: 100%;
+    min-height: 15px;
+    clear: both;
     font-size: .8em;
     font-weight: bold;
     background-color: rgba(98, 149, 140, .4);
-    color:white;
+    color: white;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
 
 .cm-chat-message-contact-header-bar {
-    position: relative;
-    display:block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
     margin: 0;
     padding: 2px 5px;
-    width:100%;
-    min-height: 18px;
-    clear:both;
+    width: 100%;
+    min-height: 15px;
     font-size: .8em;
     font-weight: bold;
     background-color: rgba(98, 162, 189, 1);
-    color:white;
+    color: white;
+    clear: both;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+}
+
+.cm-chat-message-text-wrapper-full {
+    position: relative;
+    display: block;
+    margin: 0;
+    padding: 0 5px 0 5px;
+    width: 100%;
+    min-height: 12px;
+    clear: both;
+}
+
+.cm-chat-message-text-wrapper-ext {
+    position: relative;
+    display: block;
+    margin: 0;
+    padding: 0 5px 2px 5px;
+    width: 100%;
+    min-height: 12px;
+    clear: both;
+}
+.cm-contact-chat-emoticon-toggle{
+    position: absolute;
+    bottom:5px;
+    right:5px;
 }

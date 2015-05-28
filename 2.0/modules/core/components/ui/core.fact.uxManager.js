@@ -1,9 +1,11 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'PermissionsManager', 'NotificationManager', 'ChatStorage', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, UtilityManager, SettingsManager, PermissionsManager, NotificationManager, ChatStorage) {
+service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'PermissionsManager', 'NotificationManager', 'ChatStorage','Emoticons', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, UtilityManager, SettingsManager, PermissionsManager, NotificationManager, ChatStorage, Emoticons) {
     var that = this;
 
     this.ux = {};
+
+    this.ux.emoticons = Emoticons;
 
     this.ux.main_panel = {};
 
@@ -83,6 +85,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
 
     this.returnMessageHtml = function(type, session_key, message) {
         var config = {};
+        config.is_user_author = that.isMessageFromUser(message);
         config.is_full = that.isMessageAuthorDifferentLast(type, session_key, message);
         config.different_author = that.isMessageAuthorDifferentLast(type, session_key, message);
         config.message_time_format = that.returnMessageTimeFormat(message);
@@ -92,7 +95,6 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         } else {
             html += '<div class="cm-chat-message-wrapper-ext">';
         }
-        html += '<div class="cm-chat-message-wrapper-ext">';
         html += that.getMessageTemplate(type, session_key, message, config);
         html += '</div>';
         return html;
@@ -114,21 +116,27 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.returnUserMessage = function(type, session_key, message, config) {
         var html = '';
         if (config.different_author) {
-            html += '<div class="cm-chat-message-user-content-wrapper cm-cm-chat-message-contact-top" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
+            html += '<div class="cm-chat-message-user-avatar-wrapper img-circle">';
+            html += '<img class="cm-chat-message-avatar img-circle" ng-src="{{chat.user.profile.avatar_url}}" alt="...">';
+            html += '</div>';
+        }
+        if (config.different_author) {
+            html += '<div class="cm-chat-message-user-content-wrapper-full" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
             html += '<div class="cm-chat-message-user-header-bar">';
             html += '<span class="pull-left" ng-bind="chat.user.self_name"></span>';
             html += '<span class="pull-right" ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
             html += '</div>';
         } else {
-            html += '<div class="cm-chat-message-user-content-wrapper" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
+            html += '<div class="cm-chat-message-user-content-wrapper-ext" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
+        }
+        if (config.different_author) {
+            html += '<div class="cm-chat-message-text-wrapper-full">';
+        } else {
+            html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
         html += '<span ng-bind="message.text"></span>';
         html += '</div>';
-        if (config.different_author) {
-            html += '<div class="cm-chat-message-user-avatar-wrapper">';
-            html += '<img class="cm-chat-message-avatar" ng-src="{{chat.user.profile.avatar_url}}" alt="...">';
-            html += '</div>';
-        }
+        html += '</div>';
 
         return html;
     };
@@ -136,22 +144,27 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.returnContactMessage = function(type, session_key, message, config) {
         var html = '';
         if (config.different_author) {
-            html += '<div class="cm-chat-message-contact-content-wrapper cm-cm-chat-message-contact-top" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
+            html += '<div class="cm-chat-message-contact-avatar-wrapper img-circle">';
+            html += '<img class="cm-chat-message-avatar img-circle" ng-src="{{chat.contact.profile.avatar_url}}" alt="...">';
+            html += '</div>';
+        }
+        if (config.different_author) {
+            html += '<div class="cm-chat-message-contact-content-wrapper-full" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
             html += '<div class="cm-chat-message-contact-header-bar">';
             html += '<span class="pull-left" ng-bind="chat.contact.profile.name"></span>';
             html += '<span class="pull-right" ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
             html += '</div>';
         } else {
-            html += '<div class="cm-chat-message-contact-content-wrapper" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
+            html += '<div class="cm-chat-message-contact-content-wrapper-ext" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
         }
-        html += '<span ng-bind="message.text"></span>';
-        html += '</div>';
         if (config.different_author) {
-            html += '<div class="cm-chat-message-contact-avatar-wrapper">';
-            html += '<img class="cm-chat-message-avatar" ng-src="{{chat.contact.profile.avatar_url}}" alt="...">';
-            html += '</div>';
+            html += '<div class="cm-chat-message-text-wrapper-full">';
+        } else {
+            html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
-
+        html += '<div ng-bind="message.text"></div>';
+        html += '</div>';
+        html += '</div>';
         return html;
     };
 
@@ -171,7 +184,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
                 }
             }
         }
-        if(ChatStorage[type].chat.list[session_key].messages.list[ChatStorage[type].chat.list[session_key].messages.map[message.key] - 1]){
+        if (ChatStorage[type].chat.list[session_key].messages.list[ChatStorage[type].chat.list[session_key].messages.map[message.key] - 1]) {
             ChatStorage[type].chat.list[session_key].messages.list[ChatStorage[type].chat.list[session_key].messages.map[message.key] - 1].is_author_break = true;
         }
 

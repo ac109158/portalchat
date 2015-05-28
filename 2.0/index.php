@@ -34,11 +34,12 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
             './vendor/bootstrap/bootstrap.min.js', //bootstrap
             './modules/toaster/toaster.module.js', //remove
             './modules/toolkit/toolkit.js', //remove
+            './vendor/emoji.min.js', //remove
         ],
 
         applicationModuleDependencies: applicationModuleDependencies,
 
-        applicationModuleVendorDependencies: ['firebase', 'ngSanitize','ngAnimate', 'ui.bootstrap', 'toaster', 'pop.toolkit'],
+        applicationModuleVendorDependencies: ['firebase', 'ngSanitize','ngAnimate', 'ui.bootstrap','emoji', 'toaster', 'pop.toolkit'],
         registerModule: function(moduleName, dependencies) { // Add a new vertical module
             // Create angular module
             if ( debug) { console.debug(moduleName + ' is registering as a module'); }
