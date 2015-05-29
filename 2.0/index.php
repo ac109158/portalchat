@@ -6,6 +6,7 @@
      <link href="./assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
      <link href="./assets/css/compiled_vendor.css" rel="stylesheet" type="text/css">
      <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+     <link href="./vendor/emoji/emoji.min.css" rel="stylesheet"  />
 </head>
 <body>
     <div ng-cloak presence="MOUSE TOUCH KEYBOARD" ng-controller="core.main" ng-init="initUser();">
@@ -23,7 +24,7 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
 
         applicationModuleCoreVendorDependenciesScripts: [ // list any js framework/tool that you are going to use in your app project here
             './vendor/jquery/jquery-2.1.3.min.js',
-            './vendor/angular/angular.min.js',
+            './vendor/angular/angular.js',
             './vendor/firebase/firebase.js',
         ],
         applicationModuleVendorDependenciesScripts: [ // list any js framework/tool that you are going to use in your app project here
@@ -35,11 +36,13 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
             './modules/toaster/toaster.module.js', //remove
             './modules/toolkit/toolkit.js', //remove
             './vendor/emoji.min.js', //remove
+            './vendor/emoji/config.js', //remove
+            './vendor/emoji/emoji.min.js', //remove
         ],
 
         applicationModuleDependencies: applicationModuleDependencies,
 
-        applicationModuleVendorDependencies: ['firebase', 'ngSanitize','ngAnimate', 'ui.bootstrap','emoji', 'toaster', 'pop.toolkit'],
+        applicationModuleVendorDependencies: ['firebase', 'ngSanitize','ngAnimate', 'ui.bootstrap','emojiApp', 'toaster', 'pop.toolkit'],
         registerModule: function(moduleName, dependencies) { // Add a new vertical module
             // Create angular module
             if ( debug) { console.debug(moduleName + ' is registering as a module'); }
@@ -49,6 +52,7 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
     };
 })();
 (function(){
+    var g = '';
     var debug = false;
 
 
@@ -192,6 +196,25 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
     };
 
     var bootstrap = function(){
+        window.onerror = function (errorMsg, url, lineNumber, columnNumber, errorObject) {
+        var errMsg;
+            //check the errorObject as IE and FF don't pass it through (yet)
+            if (errorObject && errorObject !== undefined) {
+                    errMsg = errorObject.message;
+                }
+                else {
+                    errMsg = errorMsg;
+                }
+            console.log('Error: ' + errMsg);
+        };
+
+        var throwError = function () {
+            throw new Error(
+            'Something went wrong. Something went wrong. Something went wrong. Something went wrong. ' +
+            'Something went wrong. Something went wrong. Something went wrong. Something went wrong. ' +
+            'Something went wrong. Something went wrong. Something went wrong. Something went wrong. ' +
+            'Text does not get truncated! :-)');
+        };
         if ( debug) { console.debug('app has been bootstrapped', ' '); }
         // when all is done, execute bootstrap angular application
         //Start by defining the main module and adding the module dependencies

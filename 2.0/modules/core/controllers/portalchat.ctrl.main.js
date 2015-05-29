@@ -6,7 +6,8 @@ angular.module('portalchat.core').controller('core.main', ['$rootScope', '$scope
         $scope.runApp = false;
 
 
-
+        $scope.emojiMessage = {};
+        $scope.emojiMessage.messagetext = '';
         $scope.initUser = function() {
             CoreManager.initUser();
         };

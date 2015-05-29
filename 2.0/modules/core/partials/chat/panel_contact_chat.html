@@ -87,10 +87,20 @@
     </div>
     <div class="cm-contact-chat-status-bottom min-scroll">
     </div>
+    <div style="z-index:5; position:absolute; bottom:30px; width:100%;">
+        <div emoji-form>
+            <textarea id="messageInput" ng-model="chat.message.text"></textarea>
+            <button style="position: absolute; bottom:-20px; right:0;" id="emojibtn">
+                <i class="icon icon-emoji"></i>
+            </button>
+        </div>
+    </div>
     <!-- end of chat message repeat -->
     <!-- end of individual message section -->
     <div class="cm-contact-chat-message-reference">
     </div>
-    <textarea class="cm-contact-chat-message-input form-control pointer" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on" placeholder="Enter chat to {{chat.contact.profile.first_name}}... " ng-keydown="ui.fx.showContactThatUserIsTyping(chat.session.type, chat.session.session_key);" ng-model="chat.message.text" ng-enter-press=" ui.fx.sendChatMessage(chat.session.type, chat.session.session_key, false);" ng-tab-press="ui.fx.setNexTab()"></textarea>
-    <div ng-click="ui.fx.toggleChatMenu('contact', chat.session.session_key, 'emoticons');" class="cm-contact-chat-emoticon-toggle"><i class="emoji emoji_smiley"></i></div>
+<!--     <div ng-if="ux.platform.browser == 'Firefox'">
+        <textarea class="cm-contact-chat-message-input form-control pointer" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on" placeholder="Enter chat to {{chat.contact.profile.first_name}}... " ng-keydown="ui.fx.showContactThatUserIsTyping(chat.session.type, chat.session.session_key);" ng-model="chat.message.text" ng-enter-press=" ui.fx.sendChatMessage(chat.session.type, chat.session.session_key, false);" ng-tab-press="ui.fx.setNexTab()"></textarea>
+        <div ng-click="ui.fx.toggleChatMenu('contact', chat.session.session_key, 'emoticons');" class="cm-contact-chat-emoticon-toggle"><i class="emoji emoji_smiley"></i></div>
+    </div> -->
 </div>

@@ -812,6 +812,9 @@ ul.nav.nav-tabs a:hover {
     min-height: 12px;
     clear: both;
 }
+#messageDiv{
+    max-height: 35px;
+}
 .cm-contact-chat-emoticon-toggle{
     position: absolute;
     bottom:5px;

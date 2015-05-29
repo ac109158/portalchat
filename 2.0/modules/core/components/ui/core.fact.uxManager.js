@@ -1,9 +1,11 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'PermissionsManager', 'NotificationManager', 'ChatStorage','Emoticons', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, UtilityManager, SettingsManager, PermissionsManager, NotificationManager, ChatStorage, Emoticons) {
+service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'PermissionsManager', 'NotificationManager', 'ChatStorage','BrowserService','Emoticons', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, UtilityManager, SettingsManager, PermissionsManager, NotificationManager, ChatStorage,BrowserService, Emoticons) {
     var that = this;
 
     this.ux = {};
+
+    this.ux.platform = BrowserService.platform;
 
     this.ux.emoticons = Emoticons;
 
@@ -134,7 +136,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         } else {
             html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
-        html += '<span ng-bind="message.text"></span>';
+        html += '<span ng-bind-html="message.text | colonToSmiley"></span>';
         html += '</div>';
         html += '</div>';
 
@@ -162,7 +164,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         } else {
             html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
-        html += '<div ng-bind="message.text"></div>';
+        html += '<div ng-bind-html="message.text | colonToSmiley"></div>';
         html += '</div>';
         html += '</div>';
         return html;
