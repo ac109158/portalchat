@@ -48,6 +48,10 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         $rootScope.$broadcast('assign-task', {id:'log', param: 'Test'});
     };
 
+    this.ui.fx.resetDefaultSettings = function(type, session_key){
+        ChatModuleManager.resetDefaultSettings(type, session_key);
+    };
+
     this.ui.fx.chatContact = function(contact){
         ChatModuleManager.chatContact(contact);
     };
@@ -57,6 +61,10 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     };
     this.ui.fx.showContactThatUserIsTyping = function(type, session_key){
         ChatModuleManager.showContactThatUserIsTyping(type, session_key);
+    };
+
+    this.ui.fx.setChatTopic = function(type, session_key){
+        ChatModuleManager.setChatTopic(type, session_key);
     };
 
     this.ui.fx.updateSoundLevel = function(level) {

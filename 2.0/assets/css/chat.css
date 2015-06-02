@@ -83,6 +83,24 @@
     clear: both;
 }
 
+.cm-chat-typing-icon {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    text-align: center;
+}
+
+.cm-chat-typing-avatar {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+    float: left;
+    clear: none;
+}
+
 .cm-label-decal-description {
     margin: 0px auto;
     text-align: center;
@@ -105,6 +123,21 @@
     color: transparent;
     text-shadow: rgba(255, 255, 255, 0.5) 0px 3px 3px;
     padding: 0px;
+}
+
+.cm-chat-offline-text {
+    position: absolute;
+    top:6px;
+    width: 96%;
+    left: 2%;
+    color: red;
+    text-align: center;
+    font-weight: bold;
+    border-radius: 10px;
+    padding: .5%;
+    font-size: 1em;
+    background: rgba(255, 255, 255, .9);
+    z-index: 5;
 }
 
 .cm-main-panel-active-selection {
@@ -131,7 +164,7 @@
 
 .cm-menu-panel {
     border: 2px solid #456a97;
-    z-index: 5;
+    z-index: 7;
 }
 
 .cm-fixed-wrapper {
@@ -293,7 +326,7 @@ ul.nav.nav-tabs a:hover {
     border-top: 1px solid white;
     clear: both;
     min-height: 50px;
-    z-index: 2;
+    z-index: 7;
 }
 
 .cm-profile-span {
@@ -558,7 +591,16 @@ ul.nav.nav-tabs a:hover {
     top: 35px;
     height: 35px;
     width: 100%;
-    background: rgba(0, 0, 0, .5);
+    background: rgba(0, 0, 0, .1);
+}
+
+.cm-contact-chat-invite-box {
+    position: relative;
+    display: block;
+    width: auto;
+    width: 100%;
+    min-height: 25px;
+    z-index: 10;
 }
 
 .cm-contact-chat-header-panel {
@@ -581,6 +623,7 @@ ul.nav.nav-tabs a:hover {
     overflow-y: scroll;
     overflow-x: hidden;
     background: rgba(255, 255, 255.5);
+    pointer-events: all;
 }
 
 .cm-contact-message-list {
@@ -599,7 +642,7 @@ ul.nav.nav-tabs a:hover {
     bottom: 90px;
     height: 35px;
     width: 100%;
-    background: rgba(0, 0, 0, .5);
+    background: rgba(0, 0, 0, .1);
 }
 
 .cm-contact-chat-full-menu {
@@ -812,11 +855,25 @@ ul.nav.nav-tabs a:hover {
     min-height: 12px;
     clear: both;
 }
-#messageDiv{
+
+#messageDiv {
     max-height: 35px;
 }
-.cm-contact-chat-emoticon-toggle{
+
+.cm-contact-chat-emoticon-toggle {
     position: absolute;
-    bottom:5px;
-    right:5px;
+    bottom: 5px;
+    right: 5px;
+}
+
+.cm-contact-chat-chat-add-topic-wrapper {
+    position: absolute;
+    left:0;
+    top:0;
+    width: 100%;
+    word-break: break-word;
+    text-align: center;
+    padding: 2px;
+    min-height: 30px;
+    background-color: white;
 }

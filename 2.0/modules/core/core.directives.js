@@ -57,6 +57,8 @@ directive('panelContactChat', function() {
             chat: '=',
             ux: '=',
             ui: '=',
+            profiles:'=',
+            engine:'='
         },
         replace: true,
         templateUrl: './modules/core/partials/chat/panel_contact_chat.html',

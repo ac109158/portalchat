@@ -181,13 +181,20 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                             var key = snapshot.key();
                             var signals = snapshot.val();
                             var session_key = UserManager.user.profile.id + ':' + key;
-                            console.log('recieved contatact signals', session_key, signals);
-                            if (signals && signals.type && signals.active) {
+
+                            if (signals && signals.type) {
                                 if (ChatStorage[signals.type] && ChatStorage[signals.type].chat.list[session_key]) {
                                     if (!ChatStorage[signals.type].chat.list[session_key].session.active) {
                                         ChatStorage[signals.type].chat.list[session_key].session.active = true;
                                     }
-                                    ChatStorage[signals.type].chat.list[session_key].contacts.signals = signals;
+                                    $rootScope.$evalAsync(function() {
+                                        ChatStorage[signals.type].chat.list[session_key].signals.contact = signals;
+                                        if (signals.topic != ChatStorage[signals.type].chat.list[session_key].session.topic) {
+                                            ChatStorage[signals.type].chat.list[session_key].session.topic = signals.topic;
+                                            ChatStorage[signals.type].chat.list[session_key].signals.user.topic = signals.topic;
+                                            SessionsManager.setUserChatSessionStorage(signals.type, session_key);
+                                        }
+                                    });
                                 }
                             }
                         });
@@ -257,6 +264,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.is_open = true;
             session.timestamp = new Date().getTime();
             session.is_sound = true;
+            session.topic = '';
             session.order = -1;
             return session;
         }
@@ -427,6 +435,21 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             }
         });
     };
+
+    this.resetDefaultSettings = function(type, session_key) {
+        if (that.module.current.directory.chat.menu) {
+            angular.forEach(that.module.current.directory.chat.menu, function(value, key) {
+                that.module.current.directory.chat.menu[key] = false;
+            });
+        }
+        if (that.module.current.contact.chat.menu) {
+            angular.forEach(that.module.current.contact.chat.menu, function(value, key) {
+                that.module.current.contact.chat.menu[key] = false;
+            });
+        }
+        ChatManager.resetCommonDefaultSettings(type, session_key);
+    };
+
     this.openChatModuleInExternalWindow = function() {
         $scope.switchLayout(1);
         if (UserManager._user_settings_location) {
@@ -633,6 +656,10 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 that.module.contact_list.setting.show_offline = !that.module.contact_list.setting.show_offline;
             }
         });
+    };
+
+    this.setChatTopic = function(type, session_key) {
+        ChatManager.addChatTopic(type, session_key);
     };
 
     this.resetDirectoryChatListFocusSettings = function() {
@@ -1000,7 +1027,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             }
             $timeout(function() {
                 UxManager.ux.fx.evaluateChatModuleLayout();
-            },500);
+            }, 500);
         }
     };
 

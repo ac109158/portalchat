@@ -5,7 +5,7 @@
      <link href="./assets/css/chat.css" rel="stylesheet" type="text/css">
      <link href="./assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
      <link href="./assets/css/compiled_vendor.css" rel="stylesheet" type="text/css">
-     <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
      <link href="./vendor/emoji/emoji.min.css" rel="stylesheet"  />
 </head>
 <body>
@@ -35,7 +35,7 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
             './vendor/bootstrap/bootstrap.min.js', //bootstrap
             './modules/toaster/toaster.module.js', //remove
             './modules/toolkit/toolkit.js', //remove
-            './vendor/emoji.min.js', //remove
+            // './vendor/emoji.min.js', //remove
             './vendor/emoji/config.js', //remove
             './vendor/emoji/emoji.min.js', //remove
         ],

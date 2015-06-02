@@ -21,6 +21,9 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
 
     this.interval = {};
 
+    this.fb = {};
+    this.fb.location = {};
+
 
 
     // $rootScope.$on('browser_offline', function(event) {
@@ -32,6 +35,26 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
 
 
     this.load = function() {
+        that.fb.location.fb_connected = new Firebase(CoreConfig.url.firebase_database + ".info/connected");
+        that.fb.location.fb_connected.on("value", function(snap) {
+            console.log(snap.val());
+            if (snap.val()) {
+                $rootScope.$evalAsync(function() {
+                    that.engine.firebase.online = true;
+                    that.engine.network.online = true;
+                });
+
+            } else {
+                $rootScope.$evalAsync(function() {
+                    that.engine.firebase.online = false;
+                    that.engine.network.online = false;
+                    NotificationManager.playSound('bash_error');
+                });
+            }
+        });
+
+
+
         $window.addEventListener("offline", function() {
             console.log('offline');
             $rootScope.$apply(function() {
@@ -183,7 +206,7 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
         that.is_host_reachable = false;
         console.log('pinging');
         that.engine.network.is_pinging = true;
-        var host_ping_promise = $http.get( );
+        var host_ping_promise = $http.get();
         host_ping_promise.then(function(response) {
             console.log(response);
             if (response.status === 200) {

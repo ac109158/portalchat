@@ -122,9 +122,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     this.manageFireBaseConnection = function() {
         that.fb.location.fb_connection.on("value", function(snap) {
             if (snap.val()) {
-                that.firebase_connection = true;
-                // scope.firebase_connection = true;
-                /*                              that.fb.location.profile.update(that.User); */
                 that.fb.location.online.update({
                     'online': true
                 });
@@ -140,10 +137,12 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
                     'state': 'Offline'
                 }); /*                           clearInterval(set_presence); */
             } else {
-                that.firebase_connection = false;
                 // scope.firebase_connection = false;
                 that.fb.location.online.onDisconnect().update({
                     'online': false
+                });
+                that.fb.location.presence.onDisconnect().update({
+                    'state': 'Offline'
                 });
                 that.fb.location.state.onDisconnect().update({
                     'state': 'Offline'

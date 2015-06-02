@@ -116,6 +116,13 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             //states
             ChatStorage[session.type].chat.list[session.session_key].session = session;
 
+            ChatStorage[session.type].chat.list[session.session_key].topic = {};
+                ChatStorage[session.type].chat.list[session.session_key].topic.allow = true;
+                ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
+                ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
+                ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
+                ChatStorage[session.type].chat.list[session.session_key].topic.set = '';
+
 
             ChatStorage[session.type].chat.list[session.session_key].attr = {};
             ChatStorage[session.type].chat.list[session.session_key].attr.is_init = false;
@@ -171,7 +178,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             ChatStorage[session.type].chat.list[session.session_key].user.self_name = 'Me'; // variable for what the chat session should label messages that came from the user/self ex. "Me"
 
             ChatStorage[session.type].chat.list[session.session_key].contacts = {};
-            ChatStorage[session.type].chat.list[session.session_key].contacts.participated_list = [UserManager.user.profile.id, session.contact_id];
+
 
 
             ChatStorage[session.type].session.list[session.session_key] = {};
@@ -179,16 +186,30 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
 
             if (!session.is_group_chat && !session.is_directory_chat) {
                 ChatStorage[session.type].chat.list[session.session_key].signals = {};
-                ChatStorage[session.type].chat.list[session.session_key].signals.type = session.type;
-                ChatStorage[session.type].chat.list[session.session_key].signals.active = false;
-                ChatStorage[session.type].chat.list[session.session_key].signals.nudge = false;
-                ChatStorage[session.type].chat.list[session.session_key].signals.is_typing = false;
+                ChatStorage[session.type].chat.list[session.session_key].signals.user = {};
+                ChatStorage[session.type].chat.list[session.session_key].signals.user.type = session.type;
+                ChatStorage[session.type].chat.list[session.session_key].signals.user.active = false;
+                ChatStorage[session.type].chat.list[session.session_key].signals.user.nudge = false;
+                ChatStorage[session.type].chat.list[session.session_key].signals.user.is_typing = false;
+                ChatStorage[session.type].chat.list[session.session_key].signals.user.topic = session.topic;
+
+                ChatStorage[session.type].chat.list[session.session_key].signals.contact = {};
+                ChatStorage[session.type].chat.list[session.session_key].signals.contact.type = session.type;
+                ChatStorage[session.type].chat.list[session.session_key].signals.contact.active = false;
+                ChatStorage[session.type].chat.list[session.session_key].signals.contact.nudge = false;
+                ChatStorage[session.type].chat.list[session.session_key].signals.contact.is_typing = false;
+                ChatStorage[session.type].chat.list[session.session_key].signals.contact.topic = session.topic;
 
                 ChatStorage[session.type].chat.list[session.session_key].contact = {};
                 ChatStorage[session.type].session.list[session.session_key].contact = {};
-                ChatStorage[session.type].session.list[session.session_key].contact.signals = {};
+
                 ChatStorage[session.type].chat.list[session.session_key].contact.profile = ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + session.contact_id]];
                 that.setContactAdditionalProfile(session.type, session.session_key, session.contact_id);
+
+                ChatStorage[session.type].chat.list[session.session_key].contacts.active = {};
+                ChatStorage[session.type].chat.list[session.session_key].contacts.active[UserManager.user.profile.id] = session.timestamp;
+                ChatStorage[session.type].chat.list[session.session_key].contacts.active[session.contact_id] = session.timestamp;
+                ChatStorage[session.type].chat.list[session.session_key].contacts.participated = [UserManager.user.profile.id, session.contact_id];
 
                 ChatStorage[session.type].session.list[session.session_key].fb.user = {};
                 ChatStorage[session.type].session.list[session.session_key].fb.user.location = {};
@@ -206,11 +227,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             } else if (session.is_group_chat && !session.is_directory_chat) {
                 ChatStorage[session.type].session.list[session.session_key].fb.group = {};
                 ChatStorage[session.type].session.list[session.session_key].fb.group.location = {};
-
-                ChatStorage[session.type].chat.list[session.session_key].contacts.active = {};
-                ChatStorage[session.type].chat.list[session.session_key].contacts.active.list = [];
-                ChatStorage[session.type].chat.list[session.session_key].contacts.active.map = {};
-                ChatStorage[session.type].chat.list[session.session_key].contacts.profiles = {};
 
                 // topic values
                 ChatStorage[session.type].chat.list[session.session_key].topic = {};
@@ -248,7 +264,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             that.fb.location.additonal_profiles.child(contact_id).once('value', function(snapshot) {
                 var additional_profile = snapshot.val();
                 if (additional_profile) {
-                    if(additional_profile.mc && additional_profile.mc.name){
+                    if (additional_profile.mc && additional_profile.mc.name) {
                         additional_profile.mc.name = additional_profile.mc.name.replace('*', '');
                     }
                     if (PermissionsManager.hasSupervisorRights()) {
@@ -322,7 +338,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                 $timeout(function() {
                     ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.startAt(null, last_message).on('child_added', function(snapshot) { // detects a ref_location.push(Json) made to the reference location
                         if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
-                            if ( false && last_message) {
+                            if (false && last_message) {
                                 last_message = false;
                             } else {
                                 var key = snapshot.key();
