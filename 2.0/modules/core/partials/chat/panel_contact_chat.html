@@ -27,14 +27,12 @@
             <div class="form-group slim">
                 <input class="form-control" style="height: 30px; padding: 2px;" type="text" spellcheck="true" pattern=".{5,100}" maxlength=100 required title="5 characters minimum" class="form-control" placeholder="Enter a topic for this chat..." ng-model="chat.session.topic" focus-me="chat.attr.is_topic_focus">
             </div>
-            <button type="submit" style="width:0px;" class='hidden' </button>
+            <button type="submit" style="width:0px;" class='hidden'> </button>
         </form>
-        <div id="{{'topic_' + chat.session.session_key + '_wrapper'}}" ng-show="chat.topic.allow == true && chat.session.topic.length" class="cm-main-panel-chat-topic-wrapper">
-            <span ng-click="toggleTopic(directory_chat)" class="cm-chat-topic-icon glyphicon glyphicon-pushpin cm-topic-toggle"></span>
-            <div class="cm-main-panel-chat-topic min-scroll" ng-class="{'truncated':chat.topic.truncated == true}">
-                <span id="{{'topic_' + chat.session.session_key}}" maxlength=60 ng-enter-press="updateTopic(directory_chat)" contenteditable="{{chat.admin}}" ng-class="{'selectable' : chat.admin ,'no-select' : chat.admin != chat.user.profile.id}" ng-bind="chat.session.topic"></span>
-            </div>
-            <span href="#" ng-show="chat.admin" ng-click="removeTopic(directory_chat)" class="cm-chat-topic-close glyphicon pull-right glyphicon-remove"></span>
+        <div id="{{'topic_' + chat.session.session_key + '_wrapper'}}" class="cm-contact-chat-topic-wrapper">
+            <span ng-click="chat.topic.truncated = !chat.topic.truncated;" class="glyphicon glyphicon-pushpin pointer" style="position:absolute; left: 4px; top:10px;"></span>
+            <div class="cm-contact-chat-topic min-scroll" id="topic_{{chat.session.session_key.split(':')[0] + '_' + chat.session.session_key.split(':')[1]}}" maxlength=60 ng-enter-press="ui.fx.updateChatTopic(chat.session.type, chat.session.session_key)" ng-blur="ui.fx.updateChatTopic(chat.session.type, chat.session.session_key);" contenteditable="{{chat.admin && !chat.topic.truncated}}" ng-class="{'truncated':chat.topic.truncated == true, 'pointer' : chat.admin,'no-select' : !chat.admin}" ng-bind="chat.session.topic"></div>
+            <!-- <span href="#" ng-show="chat.admin" ng-click="removeTopic(directory_chat)" class="cm-chat-topic-close glyphicon pull-right glyphicon-remove"></span> -->
         </div>
     </div>
     <div ng-show="chat.menu.options" style="position:absolute; right:0;">

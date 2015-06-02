@@ -66,7 +66,9 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     this.ui.fx.setChatTopic = function(type, session_key){
         ChatModuleManager.setChatTopic(type, session_key);
     };
-
+    this.ui.fx.updateChatTopic = function(type, session_key){
+        ChatModuleManager.updateChatTopic(type, session_key);
+    };
     this.ui.fx.updateSoundLevel = function(level) {
         if (parseInt(level) && level > -1 && level <= CoreConfig.max.sound_level ) {
             NotificationManager.updateSoundLevel(level);

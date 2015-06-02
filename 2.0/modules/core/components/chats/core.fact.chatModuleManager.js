@@ -192,6 +192,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                                         if (signals.topic != ChatStorage[signals.type].chat.list[session_key].session.topic) {
                                             ChatStorage[signals.type].chat.list[session_key].session.topic = signals.topic;
                                             ChatStorage[signals.type].chat.list[session_key].signals.user.topic = signals.topic;
+                                            ChatStorage[signals.type].chat.list[session_key].topic.truncated = false;
                                             SessionsManager.setUserChatSessionStorage(signals.type, session_key);
                                         }
                                     });
@@ -662,6 +663,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         ChatManager.addChatTopic(type, session_key);
     };
 
+    this.updateChatTopic = function(type, session_key) {
+        ChatManager.updateChatTopic(type, session_key);
+    };
     this.resetDirectoryChatListFocusSettings = function() {
         angular.forEach(ChatStorage.directory.chat.list, function(directory_chat) {
             ChatManager.resetCommonFocusSettings(directory_chat.type, directory_chat.session_key);

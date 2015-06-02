@@ -263,17 +263,6 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
         return false;
     };
 
-    this.toggleChatTopicDisplay = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (ChatStorage[type].chat.list[session_key].fb.target.topic.length > 30) {
-                ChatStorage[type].chat.list[session_key].topic.truncated = !ChatStorage[type].chat.list[session_key].topic.truncated;
-            }
-            $rootScope.evalAsync(function() {
-                that.setChatTopicHeight(type, session_key);
-            });
-        }
-    };
-
     this.setChatTopicHeight = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (ChatStorage[type].chat.list[session_key].fb.target.topic) {
@@ -324,17 +313,21 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.updateChatTopic = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            var new_chat_topic = String($('#topic_' + session_key).text()).replace(/&/g, '').replace(/</g, '').replace(/>/g, '').replace(/"/g, ''); // sanitze the string
+            var new_chat_topic = String($('#topic_' + session_key.split(':')[0] + '_' + session_key.split(':')[1]).text()).replace(/&/g, '').replace(/</g, '').replace(/>/g, '').replace(/"/g, ''); // sanitze the string
+            console.log('new_chat_topic: ', new_chat_topic);
             if (new_chat_topic === 'null' || new_chat_topic === '' || new_chat_topic.length < 5) {
+                $('#topic_' + session_key.split(':')[0] + '_' + session_key.split(':')[1]).text(ChatStorage[type].chat.list[session_key].session.topic);
                 return false;
             }
-            ChatStorage[type].chat.list[session_key].topic.set = new_chat_topic;
-            if (ChatStorage[type].chat.list[session_key].fb.group.location.session) {
-                ChatStorage[type].chat.list[session_key].fb.group.location.session.update({
-                    topic: new_chat_topic
-                });
+            ChatStorage[type].chat.list[session_key].session.topic = new_chat_topic;
+            ChatStorage[type].chat.list[session_key].signals.user.topic = new_chat_topic;
+            if (type === 'contact') {
+                SessionsManager.updateContactChatSignals(type, session_key);
+            } else {
+                SessionsManager.updateDirectoryChatSignals(type, session_key);
             }
-            that.setChatTopicHeight(type, session_key);
+            SessionsManager.setUserChatSessionStorage(type, session_key);
+            // that.setChatTopicHeight(type, session_key);
             that.resetCommonDefaultSettings(type, session_key);
             that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
             return true;

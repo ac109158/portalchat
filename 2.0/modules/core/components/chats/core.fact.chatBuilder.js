@@ -60,6 +60,8 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             }
             ChatStorage[session.type].chat.list[session.session_key] = {};
 
+            ChatStorage[session.type].chat.list[session.session_key].admin = true;
+
             ChatStorage[session.type].chat.list[session.session_key].message = {};
             ChatStorage[session.type].chat.list[session.session_key].message.text = '';
 
