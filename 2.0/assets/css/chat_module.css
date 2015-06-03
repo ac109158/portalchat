@@ -335,17 +335,15 @@ input[type='range']::-moz-range-thumb {
 }
 
 .chat-reference-animation {
-    -webkit-animation: flash 1s;
-    -moz-animation: flash 1s;
-    -ms-animation: flash 1s;
-    animation: flash 1s;
+    -webkit-animation: bounce 1s;
+    -moz-animation: bounce 1s;
+    -ms-animation: bounce 1s;
+    animation: bounce 1s;
     -vendor-animation-iteration-count: 1;
     background: rgba(235, 123, 0, .8);
     color: white;
     border-radius: 2px;
-    /* 	border-radius: 10px/30px; /* horizontal radius / vertical radius */
-
-    */ z-index: 115;
+    z-index: 8;
     box-shadow: inset 0px 0px 5px 0px white;
 }
 

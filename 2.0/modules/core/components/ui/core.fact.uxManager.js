@@ -59,7 +59,6 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
                 that.reference.type = type;
                 that.reference.session_key = session_key;
                 that.reference.priority = reference_priority;
-                console.log('reference_priority', reference_priority);
             }
         }
     };
@@ -171,7 +170,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         } else {
             html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
-        html += '<span id="{{message.session_key + ' + "':'" + '+ message.priority}}" class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | linky:' + "'_blank'" + ' | colonToSmiley"></span>';
+        html += '<span class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | linky:' + "'_blank'" + ' | colonToSmiley" id="{{message.session_key + ' + "':'"  + ' + message.priority}}"></span>';
         if (message.reference && message.reference.key) {
             html += '<div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
             if (message.reference.author === UserManager.user.profile.id) {
@@ -217,7 +216,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         } else {
             html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
-        html += '<span id="{{message.session_key + ' + "':'" + '+ message.priority}}" class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | linky:' + "'_blank'" + ' | colonToSmiley"></span>';
+        html += '<span class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | linky:' + "'_blank'" + ' | colonToSmiley" id="{{message.session_key + ' + "':'"  + ' + message.priority}}"></span>';
         if (message.reference && message.reference.key) {
             html += '<div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
             if (message.reference.author === UserManager.user.profile.id) {

@@ -357,24 +357,24 @@ directive('scrollOnClick', ['$timeout', '$parse', 'UxManager', function($timeout
                     console.log('scrollOnClick');
                     $timeout(function() {
                         var message_display = document.getElementById('list:' + UxManager.reference.session_key);
-                        console.log('message_display', message_display);
+                        // console.log('message_display', message_display);
                         var message_display_current = message_display.scrollTop;
                         var message_display_height = message_display.clientHeight;
                         /*                  console.log(scope.referenced_message_id); */
                         var message_elem = document.getElementById(UxManager.reference.session_key + ':' + UxManager.reference.priority);
-                        console.log('message_elem', message_elem);
-                        var elem_height = message_elem.parentNode.parentNode.clientHeight;
-                        var display_offset = (message_display_height / 3) - elem_height;
-                        var visibile = message_elem.parentNode.parentNode.offsetTop - ((elem_height / 2) + 15);
-
+                        // console.log('message_elem', UxManager.reference.session_key + ':' + UxManager.reference.priority, message_elem);
+                        var visibile = message_elem.parentNode.parentNode.parentNode.parentNode.parentNode.offsetTop - 15;
+                        // console.log('visible', message_elem, visibile);
                         $(message_display).animate({
                             scrollTop: visibile
                         }, 500);
                         $timeout(function() {
-                            $(message_elem).addClass('text-danger chat-reference-animation');
+                            $(message_elem.parentNode).addClass('cm-chat-reference-animation-style');
+                            $(message_elem.parentNode.parentNode.parentNode.parentNode.parentNode).addClass('cm-chat-reference-animation');
                         }, 1000);
                         $timeout(function() {
-                            $(message_elem).removeClass('text-danger chat-reference-animation');
+                            $(message_elem.parentNode).removeClass('cm-chat-reference-animation-style');
+                            $(message_elem.parentNode.parentNode.parentNode.parentNode.parentNode).removeClass('cm-chat-reference-animation');
                             /*                      $("#" + scope.referenced_display).animate({scrollTop: message_display_current}, "slow"); */
                         }, 4000);
                     });

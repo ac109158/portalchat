@@ -722,6 +722,7 @@ ul.nav.nav-tabs a:hover {
     word-break: break-word;
     word-wrap: break-word;
     clear: both;
+    background: transparent;
 }
 
 .cm-chat-message-wrapper-ext {
@@ -735,6 +736,7 @@ ul.nav.nav-tabs a:hover {
     word-break: break-word;
     word-wrap: break-word;
     clear: both;
+    background: transparent;
 }
 
 .cm-chat-message-author-break {
@@ -770,6 +772,7 @@ ul.nav.nav-tabs a:hover {
     -moz-box-shadow: -2px 0 .75px .75px grey;
     box-shadow: -2px 0 .75px .75px grey;
     z-index: 2;
+    background-color: transparent;
 }
 
 .cm-chat-message-avatar {
@@ -921,7 +924,7 @@ ul.nav.nav-tabs a:hover {
 .cm-chat-message-text-ref-self {
     background: rgba(255, 255, 255, .6);
     color: rgba(98, 149, 140, 1);
-    border:1px solid orange;
+    border: 1px solid orange;
     cursor: pointer;
 }
 
@@ -931,6 +934,21 @@ ul.nav.nav-tabs a:hover {
     cursor: pointer;
 }
 
+.cm-chat-reference-animation-style {
+    background: rgba(255, 255, 255, .5);
+    background: rgba(235, 123, 0, .5);
+    /*color: white;*/
+    border-radius: 5px;
+    /*box-shadow: inset 0px 0px 5px 0px white;*/
+}
+
+.cm-chat-reference-animation {
+    -webkit-animation: pulse 1s;
+    -moz-animation: pulse 1s;
+    -ms-animation: pulse 1s;
+    animation: pulse 1s;
+    -vendor-animation-iteration-count: 1;
+}
 
 .cm-contact-chat-emoticon-toggle {
     position: absolute;
