@@ -1,7 +1,7 @@
 <div style="position:relative; height: 90%;width:96%; margin:0px auto; margin-top:5%; background:rgba(255,255,255,.8); overflow-y:auto; overflow-x:hidden;" class="well well-sm well-slim min-scroll">
 	<div>
 		<span class="cm-profile-span-label">Profile</span>
-		
+
 	</div>
 	<div style="width:100%; display:block; min-height:20px;">
 		<div style="width:40%; padding:2px; float:left">
@@ -43,7 +43,7 @@
 				<div style="width:100%; height:20px; background:rgba(255,255,255,.8); border-radius:2px; margin-bottom:2px;">
 					<center><span>Status: </span><span ng-class="{'Busy' : user_chat_presence.$value != 'Online','Online': user_chat_presence.$value == 'Online' }" ng-bind="user_chat_presence.$value"></span></center>
 				</div>
-				<textarea ng-show="user_chat_presence.$value != 'Online'" style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px;"  placeholder="Enter a detailed message for your current chat status if you would like..." ng-model="user_profile.presence.message" ng-enter-press="updatePresenceMessage()" ng-blur="updatePresenceMessage()"></textarea>
+				<textarea ng-show="user_chat_presence.$value != 'Online'" style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px;"  placeholder="Enter a detailed message for your current chat status if you would like..." ng-model="user_profile.presence.message" ng-enter="updatePresenceMessage()" ng-blur="updatePresenceMessage()"></textarea>
 				<!--
 <div ng-show="user_chat_presence.$value != 'Online' && user_profile.presence.message.length" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
 					<center>Add Message to Profile: <input ng-change="updatePresenceMessageShow()" type="checkbox" ng-model="user_profile.presence.show_message"></center>
@@ -59,11 +59,11 @@
 			<div style="width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
 				<span>{{sm_group_chat.chat_description}} Notifications: <input style="position:absolute; right:15px;" ng-change="updateChatSettings(sm_group_chat)" type="checkbox" ng-model="sm_group_chat.monitor"></span>
 			</div>
-			
+
 			<div style="width:100%; clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
 				<span>{{sm_tech_chat.chat_description}} Notifications: <input style="position:absolute; right:15px;" ng-change="updateChatSettings(sm_tech_chat)" type="checkbox" ng-model="sm_tech_chat.monitor"></span>
 			</div>
-			
+
 			<div ng-if="mc_group_chat" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
 				<span>{{mc_group_chat.chat_description}} Notifications: <input style="position:absolute; right:15px; " ng-change="updateChatSettings(mc_group_chat)" type="checkbox" ng-model="mc_group_chat.monitor"></span>
 			</div>

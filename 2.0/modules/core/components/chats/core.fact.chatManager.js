@@ -98,6 +98,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             ChatStorage[type].chat.list[session_key].reference.author = null;
             ChatStorage[type].chat.list[session_key].reference.name = null;
             ChatStorage[type].chat.list[session_key].reference.text = null;
+            ChatStorage[type].chat.list[session_key].reference.priority = null;
 
 
             // if (angular.isDefined(ChatStorage[type].chat.list[session_key].fb.target.topic)) {
@@ -129,7 +130,6 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             if (fb_sync) {
                 SessionsManager.updateSessionDetail(session_key, attr, value);
             }
-            that.resetCommonDefaultSettings(type, session_key);
         }
     };
 
@@ -288,8 +288,9 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                     SessionsManager.setUserChatSessionStorage(type, session_key);
                     ChatStorage[type].chat.list[session_key].topic.set = true;
                     that.resetCommonDefaultSettings(type, session_key);
-                    that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
-                    that.toggleChatMenu(type, session_key, 'topic', false);
+                    $timeout(function() {
+                        that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
+                    }, 250);
                     return true;
                 }
             }
@@ -299,15 +300,19 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.removeChatTopic = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (angular.isDefined(ChatStorage[type].chat.list[session_key].fb.group.location.session)) {
-                ChatStorage[type].chat.list[session_key].fb.group.location.session.update({
-                    topic: false
-                });
-                ChatStorage[type].chat.list[session_key].topic.description = '';
-                ChatStorage[type].chat.list[session_key].topic.height = 0;
-                ChatStorage[type].chat.list[session_key].topic.set = false;
-                ChatStorage[type].chat.list[session_key].menu.topic = false;
+            ChatStorage[type].chat.list[session_key].session.topic = '';
+            ChatStorage[type].chat.list[session_key].signals.user.topic = '';
+            if (type === 'contact') {
+                SessionsManager.updateContactChatSignals(type, session_key);
+            } else {
+                SessionsManager.updateDirectoryChatSignals(type, session_key);
             }
+            SessionsManager.setUserChatSessionStorage(type, session_key);
+            // that.setChatTopicHeight(type, session_key);
+            that.resetCommonDefaultSettings(type, session_key);
+            $timeout(function() {
+                that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
+            }, 250);
         }
     };
 
@@ -316,7 +321,8 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             var new_chat_topic = String($('#topic_' + session_key.split(':')[0] + '_' + session_key.split(':')[1]).text()).replace(/&/g, '').replace(/</g, '').replace(/>/g, '').replace(/"/g, ''); // sanitze the string
             console.log('new_chat_topic: ', new_chat_topic);
             if (new_chat_topic === 'null' || new_chat_topic === '' || new_chat_topic.length < 5) {
-                $('#topic_' + session_key.split(':')[0] + '_' + session_key.split(':')[1]).text(ChatStorage[type].chat.list[session_key].session.topic);
+                ChatStorage[type].chat.list[session_key].session.topic = ChatStorage[type].chat.list[session_key].signals.user.topic;
+                $('#topic_' + session_key.split(':')[0] + '_' + session_key.split(':')[1]).text(ChatStorage[type].chat.list[session_key].signals.user.topic);
                 return false;
             }
             ChatStorage[type].chat.list[session_key].session.topic = new_chat_topic;
@@ -329,7 +335,9 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             SessionsManager.setUserChatSessionStorage(type, session_key);
             // that.setChatTopicHeight(type, session_key);
             that.resetCommonDefaultSettings(type, session_key);
-            that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
+            $timeout(function() {
+                that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
+            }, 250);
             return true;
         }
     };
@@ -565,6 +573,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                     ChatStorage[type].chat.list[session_key].reference.author = null;
                     ChatStorage[type].chat.list[session_key].reference.name = null;
                     ChatStorage[type].chat.list[session_key].reference.text = null;
+                    ChatStorage[type].chat.list[session_key].reference.priority = null;
                     if (ChatStorage[type].chat.list[session_key].scroll.to_top === true) {
                         ChatStorage[type].chat.list[session_key].scroll.to_top = false;
                     }
@@ -694,18 +703,23 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.addReferenceToChatMessage = function(type, session_key, message) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (message.author === UserManager.user.profile.id) {
-                ChatStorage[type].chat.list[session_key].reference.name = ChatStorage[type].chat.list[session_key].user.self_name;
-            } else if (!ChatStorage[type].chat.list[session_key].session.is_group_chat) {
-                ChatStorage[type].chat.list[session_key].reference.name = ChatStorage[type].chat.list[session_key].contact.first_name;
-            } else {
-                var name_split = message.authorName.match(/\S+/g); // splits the contact's first and last name
-                ChatStorage[type].chat.list[session_key].reference.name = name_split[0];
-            }
-            ChatStorage[type].chat.list[session_key].reference.key = message.priority;
-            ChatStorage[type].chat.list[session_key].reference.text = message.text;
-            ChatStorage[type].chat.list[session_key].reference.author = message.author;
-            ChatStorage[type].chat.list[session_key].attr.is_text_focus = true;
+            console.log('addReferenceToChatMessage: ', type, session_key, message);
+            $timeout(function() {
+                if (message.author === UserManager.user.profile.id) {
+                    ChatStorage[type].chat.list[session_key].reference.name = ChatStorage[type].chat.list[session_key].user.self_name;
+                } else {
+                    if (angular.isDefined(ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + message.author])) {
+                        ChatStorage[type].chat.list[session_key].reference.name = ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + message.author]].first_name;
+                    }
+                }
+                ChatStorage[type].chat.list[session_key].reference.key = message.key;
+                ChatStorage[type].chat.list[session_key].reference.text = message.text;
+                ChatStorage[type].chat.list[session_key].reference.author = message.author;
+                ChatStorage[type].chat.list[session_key].reference.priority = message.priority;
+                $timeout(function() {
+                    ChatStorage[type].chat.list[session_key].attr.is_text_focus = true;
+                });
+            }, 250);
         }
     };
 
@@ -977,7 +991,8 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                     time: Math.ceil(value.time / 1000),
                     text: value.text,
                     referenceName: value.reference.name || null,
-                    referenceText: value.reference.text || null
+                    referenceText: value.reference.text || null,
+                    referencePriority: value.reference.priority || null
                 });
             }, chat_record.messages);
 

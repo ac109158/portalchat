@@ -74,7 +74,6 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
 
     this.setUserChatSessionStorage = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
-            console.log('sesison: ', ChatStorage[type].chat.list[session_key].session);
             that.fb.location.storage.child(session_key.split(':')[0]).child(session_key.split(':')[1]).setWithPriority(ChatStorage[type].chat.list[session_key].session, ChatStorage[type].chat.list[session_key].session.order);
             return true;
         }
@@ -179,7 +178,7 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
                                     //change the appearnace of this existing chatbox into a group chat box
                                     if (angular.isDefined(data.index_position > 1 && that.active_chats[data.index_position]) && that.active_chats[data.index_position].contact_id === data.user_id) {
                                         index = data.index_position;
-                                    } else { /*                                     console.log(data.user_id + ' did not match ' + data.index_position); */
+                                    } else {
                                         chat_log = [];
                                         angular.forEach(that.active_chats, function(value, key) { // runs through the list of chat session to determine which chat session is tied to the value change
                                             this.push(value.contact_id);

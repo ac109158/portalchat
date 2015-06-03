@@ -322,7 +322,7 @@ ul.nav.nav-tabs a:hover {
     padding: 5px 2px 5px 5px;
     right: 0;
     top: 34px;
-    min-width: 100px;
+    min-width: 105px;
     background: white;
     min-height: 50px;
 }
@@ -605,12 +605,12 @@ ul.nav.nav-tabs a:hover {
     background: rgba(0, 0, 0, .1);
 }
 
-.cm-contact-chat-invite-box {
+.cm-contact-chat-invite-wrapper {
     position: relative;
     display: block;
     width: auto;
     width: 100%;
-    min-height: 25px;
+    min-height: 35px;
     z-index: 10;
 }
 
@@ -671,14 +671,15 @@ ul.nav.nav-tabs a:hover {
     position: absolute;
     margin: 0;
     padding: 0;
-    width: 100%;
-    height: 35px;
-    bottom: 35px;
-    background: rgba(255, 255, 255.2);
+    bottom: 10px;
+    left: 0px;
+    right: 0px;
+    width: auto;
     resize: none;
+    min-height: 52px;
 }
 
-.cm-contact-chat-message-reference {
+.cm-contact-chat-message-reference-wrapper {
     postion: absolute;
     margin: 0;
     padding: 0;
@@ -686,6 +687,27 @@ ul.nav.nav-tabs a:hover {
     width: 100%;
     height: 35px;
     background: rgba(255, 255, 255.2);
+}
+
+.cm-contact-chat-reference-text {
+    position: absolute;
+    bottom: 10px;
+    left: 2px;
+    right: 36px;
+    /*background: #00335B;*/
+
+    border: 1px solid #ccc;
+    color: #00335B;
+    text-align: center;
+    font-weight: bold;
+    padding: .5%;
+    font-size: .9em;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 7;
+    height: 28px;
 }
 /*********************     Chat  *************************/
 
@@ -697,6 +719,8 @@ ul.nav.nav-tabs a:hover {
     width: 100%;
     padding: 0;
     min-height: 40px;
+    word-break: break-word;
+    word-wrap: break-word;
     clear: both;
 }
 
@@ -708,6 +732,8 @@ ul.nav.nav-tabs a:hover {
     margin: 0;
     padding: 0;
     min-height: 15px;
+    word-break: break-word;
+    word-wrap: break-word;
     clear: both;
 }
 
@@ -853,7 +879,7 @@ ul.nav.nav-tabs a:hover {
     margin: 0;
     padding: 0 5px 0 5px;
     width: 100%;
-    min-height: 12px;
+    min-height: 14px;
     clear: both;
 }
 
@@ -863,18 +889,71 @@ ul.nav.nav-tabs a:hover {
     margin: 0;
     padding: 0 5px 2px 5px;
     width: 100%;
-    min-height: 12px;
+    min-height: 14px;
     clear: both;
 }
 
-#messageDiv {
-    max-height: 35px;
+.cm-chat-message-text {
+    position: relative;
+    display: block;
+    width: 100%;
+    pointer-events: all;
+    text-decoration: none;
 }
+
+.cm-chat-message-text-ref {
+    position: relative;
+    margin: 0;
+    width: 100%;
+    min-height: 14px;
+    clear: both;
+    font-size: .8em;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid white;
+    padding: 2px;
+    border-radius: 5px;
+    margin-bottom: 2px;
+}
+
+.cm-chat-message-text-ref-self {
+    background: rgba(255, 255, 255, .6);
+    color: rgba(98, 149, 140, 1);
+    border:1px solid orange;
+    cursor: pointer;
+}
+
+.cm-chat-message-text-ref-other {
+    background: rgba(255, 255, 255, .6);
+    color: rgba(98, 162, 189, 1);
+    cursor: pointer;
+}
+
 
 .cm-contact-chat-emoticon-toggle {
     position: absolute;
     bottom: 5px;
     right: 5px;
+}
+
+.cm-contact-chat-extend-timestamp {
+    margin: 0px;
+    margin-left: 2px;
+    margin-right: 2px;
+    width: auto;
+    padding: 0px;
+    position: relative;
+    min-height: 1em;
+    font-size: .7em;
+    text-align: center;
+    border: 1px solid #ccc;
+    font-weight: bold;
+    line-height: 10px;
+    border-radius: 5px 20px 5px;
+    background: rgba(255, 255, 255, .3);
+    clear: both;
 }
 
 .cm-contact-chat-chat-add-topic-wrapper {
@@ -887,6 +966,7 @@ ul.nav.nav-tabs a:hover {
     padding: 2px;
     min-height: 30px;
     background-color: white;
+    z-index: 7;
 }
 
 .cm-contact-chat-topic-wrapper {
@@ -901,9 +981,9 @@ ul.nav.nav-tabs a:hover {
     text-align: left;
     font-weight: bold;
     font-size: .9em;
-    z-index: 7;
-    background: rgba(69, 106, 151, 0.9);
-    border:1px solid white;
+    z-index: 6;
+    background: rgba(255, 0, 0, 0.7);
+    border: 1px solid white;
 }
 
 .cm-contact-chat-topic {

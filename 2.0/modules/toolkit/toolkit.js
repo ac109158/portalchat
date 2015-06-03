@@ -485,7 +485,7 @@
                 if (isNaN(searchThreshold) || searchThreshold === Infinity) {
                     searchThreshold = undefined;
                 }
-                if (iElm) {
+                if (iElm && iElm.chosen) {
                     iElm.chosen({
                         width: '100%',
                         max_selected_options: maxSelection,
@@ -1066,7 +1066,6 @@ factory('TableManager', ['$rootScope', '$filter', '$timeout',
         var that = this;
 
         this.buildTable = function(table_name, config) {
-            console.log(table_name, ' : Config: ', config);
             var table = {};
             table.name = table_name;
             table.modelName = config.model;
@@ -1086,9 +1085,6 @@ factory('TableManager', ['$rootScope', '$filter', '$timeout',
         }
 
         this.search = function(table) {
-            console.log('searchBy: ', table.options.searchBy);
-            console.log('orderByField: ', table.options.orderByField);
-            console.log('reverseOrder: ', table.options.reverseOrder);
             if (table && table.model) {
                 if (typeof table.model === undefined) {
                     return;
@@ -1294,7 +1290,6 @@ factory('TableManager', ['$rootScope', '$filter', '$timeout',
             };
 
             scope.setPage = function(index) {
-                console.log(attrs.name, index);
                 TableManager.setPage(scope.tables[attrs.name], index);
             };
 
@@ -1362,28 +1357,54 @@ angular.module('pop.toolkit').directive('ngEnter', function() {
     };
 });
 
-angular.module('pop.toolkit').directive('focusMe', function() {
+angular.module('pop.toolkit').directive('ngKeydown', function() {
+    return {
+        restrict: 'A',
+        link: function(scope, elem, attrs) {
+            // this next line will convert the string
+            // function name into an actual function
+            var functionToCall = scope.$eval(attrs.ngKeydown);
+        }
+    };
+});
+
+angular.module('pop.toolkit').directive('ngTabPress', function() {
+    return function(scope, element, attrs) {
+        element.bind("keydown keypress", function(event) {
+            if (event.which === 9) {
+                scope.$apply(function() {
+                    scope.$eval(attrs.ngTabPress);
+                });
+
+                event.preventDefault();
+            }
+        });
+    };
+});
+
+angular.module('pop.toolkit').directive('ngFocus', ['$timeout', function($timeout) {
     return {
         restrict: 'A',
         scope: {
-            focusMe: '='
+            ngFocus: '='
         },
         link: function(scope, elt) {
-            scope.$watch('focusMe', function(val) {
+            scope.$watch('ngFocus', function(val) {
                 if (val) {
-                    elt[0].focus();
+                    $timeout(function() {
+                        elt[0].focus();
+                    });
                 }
             });
         }
     };
-});
+}]);
 
 angular.module('pop.toolkit').directive('popDraggable', function() {
     return {
         restrict: 'A',
         link: function(scope, elm, attrs) {
             var options = scope.$eval(attrs.popDraggable); //allow options to be passed in
-            console.log('this ' + elm + 'should be draggable: ' + options);
             elm.draggable(options);
         }
     };

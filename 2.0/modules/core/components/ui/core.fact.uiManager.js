@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig','UserManager',  'UtilityManager', 'SettingsManager', 'ChatModuleManager', 'PermissionsManager', 'NotificationManager', function($rootScope, $interval, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig,UserManager, UtilityManager, SettingsManager, ChatModuleManager, PermissionsManager, NotificationManager) {
+service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'ChatModuleManager', 'PermissionsManager', 'NotificationManager', function($rootScope, $interval, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, UtilityManager, SettingsManager, ChatModuleManager, PermissionsManager, NotificationManager) {
     var that = this;
 
     this.ui = {};
@@ -44,33 +44,40 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         UtilityManager.pingHost();
     };
 
-    this.ui.fx.log = function(){
-        $rootScope.$broadcast('assign-task', {id:'log', param: 'Test'});
+    this.ui.fx.log = function() {
+        $rootScope.$broadcast('assign-task', {
+            id: 'log',
+            param: 'Test'
+        });
     };
 
-    this.ui.fx.resetDefaultSettings = function(type, session_key){
+    this.ui.fx.resetDefaultSettings = function(type, session_key) {
         ChatModuleManager.resetDefaultSettings(type, session_key);
     };
 
-    this.ui.fx.chatContact = function(contact){
+    this.ui.fx.chatContact = function(contact) {
         ChatModuleManager.chatContact(contact);
     };
 
-    this.ui.fx.sendChatMessage = function(type, session_key, media){
+    this.ui.fx.sendChatMessage = function(type, session_key, media) {
         ChatModuleManager.sendChatMessage(type, session_key, media);
     };
-    this.ui.fx.showContactThatUserIsTyping = function(type, session_key){
+    this.ui.fx.showContactThatUserIsTyping = function(type, session_key) {
         ChatModuleManager.showContactThatUserIsTyping(type, session_key);
     };
 
-    this.ui.fx.setChatTopic = function(type, session_key){
+
+    this.ui.fx.setChatTopic = function(type, session_key) {
         ChatModuleManager.setChatTopic(type, session_key);
     };
-    this.ui.fx.updateChatTopic = function(type, session_key){
+    this.ui.fx.updateChatTopic = function(type, session_key) {
         ChatModuleManager.updateChatTopic(type, session_key);
     };
+    this.ui.fx.removeChatTopic = function(type, session_key) {
+        ChatModuleManager.removeChatTopic(type, session_key);
+    };
     this.ui.fx.updateSoundLevel = function(level) {
-        if (parseInt(level) && level > -1 && level <= CoreConfig.max.sound_level ) {
+        if (parseInt(level) && level > -1 && level <= CoreConfig.max.sound_level) {
             NotificationManager.updateSoundLevel(level);
             SettingsManager.updateGlobalSetting('sound_level', level);
             NotificationManager.playSound('new_chat');
@@ -91,19 +98,18 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     };
 
     this.ui.fx.toggleChatMenu = function(type, session_key, menu, value) {
-        console.log(type, session_key, menu, value);
         ChatModuleManager.toggleChatMenu(type, session_key, menu, value);
     };
 
-    this.ui.fx.toggleContactListShowOffline = function(value){
+    this.ui.fx.toggleContactListShowOffline = function(value) {
         ChatModuleManager.toggleContactListShowOffline(value);
     };
 
-    this.ui.fx.chatContactListSearch = function(){
+    this.ui.fx.chatContactListSearch = function() {
         ChatModuleManager.chatContactListSearch();
     };
 
-    this.ui.fx.setMainPanelTab = function(tab_index){
+    this.ui.fx.setMainPanelTab = function(tab_index) {
         ChatModuleManager.setMainPanelTab(tab_index);
     };
 
@@ -131,6 +137,10 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
 
     this.ui.fx.openChatModule = function() {
         ChatModuleManager.openChatModule();
+    };
+
+    this.ui.fx.addReferenceToChatMessage = function(type, session_key, message) {
+        ChatModuleManager.addReferenceToChatMessage(type, session_key, message);
     };
 
     this.ui.fx.lookUpChatReference = function(priority, message_id, display_id) {
@@ -232,10 +242,6 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
 
     this.ui.fx.loadPreviousChatMessages = function(type, session_key) {
         ChatModuleManager.loadPreviousChatMessages(type, session_key);
-    };
-
-    this.ui.fx.addReferenceToChatMessage = function(type, session_key, message) {
-        ChatModuleManager.addReferenceToChatMessage(type, session_key, message);
     };
 
     this.ui.fx.createDirectoryListChat = function(session_key) {

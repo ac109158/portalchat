@@ -37,7 +37,6 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
     this.load = function() {
         that.fb.location.fb_connected = new Firebase(CoreConfig.url.firebase_database + ".info/connected");
         that.fb.location.fb_connected.on("value", function(snap) {
-            console.log(snap.val());
             if (snap.val()) {
                 $rootScope.$evalAsync(function() {
                     that.engine.firebase.online = true;
@@ -56,13 +55,11 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
 
 
         $window.addEventListener("offline", function() {
-            console.log('offline');
             $rootScope.$apply(function() {
                 that.engine.network.online = false;
             });
         }, false);
         $window.addEventListener("online", function() {
-            console.log('online');
             $rootScope.$apply(function() {
                 that.pingPortal();
                 that.pingGoogle();
@@ -106,7 +103,7 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
     };
 
     this.onComplete = function(error) {
-        if (error) { /*             console.log('Synchronization failed.'); */
+        if (error) {
             if (that.isHostReachable()) {
                 $log.debug("Firebase is Down");
             } else {
@@ -204,7 +201,6 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
             return false;
         }
         that.is_host_reachable = false;
-        console.log('pinging');
         that.engine.network.is_pinging = true;
         var host_ping_promise = $http.get();
         host_ping_promise.then(function(response) {

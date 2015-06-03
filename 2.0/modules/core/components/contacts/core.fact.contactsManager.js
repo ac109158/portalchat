@@ -188,7 +188,6 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
 
 
         this.registerContactPresenceChange = function(contact_tag, presence) {
-            console.log('registerContactPresenceChange: ', contact_tag, presence);
             if (contact_tag != CoreConfig.common.reference.user_prefix + UserManager.user.profile.id) {
                 if (contact_tag && presence) {
                     if (angular.isDefined(that.contacts.profiles.map[contact_tag]) && that.contacts.profiles.list[that.contacts.profiles.map[contact_tag]]) {
@@ -278,7 +277,6 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
         this.watchForRemovedProfiles = function() {
             that.fb.location.profiles.on('child_removed', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
                 var profile = snapshot.val();
-                console.log('removing: ', profile);
             });
         };
         return this;

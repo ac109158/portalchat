@@ -1,13 +1,15 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'PermissionsManager', 'NotificationManager', 'ChatStorage','BrowserService','Emoticons', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, UtilityManager, SettingsManager, PermissionsManager, NotificationManager, ChatStorage,BrowserService, Emoticons) {
+service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'PermissionsManager', 'NotificationManager', 'ChatStorage', 'BrowserService', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, UtilityManager, SettingsManager, PermissionsManager, NotificationManager, ChatStorage, BrowserService) {
     var that = this;
 
     this.ux = {};
 
-    this.ux.platform = BrowserService.platform;
+    this.reference = {};
+    this.reference.allow = false;
+    this.reference.priority = null;
 
-    this.ux.emoticons = Emoticons;
+    this.ux.platform = BrowserService.platform;
 
     this.ux.main_panel = {};
 
@@ -50,9 +52,32 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
 
     };
 
+    this.ux.fx.referenceMessage = function(type, session_key, reference_priority) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (angular.isDefined(reference_priority)) {
+                that.reference.allow = true;
+                that.reference.type = type;
+                that.reference.session_key = session_key;
+                that.reference.priority = reference_priority;
+                console.log('reference_priority', reference_priority);
+            }
+        }
+    };
+    this.ux.fx.isReferencedMessage = function(priority) {
+        if (that.reference.allow && that.reference.priority == priority) {
+            $timeout(function() {
+                that.reference.allow = false;
+                that.reference.type = null;
+                that.reference.session_key = null;
+                that.reference.priority = null;
+            }, 3000);
+            return true;
+        }
+        return false;
+    };
+
     this.ux.fx.evaluateChatModuleLayout = function() {
         that.setChatModuleSectionHeights();
-        console.log(that.ux);
     };
     this.ux.fx.alertNewChat = function() {
         NotificationManager.playSound('new_chat');
@@ -90,9 +115,13 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         config.is_user_author = that.isMessageFromUser(message);
         config.is_full = that.isMessageAuthorDifferentLast(type, session_key, message);
         config.different_author = that.isMessageAuthorDifferentLast(type, session_key, message);
+        if (!config.different_author) {
+            config.time_lapse = that.isMessageTimeLapse(type, session_key, message);
+            config.minute_from_last = that.isLastMessagePastMinute(type, session_key, message);
+        }
         config.message_time_format = that.returnMessageTimeFormat(message);
         var html = '';
-        if (config.different_author) {
+        if (config.different_author || config.time_lapse) {
             html += '<div class="cm-chat-message-wrapper-full">';
         } else {
             html += '<div class="cm-chat-message-wrapper-ext">';
@@ -117,12 +146,12 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
 
     this.returnUserMessage = function(type, session_key, message, config) {
         var html = '';
-        if (config.different_author) {
+        if (config.different_author || config.time_lapse) {
             html += '<div class="cm-chat-message-user-avatar-wrapper img-circle">';
             html += '<img class="cm-chat-message-avatar img-circle" ng-src="{{chat.user.profile.avatar_url}}" alt="...">';
             html += '</div>';
         }
-        if (config.different_author) {
+        if (config.different_author || config.time_lapse) {
             html += '<div class="cm-chat-message-user-content-wrapper-full" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
             html += '<div class="cm-chat-message-user-header-bar">';
             html += '<span class="pull-left" ng-bind="chat.user.self_name"></span>';
@@ -130,13 +159,31 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             html += '</div>';
         } else {
             html += '<div class="cm-chat-message-user-content-wrapper-ext" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
+            if (config.minute_from_last) {
+                html += '<div class="no-select cm-contact-chat-extend-timestamp">';
+                html += '<span ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
+                html += '</div>';
+
+            }
         }
         if (config.different_author) {
             html += '<div class="cm-chat-message-text-wrapper-full">';
         } else {
             html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
-        html += '<span ng-bind-html="message.text | colonToSmiley"></span>';
+        html += '<span id="{{message.session_key + ' + "':'" + '+ message.priority}}" class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | linky:' + "'_blank'" + ' | colonToSmiley"></span>';
+        if (message.reference && message.reference.key) {
+            html += '<div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
+            if (message.reference.author === UserManager.user.profile.id) {
+                html += ' cm-chat-message-text-ref-self';
+            } else {
+                html += ' cm-chat-message-text-ref-other';
+            }
+            html += '" ng-class="{' + "'pointer'" + ': message.reference.priority >= chat.priority.first}">';
+            html += '<span ng-bind="' + "'@'" + ' + message.reference.name"></span><span ng-bind-html="' + "' : '" + ' + message.reference.text | colonToSmiley"></span>';
+            html += '</div>';
+        }
+        html += '<div class="clearfix"></div>';
         html += '</div>';
         html += '</div>';
 
@@ -145,12 +192,12 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
 
     this.returnContactMessage = function(type, session_key, message, config) {
         var html = '';
-        if (config.different_author) {
+        if (config.different_author || config.time_lapse) {
             html += '<div class="cm-chat-message-contact-avatar-wrapper img-circle">';
             html += '<img class="cm-chat-message-avatar img-circle" ng-src="{{chat.contact.profile.avatar_url}}" alt="...">';
             html += '</div>';
         }
-        if (config.different_author) {
+        if (config.different_author || config.time_lapse) {
             html += '<div class="cm-chat-message-contact-content-wrapper-full" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
             html += '<div class="cm-chat-message-contact-header-bar">';
             html += '<span class="pull-left" ng-bind="chat.contact.profile.name"></span>';
@@ -158,16 +205,41 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             html += '</div>';
         } else {
             html += '<div class="cm-chat-message-contact-content-wrapper-ext" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
+            if (config.minute_from_last) {
+                html += '<div class="no-select cm-contact-chat-extend-timestamp">';
+                html += '<span ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
+                html += '</div>';
+
+            }
         }
         if (config.different_author) {
             html += '<div class="cm-chat-message-text-wrapper-full">';
         } else {
             html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
-        html += '<div ng-bind-html="message.text | colonToSmiley"></div>';
+        html += '<span id="{{message.session_key + ' + "':'" + '+ message.priority}}" class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | linky:' + "'_blank'" + ' | colonToSmiley"></span>';
+        if (message.reference && message.reference.key) {
+            html += '<div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
+            if (message.reference.author === UserManager.user.profile.id) {
+                html += ' cm-chat-message-text-ref-self';
+            } else {
+                html += ' cm-chat-message-text-ref-other';
+            }
+            html += '" ng-class="{' + "'pointer'" + ': message.reference.priority >= chat.priority.first}">';
+            html += '<span ng-bind="' + "'@'" + ' + message.reference.name"></span><span ng-bind-html="' + "' : '" + ' + message.reference.text | colonToSmiley"></span>';
+            html += '</div>';
+        }
+        html += '<div class="clearfix"></div>';
         html += '</div>';
         html += '</div>';
         return html;
+    };
+
+    this.isMessageInChatHistory = function(type, session_key, message) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && angular.isDefined(ChatStorage[type].chat.list[session_key].messages.map[message.key])) {
+            return true;
+        }
+        return false;
     };
 
     this.returnMessageTimeFormat = function(message) {
@@ -193,29 +265,24 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         return true;
     };
 
+
     this.isMessageTimeLapse = function(type, session_key, message) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (message.index_position - 1 > -1) {
-                if (((120000 + ChatStorage[type].chat.list[session_key].messages.list[message.index_position - 1].time) - message.time) <= 0) {
-                    message.time_lapse = true;
-                    ChatStorage[type].chat.list[session_key].messages.list[message.index_position - 1].was_time_lapse = true;
-                } else {
-                    ChatStorage[type].chat.list[session_key].messages.list[message.index_position - 1].time_lapse = false;
-                    ChatStorage[type].chat.list[session_key].messages.list[message.index_position - 1].was_time_lapse = false;
-                }
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && (message.priority - 1) > -1) {
+            if (360000 + ChatStorage[type].chat.list[session_key].messages.list[ChatStorage[type].chat.list[session_key].messages.map[message.key] - 1].timestamp - message.timestamp <= 0) {
+                ChatStorage[type].chat.list[session_key].messages.list[ChatStorage[type].chat.list[session_key].messages.map[message.key] - 1].is_author_break = true;
+                return true;
             }
         }
+        return false;
     };
 
     this.isLastMessagePastMinute = function(type, session_key, message) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (((60000 + ChatStorage[type].chat.list[session_key].messages.list[message.index_position - 1]) - message.time) <= 0) {
-                message.minute_from_last = true;
-                return;
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && (ChatStorage[type].chat.list[session_key].messages.map[message.key] - 1) > -1) {
+            if (60000 + ChatStorage[type].chat.list[session_key].messages.list[ChatStorage[type].chat.list[session_key].messages.map[message.key] - 1].timestamp - message.timestamp <= 0) {
+                return true;
             }
         }
-        message.minute_from_last = false;
-        return;
+        return false;
     };
 
 

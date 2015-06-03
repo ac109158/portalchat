@@ -28,7 +28,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
             }
         }).finally(function(val) {
             if (that.user.profile.id) {
-                // console.log('We now have a user : ', that.user);
                 return true;
             } else {
                 $rootScope.broadcast('user-toast', {
@@ -158,7 +157,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
                 return false;
             }
             if (online_value.online === false && that.user.profile.presence.state != 'Offline') {
-                /*                              console.log('hey, im still online, yo'); */
                 that.fb.location.online.update({
                     'online': true
                 });
@@ -178,7 +176,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
         that.fb.location.state.child('state').on('value', function(snapshot) {
             var user_state = snapshot.val();
             if (user_state === 'Offline' && that.fb.target.presence && that.user.profile.presence.state != 'Offline') {
-                // console.log('hey, im still have  a state, yo');
                 that.fb.location.state.update({
                     'state': that.user.profile.state
                 });
@@ -199,7 +196,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     this.manageUserPresence = function() {
         that.fb.location.presence.on('value', function(snapshot) {
             var presence = snapshot.val();
-            console.log('presence: ', presence);
             if (presence && presence.state) {
                 if (presence.state !== 'Offline') {
                     that.fb.location.online.update({
@@ -210,7 +206,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
                     });
                 }
                 if (presence.state === 'Offline' && that.user.profile.presence.state != 'Offline') {
-                    // console.log('Hey, I still have chat presence, you');
                     that.fb.location.presence.update(that.user.profile.presence);
                 } else {
                     if (presence.state === 'Offline' && that.user.profile.presence.state === 'Offline') {
@@ -326,7 +321,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
     };
 
     this.updateState = function(state) {
-        // console.log('update state being called with ' + state);
         if (angular.isDefined(that.fb.location.profile)) {
             if (that.fb.target.presence && that.user.profile.presence.state != 'Offline') {
                 that.fb.location.state.update({
@@ -365,11 +359,6 @@ factory("UserManager", ['$rootScope', '$log', '$http', '$timeout', '$window', '$
                 url: 'http://freegeoip.net/json/' + ip,
             }).
             success(function(response) {
-                /*
-                                delete location.lat
-                                delete location.lng;
-                */
-                /*              console.log(response.results[0]['address_components']); */
                 that.user.additional_profile.lat = response.latitude;
                 that.user.additional_profile.lng = response.longitude;
                 that.user.additional_profile.city = response.city;

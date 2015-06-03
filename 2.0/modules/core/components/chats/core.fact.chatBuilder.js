@@ -104,6 +104,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             ChatStorage[session.type].chat.list[session.session_key].reference.author = null;
             ChatStorage[session.type].chat.list[session.session_key].reference.name = null;
             ChatStorage[session.type].chat.list[session.session_key].reference.text = null;
+            ChatStorage[session.type].chat.list[session.session_key].reference.priority = null;
             //typing presence
             ChatStorage[session.type].chat.list[session.session_key].typing = {};
             ChatStorage[session.type].chat.list[session.session_key].typing.monitor = CoreConfig.is_typing_presence; // this is used to turn chat typing presence on or off

@@ -208,33 +208,6 @@ directive('cmProfile', function() {
         link: function(scope, elm, attrs) {}
     };
 }).
-
-directive('ngEnterPress', function() {
-    return function(scope, element, attrs) {
-        element.bind("keydown keypress", function(event) {
-            if (event.which === 13) {
-                scope.$apply(function() {
-                    scope.$eval(attrs.ngEnterPress);
-                });
-
-                event.preventDefault();
-            }
-        });
-    };
-}).
-directive('ngTabPress', function() {
-    return function(scope, element, attrs) {
-        element.bind("keydown keypress", function(event) {
-            if (event.which === 9) {
-                scope.$apply(function() {
-                    scope.$eval(attrs.ngTabPress);
-                });
-
-                event.preventDefault();
-            }
-        });
-    };
-}).
 directive('bindHtmlUnsafe', function($compile) {
     return function($scope, $element, $attrs) {
 
@@ -252,50 +225,6 @@ directive('bindHtmlUnsafe', function($compile) {
             compile(newHTML); // Compile it
         });
 
-    };
-}).
-directive('focusMe', function($timeout, $parse) {
-    return {
-        //scope: true,   // optionally create a child scope
-        link: function(scope, elem, attrs) {
-            var model = $parse(attrs.focusMe);
-            scope.$watch(model, function(value) {
-                if (value === true) {
-                    $timeout(function() {
-                        if (angular.isDefined(elem[0].value)) {
-                            var elemLen = elem[0].value.length;
-                            if (elem[0].selectionStart || elem[0].selectionStart == '0') {
-                                // Firefox/Chrome
-                                elem[0].selectionStart = elemLen;
-                                elem[0].selectionEnd = elemLen;
-                                elem[0].focus();
-                            } else {
-                                elem[0].focus();
-                            }
-                        }
-
-                    });
-                }
-            });
-            // to address @blesh's comment, set attribute value to 'false'
-            // on blur event:
-            elem.bind('blur', function() {
-                if (model && model.assign) {
-                    scope.$apply(model.assign(scope, false));
-                }
-
-            });
-        }
-    };
-}).
-directive('ngKeydown', function() {
-    return {
-        restrict: 'A',
-        link: function(scope, elem, attrs) {
-            // this next line will convert the string
-            // function name into an actual function
-            var functionToCall = scope.$eval(attrs.ngKeydown);
-        }
     };
 }).
 directive('windowResize', function($rootScope, $window, $timeout) {
@@ -417,7 +346,7 @@ directive('scrollIf', ['$timeout', '$window', '$compile', function($timeout, $wi
 
     }
 }]).
-directive('scrollOnClick', function($timeout, $parse) {
+directive('scrollOnClick', ['$timeout', '$parse', 'UxManager', function($timeout, $parse, UxManager) {
     return {
         scope: true,
         //scope: true,   // optionally create a child scope
@@ -425,24 +354,27 @@ directive('scrollOnClick', function($timeout, $parse) {
             var model = $parse(attrs.scrollOnClick);
             scope.$watch(model, function(value) {
                 if (value === true) {
+                    console.log('scrollOnClick');
                     $timeout(function() {
-                        var message_display = document.getElementById(scope.referenced_display);
+                        var message_display = document.getElementById('list:' + UxManager.reference.session_key);
+                        console.log('message_display', message_display);
                         var message_display_current = message_display.scrollTop;
                         var message_display_height = message_display.clientHeight;
                         /*                  console.log(scope.referenced_message_id); */
-                        var message_elem = document.getElementById(scope.referenced_message_id);
+                        var message_elem = document.getElementById(UxManager.reference.session_key + ':' + UxManager.reference.priority);
+                        console.log('message_elem', message_elem);
                         var elem_height = message_elem.parentNode.parentNode.clientHeight;
                         var display_offset = (message_display_height / 3) - elem_height;
                         var visibile = message_elem.parentNode.parentNode.offsetTop - ((elem_height / 2) + 15);
 
-                        $("#" + scope.referenced_display).animate({
+                        $(message_display).animate({
                             scrollTop: visibile
                         }, 500);
                         $timeout(function() {
-                            message_elem.addClass('text-danger chat-reference-animation');
+                            $(message_elem).addClass('text-danger chat-reference-animation');
                         }, 1000);
                         $timeout(function() {
-                            message_elem.removeClass('text-danger chat-reference-animation');
+                            $(message_elem).removeClass('text-danger chat-reference-animation');
                             /*                      $("#" + scope.referenced_display).animate({scrollTop: message_display_current}, "slow"); */
                         }, 4000);
                     });
@@ -450,7 +382,7 @@ directive('scrollOnClick', function($timeout, $parse) {
             });
         }
     };
-}).
+}]).
 directive('directoryItemScroll', function($timeout, $parse) {
     return {
         scope: true,

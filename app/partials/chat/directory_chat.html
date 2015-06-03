@@ -119,7 +119,7 @@
 
 	<!-- Pop up for adding a user to the chat -->
 	<div ng-controller="InviteController" ng-show="directory_chat.invite == true" class="cm-chat-invite-box" >
-		<typeahead-users  ng-init="inviteListInstance(directory_chat)" items="directory_chat.invite_list" prompt="Start typing name" title="name" avatar="avatar" subtitle="user_id" model="directory_chat.invited" ng-keydown="updateInviteCloseTimer(directory_chat)" ng-enter-press="selectActiveSelection(directory_chat)" on-select="onItemSelected(directory_chat)" />
+		<typeahead-users  ng-init="inviteListInstance(directory_chat)" items="directory_chat.invite_list" prompt="Start typing name" title="name" avatar="avatar" subtitle="user_id" model="directory_chat.invited" ng-keydown="updateInviteCloseTimer(directory_chat)" ng-enter="selectActiveSelection(directory_chat)" on-select="onItemSelected(directory_chat)" />
 	</div>
 <!-- 	<a href="" ng-show="directory_chat.invite === true" class=" cm-chat-invite-close glyphicon glyphicon-remove" ng-click="closeInvite(directory_chat)"></a> -->
 	<!-- End of Pop up for adding user -->
@@ -128,7 +128,7 @@
 	<div ng-if="directory_chat.addTopicOn" class="cm-main-panel-chat-add-topic-wrapper" ng-submit="addTopic(directory_chat)">
 		<form class="form slim" role="form">
 			<div class="form-group slim">
-				<input  type="text" spellcheck="true"  pattern=".{5,40}" maxlength=35 required title="5 characters minimum"  class="cm-main-panel-chat-add-input" class="form-control" placeholder="Enter a topic for this chat..." ng-model="directory_chat.topic_description"  focus-me="directory_chat.isTopicFocus">
+				<input  type="text" spellcheck="true"  pattern=".{5,40}" maxlength=35 required title="5 characters minimum"  class="cm-main-panel-chat-add-input" class="form-control" placeholder="Enter a topic for this chat..." ng-model="directory_chat.topic_description"  ng-focus="directory_chat.isTopicFocus">
 			</div>
 			<button type="submit" style="width:0px;" class='hidden' </button> <!-- hidden -->
 		</form>
@@ -140,7 +140,7 @@
 	<div ng-if="directory_chat.showTagOption === true"  class="cm-main-panel-chat-tag-wrapper" ng-submit="updateTag(directory_chat)">
 		<form class="form slim" role="form">
 			<div class="form-group slim">
-				<input type="text" spellcheck="true"  pattern=".{3,20}" maxlength=20 required title="3 characters minimum" class="cm-chat-tag-input" class="form-control" placeholder="Enter Tag for this chat..." value="{{directory_chat.tag || ''}}" ng-model="directory_chat.tag_description"  focus-me="directory_chat.isTagFocus">
+				<input type="text" spellcheck="true"  pattern=".{3,20}" maxlength=20 required title="3 characters minimum" class="cm-chat-tag-input" class="form-control" placeholder="Enter Tag for this chat..." value="{{directory_chat.tag || ''}}" ng-model="directory_chat.tag_description"  ng-focus="directory_chat.isTagFocus">
 			</div>
 			<button type="submit" style="width:0px;" class='hidden' </button>
 		</form>
@@ -150,7 +150,7 @@
 	<div id="{{'topic_' + directory_chat.session_key + '_wrapper'}}" ng-show="directory_chat.allowTopic == true && directory_chat.topic_location.$value != false && directory_chat.topic_location.$value != null " ng-click="clearDirectory(directory_chat)" class="cm-main-panel-chat-topic-wrapper">
 	<span ng-click="toggleTopic(directory_chat)" class="cm-chat-topic-icon glyphicon glyphicon-pushpin cm-topic-toggle"></span>
 		<div class="cm-main-panel-chat-topic min-scroll"  ng-class="{'truncated':directory_chat.isTopicTruncated == true}">
-			<span id="{{'topic_' + directory_chat.session_key}}" maxlength=60 ng-enter-press="updateTopic(directory_chat)" contenteditable="{{ directory_chat.admin == directory_chat.user_id}}"  ng-class="{'selectable' : directory_chat.admin == directory_chat.user_id ,'no-select' : directory_chat.admin != directory_chat.user_id}"  ng-bind="directory_chat.topic_location.$value"></span>
+			<span id="{{'topic_' + directory_chat.session_key}}" maxlength=60 ng-enter="updateTopic(directory_chat)" contenteditable="{{ directory_chat.admin == directory_chat.user_id}}"  ng-class="{'selectable' : directory_chat.admin == directory_chat.user_id ,'no-select' : directory_chat.admin != directory_chat.user_id}"  ng-bind="directory_chat.topic_location.$value"></span>
 		</div>
 		<span href="#" ng-show="directory_chat.admin == directory_chat.user_id" ng-click="removeTopic(directory_chat)" class="cm-chat-topic-close glyphicon pull-right glyphicon-remove"></span>
 	</div>
@@ -258,7 +258,7 @@
 							</div>
 							<span ng-if="message.code" ng-click="message.showVideo = !message.showVideo" href="#" class="fa fa-youtube-square cm-pointer" style="position:absolute; right:8px;  bottom:2px; font-size:1.2em;"></span>
 							<span ng-if="message.audio || message.cid" ng-click="initAudio(message)" href="#" class="fa fa fa-play-circle cm-pointer" style="position:absolute; right:8px;  bottom:2px; font-size:1.2em;"></span>
-							<p scroll-on-click="isReferencedMessage(message)"  ng-dblclick="addReferenceMessage(directory_chat, message)" class="cm-chat-message-text" id="{{'ID_' + directory_chat.to_user_id + '_' + message.priority}} " ng-enter-press="updateMessage(directory_chat, message.priority, $index)" ng-blur="updateMessage(directory_chat, message.priority, $index)" ng-model="message.text"  contenteditable="{{ $last && message.key == directory_chat.user_last_chat}}" focus-me="$last && message.key == directory_chat.user_last_chat" spellcheck="false" ng-bind-html="message.text | linky:'_blank' | emoji"></p>
+							<p scroll-on-click="isReferencedMessage(message)"  ng-dblclick="addReferenceMessage(directory_chat, message)" class="cm-chat-message-text" id="{{'ID_' + directory_chat.to_user_id + '_' + message.priority}} " ng-enter="updateMessage(directory_chat, message.priority, $index)" ng-blur="updateMessage(directory_chat, message.priority, $index)" ng-model="message.text"  contenteditable="{{ $last && message.key == directory_chat.user_last_chat}}" ng-focus="$last && message.key == directory_chat.user_last_chat" spellcheck="false" ng-bind-html="message.text | linky:'_blank' | emoji"></p>
 							<div ng-if="message.reference != undefined ">
 								<div ng-init="setReference(message, directory_chat.first_priority)" class="cm-chat-message-text-ref-link" ng-click="referenceMessage(message.reference, 'ID_' + directory_chat.to_user_id + '_' + message.reference,  'message_display_' + directory_chat.index_position)">
 									<span ng-bind="'@' + message.referenceName"></span>&nbsp;<span ng-bind="'...' + message.referenceText"></span>
@@ -305,7 +305,7 @@
 								<span ng-if="message.past_hour" ng-bind="message.time | date:'MM/dd @ h:mma'"></span>
 								<span ng-if="!(message.past_hour)" ng-bind="message.time | {{directory_chat.time_format}}"></span>
 							</div>
-							<p scroll-on-click="isReferencedMessage(message, directory_chat)"  ng-dblclick="addReferenceMessage(directory_chat, message)" class="cm-chat-message-text" id="{{'ID_' + directory_chat.session_key + '_' + message.priority + '_group'}} " ng-enter-press="updateGroupMessage(directory_chat, message.priority, $index)" ng-blur="updateGroupMessage(directory_chat, message.priority, $index)" ng-model="message.text"  contenteditable="{{ $last && message.key == directory_chat.user_last_chat}}" spellcheck="false" ng-bind-html="message.text  | linky:'_blank' | emoji "></p>
+							<p scroll-on-click="isReferencedMessage(message, directory_chat)"  ng-dblclick="addReferenceMessage(directory_chat, message)" class="cm-chat-message-text" id="{{'ID_' + directory_chat.session_key + '_' + message.priority + '_group'}} " ng-enter="updateGroupMessage(directory_chat, message.priority, $index)" ng-blur="updateGroupMessage(directory_chat, message.priority, $index)" ng-model="message.text"  contenteditable="{{ $last && message.key == directory_chat.user_last_chat}}" spellcheck="false" ng-bind-html="message.text  | linky:'_blank' | emoji "></p>
 							<div ng-if="message.reference && message.reference < directory_chat.first_priority" class="cm-chat-message-text-ref">
 								<span ng-bind="'@' + message.referenceName"></span>&nbsp;<span ng-bind="'...' + message.referenceText"></span>
 							</div>
@@ -342,12 +342,12 @@
 
 	<div style="position:relative; width:100%; margin:0px; padding:1px 0px 0px 0px; height:{{chat_textarea_height}}px;">
 		<div ng-if="directory_chat.isGroupChat == false">
-			<textarea  ng-click="setTextFocus(directory_chat)" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on" placeholder="Enter chat to {{directory_chat.to_user_f_name}}... "  ng-keydown="showAsTyping(directory_chat)" ng-model="directory_chat.chat_text"  ng-enter-press=" addChatMessage(directory_chat)" class="cm-main-panel-chat-textarea" focus-me="directory_chat.isTextFocus" ng-tab-press="setNexTab()"></textarea>
+			<textarea  ng-click="setTextFocus(directory_chat)" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on" placeholder="Enter chat to {{directory_chat.to_user_f_name}}... "  ng-keydown="showAsTyping(directory_chat)" ng-model="directory_chat.chat_text"  ng-enter=" addChatMessage(directory_chat)" class="cm-main-panel-chat-textarea" ng-focus="directory_chat.isTextFocus" ng-tab-press="setNexTab()"></textarea>
 			<i style="position:absolute; top:5px; right:20px; z-index:109;" ng-show="isPinging" class="fa fa-spinner fa-spin fa-2x" ng-class="{'Busy':isPinging}"></i>
 		</div>
 		<!-- Text area that is open when chat is a group chat -->
 		<div ng-if="directory_chat.isGroupChat == true">
-			<textarea ng-click="setTextFocus(directory_chat)" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on"  placeholder="Enter chat to the group..." ng-keydown="isGroupTyping(directory_chat)" ng-model="directory_chat.chat_text"  ng-enter-press="addGroupChatMessage(directory_chat)" class="cm-main-panel-chat-textarea" focus-me="directory_chat.isTextFocus" ng-tab-press="setNexTab()"></textarea>
+			<textarea ng-click="setTextFocus(directory_chat)" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on"  placeholder="Enter chat to the group..." ng-keydown="isGroupTyping(directory_chat)" ng-model="directory_chat.chat_text"  ng-enter="addGroupChatMessage(directory_chat)" class="cm-main-panel-chat-textarea" ng-focus="directory_chat.isTextFocus" ng-tab-press="setNexTab()"></textarea>
 
 		</div>
 		<div ng-show="isPageComplete && directory_chat"ng-click="toggleEmoji(directory_chat)" class="cm-main-panel-chat-emoji-toggle">

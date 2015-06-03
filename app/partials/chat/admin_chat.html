@@ -9,7 +9,7 @@
 		<div ng-show="admin_group_chat.addTopicOn" class="cm-main-panel-chat-add-topic-wrapper" ng-submit="addTopic(admin_group_chat)">
 			<form class="form slim" role="form">
 				<div class="form-group slim">
-					<input style="width:100%;" type="text" spellcheck="true"  pattern=".{5,40}" maxlength="35" required title="5 characters minimum"  class="topic-input" class="form-control" placeholder="Enter a topic for this chat..." ng-model="admin_group_chat.topic_description"  focus-me="admin_group_chat.isTopicFocus">
+					<input style="width:100%;" type="text" spellcheck="true"  pattern=".{5,40}" maxlength="35" required title="5 characters minimum"  class="topic-input" class="form-control" placeholder="Enter a topic for this chat..." ng-model="admin_group_chat.topic_description"  ng-focus="admin_group_chat.isTopicFocus">
 				</div>
 				<button type="submit" style="width:0px;" class='hidden' </button> <!-- hidden -->
 			</form>
@@ -22,7 +22,7 @@
 	<div id="{{'topic_' + admin_group_chat.session_key + '_wrapper'}}" ng-show="admin_group_chat.topic_location.$value != false && admin_group_chat.topic_location.$value != null " ng-click="clearDirectory(admin_group_chat)" class="cm-main-panel-chat-topic-wrapper">
 	<span ng-click="toggleTopic(admin_group_chat)" class="cm-chat-topic-icon glyphicon glyphicon-pushpin pull-left"></span>
 		<div class="cm-main-panel-chat-topic min-scroll"  ng-class="{'truncated':admin_group_chat.isTopicTruncated == true}">
-			<span id="{{'topic_' + admin_group_chat.session_key}}" maxlength=60 ng-enter-press="updateTopic(admin_group_chat)" contenteditable="{{ true}}"  ng-class="{'selectable' : admin_group_chat.admin == directory_chat.user_id ,'no-select' : admin_group_chat.admin != admin_group_chat.user_id}"  ng-bind="admin_group_chat.topic_location.$value"></span>
+			<span id="{{'topic_' + admin_group_chat.session_key}}" maxlength=60 ng-enter="updateTopic(admin_group_chat)" contenteditable="{{ true}}"  ng-class="{'selectable' : admin_group_chat.admin == directory_chat.user_id ,'no-select' : admin_group_chat.admin != admin_group_chat.user_id}"  ng-bind="admin_group_chat.topic_location.$value"></span>
 		</div>
 		<span href="#" ng-if="true" ng-click="removeTopic(admin_group_chat)" class="cm-chat-topic-close glyphicon pull-right glyphicon-remove"></span>
 	</div>
@@ -84,7 +84,7 @@
 								<span ng-show="message.past_hour" ng-bind="message.time | date:'MM/dd @ h:mma'"></span>
 								<span ng-show="!(message.past_hour)" ng-bind="message.time | {{admin_group_chat.time_format}}"></span>
 							</div>
-							<p scroll-on-click="isReferencedMessage(message)"  ng-dblclick="addReferenceMessage(admin_group_chat, message )" class="cm-chat-message-text selectable" id="{{'ID_' + admin_group_chat.session_key + '_' + message.priority + '_group'}}" ng-blur="updateGroupMessage(admin_group_chat, message.priority, $index)" ng-enter-press="updateGroupMessage(admin_group_chat, message.priority, $index)" ng-model="message.text"  contenteditable="{{ $last && message.key == admin_group_chat.user_last_chat}}" spellcheck="false" ng-bind-html="message.text  | linky:'_blank' | emoji "></p>
+							<p scroll-on-click="isReferencedMessage(message)"  ng-dblclick="addReferenceMessage(admin_group_chat, message )" class="cm-chat-message-text selectable" id="{{'ID_' + admin_group_chat.session_key + '_' + message.priority + '_group'}}" ng-blur="updateGroupMessage(admin_group_chat, message.priority, $index)" ng-enter="updateGroupMessage(admin_group_chat, message.priority, $index)" ng-model="message.text"  contenteditable="{{ $last && message.key == admin_group_chat.user_last_chat}}" spellcheck="false" ng-bind-html="message.text  | linky:'_blank' | emoji "></p>
 							<div ng-if="message.reference != undefined ">
 								<div ng-init="setReference(message, admin_group_chat.first_priority)" ng-class="{'cm-chat-message-text-ref': message.isReference != true,'cm-chat-message-text-ref-link': message.isReference == true, 'cm-referenced-self': message.isReference && message.isReferencedSelf == true, 'cm-referenced-other':message.isReference && message.isReferencedSelf == false}" ng-click="referenceMessage(message.reference, 'ID_' + admin_group_chat.session_key + '_' + message.reference + '_group',  'message_display_' + admin_group_chat.index_position)">
 									<span ng-bind="'@' + message.referenceName"></span>&nbsp;<span ng-bind="'...' + message.referenceText"></span>
@@ -109,7 +109,7 @@
 	</div>
 
 	<div style="position:relative; width:100%; margin:0px; padding:1px 0px 0px 0px; height:{{chat_textarea_height}}px;">
-		<textarea ng-click="setDirectoryFocus(admin_group_chat)" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on"  placeholder="Enter chat to the group... " ng-model="admin_group_chat.chat_text"  ng-keydown="isGroupTyping(admin_group_chat)" ng-enter-press="addGroupChatMessage(admin_group_chat)" class="cm-main-panel-chat-textarea" style="left:2%;" focus-me="admin_group_chat.isTextFocus" ng-tab-press="setNexTab()"></textarea>
+		<textarea ng-click="setDirectoryFocus(admin_group_chat)" spellcheck="true" auto-correct="on" autocorrect="on" autocapitalize="on"  placeholder="Enter chat to the group... " ng-model="admin_group_chat.chat_text"  ng-keydown="isGroupTyping(admin_group_chat)" ng-enter="addGroupChatMessage(admin_group_chat)" class="cm-main-panel-chat-textarea" style="left:2%;" ng-focus="admin_group_chat.isTextFocus" ng-tab-press="setNexTab()"></textarea>
 	</div>
 	<div ng-click="toggleEmoji(admin_group_chat)" class="cm-main-panel-chat-emoji-toggle">
 		<center><span ng-blur="toggleEmoji(admin_group_chat)" class="emoji emoji_smiley"></span></center><!-- Toggle for emoji pop up box -->

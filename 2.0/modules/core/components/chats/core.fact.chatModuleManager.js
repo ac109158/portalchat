@@ -123,7 +123,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             $timeout(function() {
                 that.module.state.is_ready = true;
                 $timeout(function() {
-                    $rootScope.$broadcast('update-chosen');
                     $timeout(function() {
                         UxManager.ux.fx.evaluateChatModuleLayout();
                         that.addUnloadListener();
@@ -135,7 +134,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
 
     this.addUnloadListener = function() {
-        console.log('here');
         $window.onbeforeunload = function(e) {
             SettingsManager.unload();
             SessionsManager.unload();
@@ -144,7 +142,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
     this.setFirebaseLocations = function() {
         if (UserManager.user.profile.id) {
-            // console.log(CoreConfig.chat.url_root + UserManager.user.profile.id + '/' + CoreConfig.session.root_reference);
             that.fb.chat.location.sessions = new Firebase(CoreConfig.chat.url_root + UserManager.user.profile.id + '/' + CoreConfig.session.root_reference);
         }
     };
@@ -172,7 +169,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                             that.createSessionifNotExists('contact', UserManager.user.profile.id + ':' + key);
                         });
                         var last_child = keys[keys.length - 1];
-                        console.log('last_child:', last_child);
                         if (angular.isUndefined(last_child)) {
                             discard_last_child = false;
                         }
@@ -206,9 +202,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                                 if (discard_last_child) {
                                     discard_last_child = false;
                                 } else {
-                                    console.log(signal);
                                     if (signal && signal.type === 'contact') {
-                                        console.log('we need to prime a contact chat', location_id, signal);
                                         var contact_tag = CoreConfig.common.reference.user_prefix + location_id;
                                         if (angular.isDefined(ContactsManager.contacts.profiles.map[contact_tag]) && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]]) {
                                             that.createSessionifNotExists('contact', that.getSessionKey(location_id));
@@ -239,10 +233,8 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
     this.createSessionifNotExists = function(type, session_key) {
         if (ChatStorage[type].chat.list[session_key]) {
-            console.log('Already exists;', type, session_key);
             return;
         } else {
-            console.log('prime a session: ', type, session_key);
             if (type == 'contact' && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + session_key.split(':')[1]]]) {
                 var contact = angular.copy(ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + session_key.split(':')[1]]]);
                 that.registerContactChatSession(that.getContactChatSessionDetails(contact), false);
@@ -275,7 +267,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
     this.chatContact = function(contact) {
         if (contact && contact.user_id && that.module.state.allow_chat_request) {
-            console.log(contact);
             that.module.state.allow_chat_request = false;
             var session = that.getContactChatSessionDetails(contact);
             if (that.registerContactChatSession(angular.copy(session))) {
@@ -305,7 +296,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 $log.debug('Request Denied: Firebase is Offline');
                 return false;
             } else if (that.module.attr.last_requested_chat === session.session_key) {
-                $log.debug('This appears to be a duplicate rquest, return false'); /*           console.log('requested: ' + that.last_requested_chat + ' session.user_id: ' + session.user_id); */
+                $log.debug('This appears to be a duplicate rquest, return false');
                 that.module.attr.last_requested_chat = undefined;
                 return true;
             }
@@ -488,7 +479,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                         that.module.asset.external_window_instance.addEventListener('DOMContentLoaded', resizeExternalWindowInstance, true);
 
                         function resizeExternalWindowInstance() {
-                            /*                              console.log('calling resize child'); */
                             $timeout(function() {
                                 that.module.asset.external_window_instance.document.documentElement.style.overflow = 'hidden'; // firefox, chrome
                                 that.module.asset.external_window_instance.document.body.scroll = "no"; // ie only
@@ -666,6 +656,11 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     this.updateChatTopic = function(type, session_key) {
         ChatManager.updateChatTopic(type, session_key);
     };
+
+    this.removeChatTopic = function(type, session_key) {
+        ChatManager.removeChatTopic(type, session_key);
+    };
+
     this.resetDirectoryChatListFocusSettings = function() {
         angular.forEach(ChatStorage.directory.chat.list, function(directory_chat) {
             ChatManager.resetCommonFocusSettings(directory_chat.type, directory_chat.session_key);
@@ -673,7 +668,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
 
     this.closeChatModule = function() {
-        console.log('close');
         that.resetDirectoryChatListFocusSettings();
         $rootScope.$evalAsync(function() {
             that.module.state.is_closing = true;
@@ -848,7 +842,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
 
     this.setChatAsCurrent = function(type, session_key) {
-        console.log('setChatAsCurrent: ', type, session_key);
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (type === 'directory') {
                 if (ChatStorage[type].chat.list[session_key].messages.list.length > CoreConfig.chat.setting.max_message_count) {
@@ -870,7 +863,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 SettingsManager.updateGlobalSetting('last_panel_tab', session_key, true);
             }
             if (type === 'contact') {
-                console.log('here');
                 if (that.module.current.contact.session_key) {
                     ChatStorage.contact.chat.list[that.module.current.contact.session_key].attr.is_active = false;
                 }
@@ -879,7 +871,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 ChatStorage[type].chat.list[session_key].attr.is_active = true;
                 ChatStorage[type].chat.list[session_key].session.active = true;
                 that.module.current.contact.chat = ChatStorage[type].chat.list[session_key];
-                console.log('current contact: ', that.module.current.contact.chat);
 
                 SettingsManager.updateGlobalSetting('last_contact_chat', session_key, true);
             }
@@ -1017,7 +1008,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
 
     this.setMainPanelTab = function(tab_index_position) {
-        console.log('setMainPanelTab: ', tab_index_position)
         if (parseInt(tab_index_position, 10) > -1 && that.module.tab.current.index_position != tab_index_position) {
             that.module.tab.current = that.module.tab.list[tab_index_position];
             if (that.module.tab.current.type === 'contact') {
@@ -1149,7 +1139,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
 
     this.evaluateChatModuleLayout = function() {
-        console.log('here');
         UxManager.ux.fx.evaluateChatModuleLayout();
         return;
 
@@ -1184,7 +1173,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
     this.showInGeneralPanelContactList = function(contact) { // this function will determine the client has filtered the user out of the general directory user list
         if (angular.isDefined(UserManager.user.group) && UserManager.user.group.indexOf(CoreConfig.common.reference.user_prefix + contact.user_id) > -1) {
-            /*          console.log(user.name + 'is in user_group' + angular.toJson(UserManager.user_group)); */
             return false;
         }
         if (contact.user_id === ContactsManager.smod.id || contact.user_id === ContactsManager.tod.id) {
@@ -1201,14 +1189,10 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
 
     this.isSessionLastRequested = function(session_key) {
-        /*      console.log(session + ' : ' + ChatManager._last_pushed_session); */
-        /*      console.log(session === ChatManager._last_pushed_session) */
         return session_key === that.module.attr.last_requested_chat;
     };
 
     this.isSessionLastRemoved = function(session_key) {
-        /*      console.log(session + ' : ' + $scope.last_deactivated_chat); */
-        /*      console.log(session === $scope.last_deactivated_chat); */
         return session_key === that.module.attr.last_removed_chat;
     };
 

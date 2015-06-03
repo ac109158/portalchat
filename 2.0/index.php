@@ -55,19 +55,6 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
     var g = '';
     var debug = false;
 
-
-    window.onerror = function (errorMsg, url, lineNumber, columnNumber, errorObject) {
-        var errMsg;
-        //check the errorObject as IE and FF don't pass it through (yet)
-        if (errorObject && errorObject !== undefined) {
-                errMsg = errorObject.message;
-            }
-            else {
-                errMsg = errorMsg;
-            }
-        console.log('Error: ' + errMsg);
-    };
-
     var script_files = [
         './modules/core/core.module.js',
         './modules/core/services/core.fact.config.js',

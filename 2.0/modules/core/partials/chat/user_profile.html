@@ -39,7 +39,7 @@
                 </select>
             </center>
         </div>
-        <textarea ng-show="module.user.profile.presence.state != 'Online'" class="pointer"style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px; color:black;" placeholder="Enter a detailed message for your current chat status if you would like..." ng-model="module.user.profile.presence.message" ng-enter-press="" ng-blur="ui.fx.setUserChatPresence(false)"></textarea>
+        <textarea ng-show="module.user.profile.presence.state != 'Online'" class="pointer"style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px; color:black;" placeholder="Enter a detailed message for your current chat status if you would like..." ng-model="module.user.profile.presence.message" ng-enter="" ng-blur="ui.fx.setUserChatPresence(false)"></textarea>
         <textarea ng-show="module.user.profile.presence.state == 'Online'" style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px; color:black;" placeholder="N/A"></textarea>
         <!--
 <div ng-show="module.user.profile.presence.state != 'Online' && module.user.profile.presence.message.length" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">

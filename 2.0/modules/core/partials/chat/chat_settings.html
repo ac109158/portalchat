@@ -53,10 +53,15 @@
             <span href="#" class=" glyphicon glyphicon-tag"></span>
             <span class="pointer">Remove Tag</span>
         </div>
-        <div ng-if="!chat.topic.description.set" class="cm-chat-user-option pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'topic', true);">
+        <div ng-if="!chat.session.topic.length" class="cm-chat-user-option pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'topic', true);">
             <!-- Option to add topic to chat -->
             <span href="#" class="glyphicon glyphicon-star"></span>
             <span class="pointer">Add Topic</span>
+        </div>
+        <div ng-if="chat.session.topic.length" class="cm-chat-user-option pointer" ng-click="ui.fx.removeChatTopic(chat.session.type, chat.session.session_key);">
+            <!-- Option to add topic to chat -->
+            <span href="#" class="glyphicon glyphicon-star"></span>
+            <span class="pointer">Remove Topic</span>
         </div>
         <!--
         <div ng-if="chat.viewProfile"  class="cm-chat-user-option"  ng-click="closeProfile(directory_chat)" >
