@@ -43,12 +43,12 @@
                 <span class="pointer">Add User</span>
             </div>
         </div>
-        <div ng-if="!chat.tag.set && !chat.session.is_directory_chat" class="cm-chat-user-option pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'tag', true);">
+        <div ng-if="!chat.session.tag && !chat.session.is_directory_chat" class="cm-chat-user-option pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'tag', true);">
             <!-- Option to tag the name of the chat box -->
             <span href="#" class=" glyphicon glyphicon-tag"></span>
-            <span>Tag Chat</span>
+            <span>Add Tag</span>
         </div>
-        <div ng-if="chat.tag.set" class="cm-chat-user-option pointer" ng-click="removeTag(directory_chat)">
+        <div ng-if="chat.session.tag" class="cm-chat-user-option pointer" ng-click="ui.fx.removeChatTag(chat.session.type, chat.session.session_key);">
             <!-- Option to tag the name of the chat box -->
             <span href="#" class=" glyphicon glyphicon-tag"></span>
             <span class="pointer">Remove Tag</span>

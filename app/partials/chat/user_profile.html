@@ -43,7 +43,7 @@
 				<div style="width:100%; height:20px; background:rgba(255,255,255,.8); border-radius:2px; margin-bottom:2px;">
 					<center><span>Status: </span><span ng-class="{'Busy' : user_chat_presence.$value != 'Online','Online': user_chat_presence.$value == 'Online' }" ng-bind="user_chat_presence.$value"></span></center>
 				</div>
-				<textarea ng-show="user_chat_presence.$value != 'Online'" style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px;"  placeholder="Enter a detailed message for your current chat status if you would like..." ng-model="user_profile.presence.message" ng-enter="updatePresenceMessage()" ng-blur="updatePresenceMessage()"></textarea>
+				<textarea max-length="100" ng-show="user_chat_presence.$value != 'Online'" style="width:100%; font-size:.8em;  height:50%; display:block; resize:none; margin-bottom:2px;"  placeholder="Enter a detailed message for your current chat status if you would like..." ng-model="user_profile.presence.message" ng-enter="updatePresenceMessage()" ng-blur="updatePresenceMessage()"></textarea>
 				<!--
 <div ng-show="user_chat_presence.$value != 'Online' && user_profile.presence.message.length" style="min-width:100px; width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
 					<center>Add Message to Profile: <input ng-change="updatePresenceMessageShow()" type="checkbox" ng-model="user_profile.presence.show_message"></center>

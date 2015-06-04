@@ -1422,6 +1422,30 @@ angular.module('pop.toolkit').directive('dynamic', function($compile) {
         }
     };
 });
+
+angular.module('pop.toolkit').directive('ngBindHtmlUnsafe', [function() {
+    return function(scope, element, attr) {
+        element.addClass('ng-binding').data('$binding', attr.ngBindHtmlUnsafe);
+        scope.$watch(attr.ngBindHtmlUnsafe, function ngBindHtmlUnsafeWatchAction(value) {
+            element.html(value || '');
+        });
+    }
+}]);
+
+angular.module('pop.toolkit').filter('parseUrl', function() {
+    var urls = /(\b(https?|ftp):\/\/[A-Z0-9+&@#\/%?=~_|!:,.;-]*[-A-Z0-9+&@#\/%=~_|])/gim
+    var emails = /(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})/gim
+    return function(text) {
+        if(text.match(urls)) {
+            text = text.replace(urls, "<a href=\"$1\" target=\"_blank\">$1</a>")
+        }
+        if(text.match(emails)) {
+            text = text.replace(emails, "<a href=\"mailto:$1\">$1</a>")
+        }
+
+        return text;
+    }
+});
 // this directive is used to track the scroll
 angular.module('pop.toolkit').directive("scroll", function($window) {
     return function(scope, element, attrs) {

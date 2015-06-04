@@ -170,7 +170,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         } else {
             html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
-        html += '<span class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | linky:' + "'_blank'" + ' | colonToSmiley" id="{{message.session_key + ' + "':'"  + ' + message.priority}}"></span>';
+        html += '<span class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | parseUrl | colonToSmiley" id="{{message.session_key + ' + "':'"  + ' + message.priority}}"></span>';
         if (message.reference && message.reference.key) {
             html += '<div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
             if (message.reference.author === UserManager.user.profile.id) {

@@ -91,7 +91,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
 
             ChatStorage[session.type].chat.list[session.session_key].tag = {};
             ChatStorage[session.type].chat.list[session.session_key].tag.description = '';
-            ChatStorage[session.type].chat.list[session.session_key].tag.set = '';
             // on the bubble
 
             //scroll control
@@ -348,6 +347,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                                 var message = snapshot.val();
                                 message.key = key;
                                 if (message && key != ChatStorage[session.type].chat.list[session.session_key].attr.last_logged_chat) {
+                                    ChatStorage[session.type].chat.list[session.session_key].session.active = true;
                                     that.storeChatMessageInChatMessageList(session.type, session.session_key, message);
                                     UxManager.ux.fx.alertNewChat(session.type, session.session_key);
                                     return;
@@ -381,6 +381,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             ChatStorage[type].chat.list[session_key].priority.next++;
         }
         ChatStorage[type].chat.list[session_key].messages.map[message.key] = ChatStorage[type].chat.list[session_key].messages.list.length;
+        message.text = $sce.trustAsHtml(message.text);
         ChatStorage[type].chat.list[session_key].messages.list.push(message);
 
     };

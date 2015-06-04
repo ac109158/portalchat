@@ -233,15 +233,6 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
         }
     };
 
-    this.showContactChatTagInput = function(session_key) {
-        that.resetCommonDefaultSettings('contact', session_key);
-        $timeout(function() {
-            that.toggleChatAttr('contact', session_key, 'is_tag_option', true, false);
-            that.toggleChatAttr('contact', session_key, 'is_tag_focus', true, false);
-            that.toggleChatAttr('contact', session_key, 'is_top_spacer', true, false);
-        });
-    };
-
     this.updateContactChatTag = function(session_key, fb_sync) {
         if (ChatStorage.contact.chat.list[session_key]) {
             if (angular.isDefined(ChatStorage.contact.chat.list[session_key].tag.description) && ChatStorage.contact.chat.list[session_key].tag.description.length > 2 && ChatStorage.contact.chat.list[session_key].tag.description.length <= 20) {
@@ -263,18 +254,38 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
         return false;
     };
 
-    this.setChatTopicHeight = function(type, session_key) {
+    this.removeChatTag = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (ChatStorage[type].chat.list[session_key].fb.target.topic) {
-                ChatStorage[type].chat.list[session_key].topic.height = $document.getElementById('topic_' + session_key + '_wrapper').clientHeight;
-            } else {
-                ChatStorage[type].chat.list[session_key].topic.height = 0;
-            }
+            ChatStorage[type].chat.list[session_key].session.tag = '';
+            ChatStorage[type].chat.list[session_key].tag.description = '';
+            SessionsManager.setUserChatSessionStorage(type, session_key);
+            that.resetCommonDefaultSettings(type, session_key);
+            $timeout(function() {
+                that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
+            }, 250);
         }
     };
 
+    this.addChatTag = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (angular.isDefined(ChatStorage[type].chat.list[session_key].tag.description) && ChatStorage[type].chat.list[session_key].tag.description.length > 2 && ChatStorage[type].chat.list[session_key].tag.description.length <= 20) {
+                ChatStorage[type].chat.list[session_key].tag.description = ChatStorage[type].chat.list[session_key].tag.description.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
+                if (ChatStorage[type].chat.list[session_key].tag.description.length >= 2) {
+                    ChatStorage[type].chat.list[session_key].session.tag = ChatStorage[type].chat.list[session_key].tag.description;
+                    SessionsManager.setUserChatSessionStorage(type, session_key);
+                }
+            }
+            ChatStorage[type].chat.list[session_key].tag.description = '';
+            that.resetCommonDefaultSettings(type, session_key);
+            $timeout(function() {
+                that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
+            }, 250);
+
+        }
+    };
+
+
     this.addChatTopic = function(type, session_key) {
-        console.log('here', type, session_key)
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (angular.isDefined(ChatStorage[type].chat.list[session_key].session.topic) && ChatStorage[type].chat.list[session_key].session.topic.length > 5 && ChatStorage[type].chat.list[session_key].session.topic.length <= 100) {
                 ChatStorage[type].chat.list[session_key].session.topic = ChatStorage[type].chat.list[session_key].session.topic.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
@@ -308,7 +319,6 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 SessionsManager.updateDirectoryChatSignals(type, session_key);
             }
             SessionsManager.setUserChatSessionStorage(type, session_key);
-            // that.setChatTopicHeight(type, session_key);
             that.resetCommonDefaultSettings(type, session_key);
             $timeout(function() {
                 that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
@@ -318,11 +328,12 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.updateChatTopic = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            var new_chat_topic = String($('#topic_' + session_key.split(':')[0] + '_' + session_key.split(':')[1]).text()).replace(/&/g, '').replace(/</g, '').replace(/>/g, '').replace(/"/g, ''); // sanitze the string
+            console.log('#' + session_key + ':topic');
+            var new_chat_topic = $(document.getElementById(session_key + ':topic')).text().replace(/&/g, '').replace(/</g, '').replace(/>/g, '').replace(/"/g, ''); // sanitze the string
             console.log('new_chat_topic: ', new_chat_topic);
             if (new_chat_topic === 'null' || new_chat_topic === '' || new_chat_topic.length < 5) {
                 ChatStorage[type].chat.list[session_key].session.topic = ChatStorage[type].chat.list[session_key].signals.user.topic;
-                $('#topic_' + session_key.split(':')[0] + '_' + session_key.split(':')[1]).text(ChatStorage[type].chat.list[session_key].signals.user.topic);
+                $(document.getElementById(session_key + ':topic')).text(ChatStorage[type].chat.list[session_key].signals.user.topic);
                 return false;
             }
             ChatStorage[type].chat.list[session_key].session.topic = new_chat_topic;
@@ -333,7 +344,6 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 SessionsManager.updateDirectoryChatSignals(type, session_key);
             }
             SessionsManager.setUserChatSessionStorage(type, session_key);
-            // that.setChatTopicHeight(type, session_key);
             that.resetCommonDefaultSettings(type, session_key);
             $timeout(function() {
                 that.toggleChatAttr(type, session_key, 'is_text_focus', true, false);
@@ -468,43 +478,6 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
         }
     };
 
-    this.updateChatMessage = function(type, session_key, priority, message_index) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (angular.isUndefined(ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message) || angular.isUndefined(ChatStorage[type].chat.list[session_key].attr.last_sent_user_message)) return false;
-            var encrypted_text;
-            var updated_text = $('#ID_' + ChatStorage[type].chat.list[session_key].contact.id + '_' + priority).text();
-            if (updated_text === 'null' || updated_text === '') {
-                return false;
-            }
-            /*      updated_text  = String(updated_text).replace(/&/g, '').replace(/</g, '').replace(/>/g, '').replace(/"/g, ''); // sanitze the string */
-            ChatStorage[type].chat.list[session_key].messages_list[message_index].text = updated_text;
-            if (UserManager.user.encryption === true) {
-                var encrypt_session_key = sjcl.encrypt(CoreConfig.encrypt_pass, session_key);
-                encrypted_text = sjcl.encrypt(session_key, updated_text);
-                if (encrypted_text === 'null' || new_text === '') {
-                    return false;
-                }
-            }
-            if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
-                ChatStorage[type].chat.list[session_key].fb.group.location.messages.push(message);
-                chat.attr.last_sent_user_message = firekey.key();
-                ChatStorage[type].chat.list[session_key].fb.group.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_user_message).update({
-                    text: encrypted_text || updated_text
-                });
-            } else {
-                ChatStorage[type].chat.list[session_key].fb.user.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_user_message).update({
-                    text: encrypted_text || updated_text
-                });
-                ChatStorage[type].chat.list[session_key].fb.contact.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message).update({
-                    text: encrypted_text || updated_text
-                });
-            }
-            ChatStorage[type].chat.list[session_key].attr.is_text_focus = true;
-            $timeout(function() {
-                that.resetUserIsTyping(type, session_key);
-            }, 500);
-        }
-    };
     this.setChatContactAdditonalProfile = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             ChatStorage[type].chat.list[session_key].contact.additional_profile = ContactsManager.getContactAdditionalProfile(ChatStorage[type].chat.list[session_key].contact.id);
@@ -533,11 +506,9 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 that.checkForCommand(type, session_key, ChatStorage[type].chat.list[session_key].message);
                 return;
             } else if (angular.isDefined(ChatStorage[type].chat.list[session_key].message.text) && ChatStorage[type].chat.list[session_key].message.text !== '' && ChatStorage[type].chat.list[session_key].message.text.length < 1000) {
-
-                /*          var message_text = String(ChatStorage[type].chat.list[session_key].message.text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string */
-
+                var message_text = String(ChatStorage[type].chat.list[session_key].message.text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
+                message_text = message_text.replace(/\n/g, '<br>');
                 ChatStorage[type].chat.list[session_key].scroll.to_bottom = false;
-                var message_text = ChatStorage[type].chat.list[session_key].message.text;
                 ChatStorage[type].chat.list[session_key].message.text = null;
                 ChatStorage[type].chat.list[session_key].ux.unread = 0;
                 /*          var d = new Date(); */
@@ -880,7 +851,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             if (!ChatStorage[type].chat.list[session_key].attr.is_init) {
                 return false;
             }
-            var el = document.getElementById('message_display_' + session_key);
+            var el = document.getElementById('list:' + session_key);
             if (el === null) {
                 $log.debug('element was not found');
                 return false;

@@ -177,12 +177,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                             var key = snapshot.key();
                             var signals = snapshot.val();
                             var session_key = UserManager.user.profile.id + ':' + key;
-
-                            if (signals && signals.type) {
+                            console.log('active: '. ChatStorage[signals.type].chat.list[session_key].session.active);
+                            if (ChatStorage[signals.type].chat.list[session_key].session.active && signals && signals.type) {
                                 if (ChatStorage[signals.type] && ChatStorage[signals.type].chat.list[session_key]) {
-                                    if (!ChatStorage[signals.type].chat.list[session_key].session.active) {
-                                        ChatStorage[signals.type].chat.list[session_key].session.active = true;
-                                    }
                                     $rootScope.$evalAsync(function() {
                                         ChatStorage[signals.type].chat.list[session_key].signals.contact = signals;
                                         if (signals.topic != ChatStorage[signals.type].chat.list[session_key].session.topic) {
@@ -258,6 +255,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.timestamp = new Date().getTime();
             session.is_sound = true;
             session.topic = '';
+            session.tag = '';
             session.order = -1;
             return session;
         }
@@ -647,6 +645,14 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 that.module.contact_list.setting.show_offline = !that.module.contact_list.setting.show_offline;
             }
         });
+    };
+
+    this.setChatTag = function(type, session_key) {
+        ChatManager.addChatTag(type, session_key);
+    };
+
+    this.removeChatTag = function(type, session_key) {
+        ChatManager.removeChatTag(type, session_key);
     };
 
     this.setChatTopic = function(type, session_key) {
@@ -1097,30 +1103,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         }
     };
 
-    this.lookUpChatReference = function(priority, message_id, display_id) {
-        that.module.referenced.priority = null;
-        that.module.referenced.message_id = null;
-        that.module.referenced.display_id = null;
-        if (reference !== null) {
-            that.module.referenced.priority = message;
-            that.module.referenced.message_id = message_id;
-            that.module.referenced.display_id = display_id;
-        }
-    };
-
-    this.isReferencedMessage = function(message) {
-        if (that.module.referenced.priority !== null && that.module.referenced.priority === message.priority && !that.module.attr.is_referencing) {
-            that.module.attr.is_referencing = true;
-            $timeout(function() {
-                that.module.referenced.priority = null;
-                that.module.referenced.message_id = null;
-                that.module.referenced.display_id = null;
-                that.module.attr.is_referencing = false;
-            }, 3000);
-            return true;
-        }
-        return false;
-    };
 
     this.addReferenceToChatMessage = function(type, session_key, message) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
@@ -1130,7 +1112,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
     this.clearChatMessageHistory = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            ChatModuleManager.clearChatMessageHistory(type, session_key);
+            ChatManager.clearChatMessageHistory(type, session_key);
         }
     };
 

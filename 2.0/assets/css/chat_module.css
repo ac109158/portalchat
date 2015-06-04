@@ -335,10 +335,10 @@ input[type='range']::-moz-range-thumb {
 }
 
 .chat-reference-animation {
-    -webkit-animation: bounce 1s;
-    -moz-animation: bounce 1s;
-    -ms-animation: bounce 1s;
-    animation: bounce 1s;
+    -webkit-animation: flash 1s;
+    -moz-animation: flash 1s;
+    -ms-animation: flash 1s;
+    animation: flash 1s;
     -vendor-animation-iteration-count: 1;
     background: rgba(235, 123, 0, .8);
     color: white;

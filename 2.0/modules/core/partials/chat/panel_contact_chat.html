@@ -1,7 +1,7 @@
 <div class="cm-contact-chat">
-    <div class="cm-contact-chat-header" class="cm-main-panel-label one-edge-shadow">
+    <div class="cm-contact-chat-header one-edge-shadow" class="cm-main-panel-label one-edge-shadow">
         <img class="pointer" style="pointer-events:all;" ng-click="ui.fx.toggleChatMenu('contact', chat.session.session_key, 'profile');" ng-src="{{chat.contact.profile.avatar_url}}" width=35 height=35/>
-        <span style="margin-left:5px; line-height:20px;" ng-bind="chat.contact.profile.name"></span>
+        <span style="margin-left:5px; line-height:20px;" ng-bind="chat.session.tag || chat.contact.profile.name"></span>
         <span style="background:white; width:100px; border-radius:10px; margin-left:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em;" ng-class="{'Busy' : chat.contact.profile.presence.state != 'Online' && chat.contact.profile.presence.state != 'Offline' && chat.contact.profile.online == true ,'Offline' : chat.contact.profile.online == false || chat.contact.profile.presence.state == 'Offline','Online' : chat.contact.profile.presence.state == 'Online' && chat.contact.profile.online == true}">{{chat.contact.profile.presence.state}}</span>
         <div class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.closeChat();">
             <center><span class="fa fa-times fa-1x"></span></center>
@@ -11,7 +11,7 @@
         </div>
     </div>
     <div class="cm-contact-chat-status-top min-scroll">
-        <div ng-if="chat.menu.invite == true" class="cm-contact-chat-invite-wrapper">
+        <div ng-if="chat.menu.invite == true" class="cm-contact-chat-add-wrapper">
             <select chosen multiple ng-model="chat.invite.contact_list" ng-options="contact as contact.name for contact in profiles.list |filter: {online:true} | orderBy:'name'">
                 <option value=''>Search User</option>
             </select>
@@ -22,16 +22,23 @@
             </div>
             <div class="clearfix"></div>
         </div>
+        <!-- Pop up input box for adding a chat tag -->
+        <form ng-if="chat.menu.tag" class="cm-contact-chat-add-wrapper" ng-submit="ui.fx.setChatTag(chat.session.type, chat.session.session_key)" role="form">
+            <div class="form-group slim">
+                <input class="form-control" type="text" spellcheck="true" pattern=".{3,20}" maxlength=20 required title="3 characters minimum" class="form-control" placeholder="Enter a Tag for this chat..." ng-model="chat.tag.description" ng-focus="chat.attr.is_tag_focus">
+            </div>
+            <button type="submit" style="width:0px;" class='hidden'> </button>
+        </form>
         <!-- Pop up input box for adding a topic to the chat -->
-        <form ng-if="chat.menu.topic" class="cm-contact-chat-chat-add-topic-wrapper" ng-submit="ui.fx.setChatTopic(chat.session.type, chat.session.session_key)" class="form slim" role="form">
+        <form ng-if="chat.menu.topic" class="cm-contact-chat-add-wrapper" ng-submit="ui.fx.setChatTopic(chat.session.type, chat.session.session_key)" role="form">
             <div class="form-group slim">
                 <input class="form-control" style="height: 30px; padding: 2px;" type="text" spellcheck="true" pattern=".{5,100}" maxlength=100 required title="5 characters minimum" class="form-control" placeholder="Enter a topic for this chat..." ng-model="chat.session.topic" ng-focus="chat.attr.is_topic_focus">
             </div>
             <button type="submit" style="width:0px;" class='hidden'> </button>
         </form>
-        <div id="{{'topic_' + chat.session.session_key + '_wrapper'}}" ng-if="chat.session.topic" class="cm-contact-chat-topic-wrapper">
+        <div ng-if="!chat.menu.topic && chat.session.topic" class="cm-contact-chat-topic-wrapper one-edge-shadow">
             <span ng-click="chat.topic.truncated = !chat.topic.truncated;" class="glyphicon glyphicon-pushpin pointer" style="position:absolute; left: 4px; top:10px;"></span>
-            <div class="cm-contact-chat-topic min-scroll" id="topic_{{chat.session.session_key.split(':')[0] + '_' + chat.session.session_key.split(':')[1]}}" maxlength=60 ng-enter="ui.fx.updateChatTopic(chat.session.type, chat.session.session_key)" ng-blur="ui.fx.updateChatTopic(chat.session.type, chat.session.session_key);" contenteditable="{{chat.admin && !chat.topic.truncated}}" ng-class="{'truncated':chat.topic.truncated == true, 'pointer' : chat.admin,'no-select' : !chat.admin}" ng-bind="chat.session.topic"></div>
+            <div class="cm-contact-chat-topic min-scroll" id="{{chat.session.session_key}}:topic" maxlength=60 ng-enter="ui.fx.updateChatTopic(chat.session.type, chat.session.session_key)" ng-blur="ui.fx.updateChatTopic(chat.session.type, chat.session.session_key);" contenteditable="{{chat.admin && !chat.topic.truncated}}" ng-class="{'truncated':chat.topic.truncated == true, 'pointer' : chat.admin,'no-select' : !chat.admin}" ng-bind="chat.session.topic"></div>
             <!-- <span href="#" ng-show="chat.admin" ng-click="removeTopic(directory_chat)" class="cm-chat-topic-close glyphicon pull-right glyphicon-remove"></span> -->
         </div>
     </div>
@@ -42,14 +49,6 @@
         <cm-contact-profile></cm-contact-profile>
     </div>
     <!-- Pop up input box for adding Tag as name of the chat -->
-    <div ng-if="chat.menu.tag === true" class="cm-main-panel-chat-tag-wrapper" ng-submit="updateTag(directory_chat)">
-        <form class="form slim" role="form">
-            <div class="form-group slim">
-                <input type="text" spellcheck="true" pattern=".{3,20}" maxlength=20 required title="3 characters minimum" class="cm-chat-tag-input" class="form-control" placeholder="Enter Tag for this chat..." value="{{chat.tag.desription || ''}}" ng-model="chat.tag_description" ng-focus="chat.attr.is_tag_focus">
-            </div>
-            <button type="submit" style="width:0px;" class='hidden' </button>
-        </form>
-    </div>
     <!-- end of tag input box -->
     <!-- Section for displaying Chat messages -->
     <div ng-if="chat.menu.audio" class="cm-contact-chat-full-menu min-scroll cm-menu-panel">
@@ -72,19 +71,20 @@
                 <div ng-init="message.html = ux.fx.getMessageHtml(chat.session.type, chat.session.session_key, message);" dynamic="message.html"></div>
                 <div class="clearfix"></div>
             </div>
+            <div style="position:relative; display:block; width: 100%; height: 45px;" class="clearfix"></div>
         </div>
         <!-- end of chat format container -->
     </div>
-    <div style="z-index:5; position:absolute; bottom:30px; width:100%;">
+    <div style="z-index:5; position:absolute; bottom:30px; width:100%; pointer-events:all;">
         <div emoji-form>
             <textarea id="messageInput" placeholder="Enter Chat to {{chat.chat_description || chat.contact.profile.first_name}}" ng-model="chat.message.text"></textarea>
             <button style="position: absolute; bottom:-20px; right:0;" id="emojibtn">
-                <i class="icon icon-emoji"></i>
+                <i class="icon icon-emoji pointer"></i>
             </button>
         </div>
     </div>
     <div class="cm-contact-chat-status-bottom min-scroll">
-        <div ng-if="chat.session.type === 'contact' && chat.signals.contact.is_typing" style="position:absolute; top:0px; left:0px; width: 100%; background:rgba(255,255,255,.5);">
+        <div ng-if="chat.session.type === 'contact' && chat.signals.contact.is_typing" style="position:absolute; z-index: 7; top:0px; left:0px; width: 100%; background:rgba(255,255,255,.5);">
             <i class="fa fa-spinner fa-2x fa-pulse cm-chat-typing-icon"></i>
             <div style="position:absolute; top:3px; left:35px;">
                 <img class="cm-chat-typing-avatar" ng-src="{{chat.contact.profile.avatar_url}}" />
@@ -96,7 +96,7 @@
                 <img class="cm-chat-typing-avatar" ng-repeat="contact_id in chat.signals.contact.is_typing track by $index" ng-src="{{profiles.list[profiles.map['user_' + contact_id]].avatar_url}}" />
             </div>
         </div>
-        <div ng-if="(chat.session.type == 'contact' && !chat.contact.profile.online) || chat.contact.presence.state == 'Offline'" class="cm-chat-offline-text one-edge-shadow">{{chat.tag.description || chat.contact.profile.first_name}} is Offline.</div>
+        <div ng-if="(chat.session.type == 'contact' && !chat.contact.profile.online) || chat.contact.presence.state == 'Offline'" class="cm-chat-offline-text full-edge-shadow">{{chat.tag.description || chat.contact.profile.first_name}} is Offline.</div>
         <div ng-if="!engine.network.online" class="cm-chat-offline-text one-edge-shadow">No Network Connection</div>
         <div ng-if=" !chat.attr.is_directory_chat && chat.attr.is_group_chat && Object.size(chat.contacts.active) < 1" class="cm-chat-offline-text one-edge-shadow">The Group Chat is Empty.</div>
         <div ng-if="chat.signals.nudge" class="cm-chat-offline-text" style="background:rgba(69,106,151,0.8); color:white;"><i class="fa fa-bolt chat-nudge-icon"></i> You were just nudged by {{chat.contact.profile.first_name}} <i class="fa fa-bolt chat-nudge-icon"></i></div>
@@ -104,10 +104,11 @@
     <!-- end of chat message repeat -->
     <!-- end of individual message section -->
     <div class="cm-contact-chat-message-reference-wrapper">
-        <div ng-show="chat.reference.text">
-            <div class="cm-contact-chat-reference-text">
-                <span ng-bind="'@' + chat.reference.name"></span>&nbsp;<span ng-bind-html="' : ' + chat.reference.text | colonToSmiley"></span>
-            </div>
+        <div ng-if="!chat.attr.is_group_chat && chat.contact.profile.presence.post && chat.contact.profile.presence.message" class="cm-contact-chat-banner min-scroll">
+            <span ng-bind="chat.contact.profile.presence.message"></span>
+        </div>
+        <div ng-show="chat.reference.text" class="cm-contact-chat-reference-text">
+            <span ng-bind="'@' + chat.reference.name"></span>&nbsp;<span ng-bind-html="' : ' + chat.reference.text | colonToSmiley"></span>
         </div>
     </div>
     <!--     <div ng-if="ux.platform.browser == 'Firefox'">

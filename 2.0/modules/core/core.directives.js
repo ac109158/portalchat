@@ -363,7 +363,7 @@ directive('scrollOnClick', ['$timeout', '$parse', 'UxManager', function($timeout
                         /*                  console.log(scope.referenced_message_id); */
                         var message_elem = document.getElementById(UxManager.reference.session_key + ':' + UxManager.reference.priority);
                         // console.log('message_elem', UxManager.reference.session_key + ':' + UxManager.reference.priority, message_elem);
-                        var visibile = message_elem.parentNode.parentNode.parentNode.parentNode.parentNode.offsetTop - 15;
+                        var visibile = message_elem.parentNode.parentNode.parentNode.parentNode.parentNode.offsetTop - 45;
                         // console.log('visible', message_elem, visibile);
                         $(message_display).animate({
                             scrollTop: visibile

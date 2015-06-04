@@ -66,6 +66,13 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         ChatModuleManager.showContactThatUserIsTyping(type, session_key);
     };
 
+    this.ui.fx.setChatTag = function(type, session_key) {
+        ChatModuleManager.setChatTag(type, session_key);
+    };
+
+    this.ui.fx.removeChatTag = function(type, session_key) {
+        ChatModuleManager.removeChatTag(type, session_key);
+    };
 
     this.ui.fx.setChatTopic = function(type, session_key) {
         ChatModuleManager.setChatTopic(type, session_key);
@@ -142,11 +149,6 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     this.ui.fx.addReferenceToChatMessage = function(type, session_key, message) {
         ChatModuleManager.addReferenceToChatMessage(type, session_key, message);
     };
-
-    this.ui.fx.lookUpChatReference = function(priority, message_id, display_id) {
-        ChatModuleManager.lookUpChatReference(priority, message_id, display_id);
-    };
-
 
     this.ui.fx.toggleChatModuleLayout = function() {
         if (SettingsManager.global.layout === 1) {
