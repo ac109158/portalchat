@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'PermissionsManager', 'NotificationManager', 'ChatStorage', 'BrowserService', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, UtilityManager, SettingsManager, PermissionsManager, NotificationManager, ChatStorage, BrowserService) {
+service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'ContactsManager', 'UtilityManager', 'SettingsManager', 'PermissionsManager', 'NotificationManager', 'ChatStorage', 'BrowserService', function($rootScope, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, ContactsManager, UtilityManager, SettingsManager, PermissionsManager, NotificationManager, ChatStorage, BrowserService) {
     var that = this;
 
     this.ux = {};
@@ -112,6 +112,9 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.returnMessageHtml = function(type, session_key, message) {
         var config = {};
         config.is_user_author = that.isMessageFromUser(message);
+        if(!config.is_user_author){
+            config.contact = ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + message.author]];
+        }
         config.is_full = that.isMessageAuthorDifferentLast(type, session_key, message);
         config.different_author = that.isMessageAuthorDifferentLast(type, session_key, message);
         if (!config.different_author) {
@@ -125,6 +128,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         } else {
             html += '<div class="cm-chat-message-wrapper-ext">';
         }
+        console.log(config);
         html += that.getMessageTemplate(type, session_key, message, config);
         html += '</div>';
         return html;
@@ -193,13 +197,13 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         var html = '';
         if (config.different_author || config.time_lapse) {
             html += '<div class="cm-chat-message-contact-avatar-wrapper img-circle">';
-            html += '<img class="cm-chat-message-avatar img-circle" ng-src="{{chat.contact.profile.avatar_url}}" alt="...">';
+            html += '<img class="cm-chat-message-avatar img-circle" src="'+ config.contact.avatar_url+ '" alt="...">';
             html += '</div>';
         }
         if (config.different_author || config.time_lapse) {
             html += '<div class="cm-chat-message-contact-content-wrapper-full" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}">';
             html += '<div class="cm-chat-message-contact-header-bar">';
-            html += '<span class="pull-left" ng-bind="chat.contact.profile.name"></span>';
+            html += '<span class="pull-left">'+ config.contact.name + '</span>';
             html += '<span class="pull-right" ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
             html += '</div>';
         } else {
@@ -216,7 +220,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         } else {
             html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
-        html += '<span class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | linky:' + "'_blank'" + ' | colonToSmiley" id="{{message.session_key + ' + "':'"  + ' + message.priority}}"></span>';
+        html += '<span class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | parseUrl | colonToSmiley" id="{{message.session_key + ' + "':'"  + ' + message.priority}}"></span>';
         if (message.reference && message.reference.key) {
             html += '<div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
             if (message.reference.author === UserManager.user.profile.id) {

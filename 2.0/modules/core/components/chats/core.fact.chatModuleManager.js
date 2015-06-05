@@ -68,7 +68,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
     this.module.config = {};
     this.module.config.directory = {};
-    this.module.config.directory.models = ['chat_reference', 'chat_description', 'admin', 'mandatory', 'watch_users', 'store_length'];
+    this.module.config.directory.models = ['name', 'session_key', 'admin', 'monitor', 'active'];
     this.module.config.directory.default_chats = {};
 
     this.module.setting = CoreConfig.module.setting;
@@ -112,8 +112,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     this.module.interval.window_resize = null;
 
     this.load = function() {
-        that.setFirebaseLocations();
-        that.setFirebaseTargets();
         that.establishUserChat();
         ChatBuilder.load();
         $timeout(function() {
@@ -140,26 +138,18 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         };
     };
 
-    this.setFirebaseLocations = function() {
-        if (UserManager.user.profile.id) {
-            that.fb.chat.location.sessions = new Firebase(CoreConfig.chat.url_root + UserManager.user.profile.id + '/' + CoreConfig.session.root_reference);
-        }
-    };
-
-    this.setFirebaseTargets = function() {
-        if (UserManager.user.profile.id) {}
-    };
-
     this.establishUserChat = function() { //  Step 1 this function will initialize the that variables and set the user chat presence.
         if (CoreConfig.user && UserManager.user.profile.id) {
             NotificationManager.mute();
             ChatStorage.contact.session.list = [];
             ChatStorage.contact.session.map = {};
             // look at the active session folder of the user, and create chatSession for an calling card objects present
-            SessionsManager.fb.location.storage.child(UserManager.user.profile.id).once('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
+            SessionsManager.fb.location.sessions.child(UserManager.user.profile.id).once('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
                 var sessions = snapshot.val();
                 angular.forEach(sessions, function(session) {
-                    ChatBuilder.buildChatForSession(session);
+                    if (session && session.type === 'contact') {
+                        ChatBuilder.buildChatForSession(session);
+                    }
                 });
                 $timeout(function() {
                     var discard_last_child = true;
@@ -177,7 +167,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                             var key = snapshot.key();
                             var signals = snapshot.val();
                             var session_key = UserManager.user.profile.id + ':' + key;
-                            console.log('active: '. ChatStorage[signals.type].chat.list[session_key].session.active);
                             if (ChatStorage[signals.type].chat.list[session_key].session.active && signals && signals.type) {
                                 if (ChatStorage[signals.type] && ChatStorage[signals.type].chat.list[session_key]) {
                                     $rootScope.$evalAsync(function() {
@@ -262,6 +251,27 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         return false;
     };
 
+    this.getDirectoryChatSessionDetails = function(config) {
+        if (config && config.session_key) {
+            var session = {};
+            session.admin = config.admin;
+            session.type = 'directory';
+            session.session_key = config.session_key;
+            session.active = config.active;
+            session.name = config.name;
+            session.is_directory_chat = true;
+            session.is_group_chat = true;
+            session.is_open = true;
+            session.timestamp = new Date().getTime();
+            session.monitor = config.monitor;
+            session.is_sound = config.is_sound;
+            session.topic = '';
+            session.tag = '';
+            session.order = config.order;
+            return session;
+        }
+        return false;
+    };
 
     this.chatContact = function(contact) {
         if (contact && contact.user_id && that.module.state.allow_chat_request) {
@@ -337,53 +347,62 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     this.setDefaultDirectoryChatConfiguration = function() {
         if (!that.module.state.is_ready) {
             that.module.config.directory.default_chats['sm_group_chat'] = {
-                chat_reference: 'sm_group_chat',
+                type: 'directory',
                 session_key: 'sm_group_chat',
-                chat_description: 'PlusOne - Group Chat',
-                admin: 'smod',
-                mandatory: true,
+                name: 'PlusOne - Group Chat',
+                admin: false,
                 watch_users: false,
                 store_length: 1,
-                monitor: false
+                order: 0,
+                monitor: false,
+                is_sound: false,
+                active: true
             };
             that.module.config.directory.default_chats['sm_tech_chat'] = {
-                chat_reference: 'sm_tech_chat',
+                type: 'directory',
                 session_key: 'sm_tech_chat',
-                chat_description: 'Tech Support - Group Chat',
-                admin: 'tod',
-                mandatory: true,
+                name: 'Tech Support - Group Chat',
+                admin: false,
                 watch_users: false,
                 store_length: 2,
-                monitor: false
+                order: 1,
+                monitor: false,
+                is_sound: false,
+                active: true
             };
-            if (UserManager.user && UserManager.user.supervisors && UserManager.user.supervisors.mc) {
-                that.module.config.directory.default_chats['mc_' + UserManager.user.supervisors.mc.user_id + '_group_chat'] = {
-                    chat_reference: ('mc_' + UserManager.user.supervisors.mc.user_id + '_group_chat'),
-                    session_key: 'mc_' + UserManager.user.supervisors.mc.user_id + '_group_chat',
-                    chat_description: UserManager.user.supervisors.mc.name + ' - MC Team Chat',
-                    admin: UserManager.user.supervisors.mc.user_id,
-                    mandatory: false,
-                    watch_users: false,
-                    store_length: 3,
-                    monitor: false
-                };
-            }
         }
     };
 
     this.setDefaultDirectoryChats = function() {
         that.setDefaultDirectoryChatConfiguration();
-        // if (that.module.config.directory.default_chats) {
-        //     angular.forEach(that.module.config.directory.default_chats, function(config) {
-        //         if (that.validateDirectoryChatConfiguration(config)) {
-        //             var new_dc = DirectoryChatManager.buildNewDirectoryChat(config);
-        //             new_dc.index_position = config.chat_reference;
-        //             that.setDefaultSettings(new_dc);
-        //             ChatStorage.directory.chat.map[config.chat_reference] = ChatStorage.directory.chat.list.length;
-        //             ChatStorage.directory.chat.list.push(new_dc);
-        //         }
-        //     });
-        // }
+        if (that.module.config.directory.default_chats) {
+            angular.forEach(that.module.config.directory.default_chats, function(config) {
+                if (that.validateDirectoryChatConfiguration(config)) {
+                    ChatBuilder.buildChatForSession(that.getDirectoryChatSessionDetails(config));
+                }
+            });
+            angular.forEach(that.module.chats.directory.session.list, function(value, session_key) {
+                if (value.fb && value.fb.group) {
+                    SessionsManager.fb.location.signals.child(session_key).on("value", function(snapshot) {
+                        var signals = snapshot.val();
+                        if (ChatStorage.directory.chat.list[session_key].session.active && signals) {
+                            if (ChatStorage.directory && ChatStorage.directory.chat.list[session_key]) {
+                                $rootScope.$evalAsync(function() {
+                                    ChatStorage.directory.chat.list[session_key].signals.group = signals;
+                                    console.log(session_key, ChatStorage.directory.chat.list[session_key].signals.group);
+                                    if (signals.topic != ChatStorage.directory.chat.list[session_key].session.topic) {
+                                        ChatStorage.directory.chat.list[session_key].session.topic = signals.topic;
+                                        ChatStorage.directory.chat.list[session_key].topic.truncated = false;
+                                        SessionsManager.setUserChatSessionStorage(signals.type, session_key);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            });
+
+        }
     };
 
 
@@ -850,7 +869,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     this.setChatAsCurrent = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (type === 'directory') {
-                if (ChatStorage[type].chat.list[session_key].messages.list.length > CoreConfig.chat.setting.max_message_count) {
+                if (ChatStorage[type].chat.list[session_key].messages.list.length > CoreConfig.module.setting.max_message_count) {
                     var i = 0;
                     ChatStorage[type].chat.list[session_key].messages.list = ChatStorage[type].chat.list[session_key].messages.list.slice(-(CoreConfig.chat.setting.max_message_count));
                     ChatStorage[type].chat.list[session_key].priority.next = ChatStorage[type].chat.list[session_key].messages.list[ChatStorage[type].chat.list[session_key].messages.list.length - 1].priority + 1;
@@ -861,11 +880,14 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                     }
                 }
                 if (that.module.current.directory.session_key) {
-                    ChatStorage.contact.chat.list[that.module.current.directory.session_key].attr.is_active = false;
+                    ChatStorage.directory.chat.list[that.module.current.directory.session_key].attr.is_active = false;
                 }
                 that.module.current.directory.session_key = session_key;
                 that.module.current.directory.stored_session_key = session_key;
                 ChatStorage.directory.chat.list[session_key].attr.is_active = true;
+                ChatStorage.directory.chat.list[session_key].attr.is_active = true;
+                ChatStorage.directory.chat.list[session_key].session.active = true;
+                that.module.current.directory.chat = ChatStorage.directory.chat.list[session_key];
                 SettingsManager.updateGlobalSetting('last_panel_tab', session_key, true);
             }
             if (type === 'contact') {
@@ -922,8 +944,8 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         }
     };
 
-    this.showContactThatUserIsTyping = function(type, session_key) {
-        ChatManager.showContactThatUserIsTyping(type, session_key);
+    this.showChatThatUserIsTyping = function(type, session_key) {
+        ChatManager.showChatThatUserIsTyping(type, session_key);
     };
 
     this.sendChatMessageAsBrowserNotification = function(type, session_key, message, heading) {

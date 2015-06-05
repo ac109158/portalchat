@@ -1436,10 +1436,10 @@ angular.module('pop.toolkit').filter('parseUrl', function() {
     var urls = /(\b(https?|ftp):\/\/[A-Z0-9+&@#\/%?=~_|!:,.;-]*[-A-Z0-9+&@#\/%=~_|])/gim
     var emails = /(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})/gim
     return function(text) {
-        if(text.match(urls)) {
+        if (text.match(urls)) {
             text = text.replace(urls, "<a href=\"$1\" target=\"_blank\">$1</a>")
         }
-        if(text.match(emails)) {
+        if (text.match(emails)) {
             text = text.replace(emails, "<a href=\"mailto:$1\">$1</a>")
         }
 
@@ -1557,6 +1557,123 @@ angular.module('pop.toolkit').filter('orderObjectBy', function() {
         }
         return filtered;
     };
+});
+
+angular.module('pop.toolkit').filter("timeago", function() {
+    //time: the time
+    //local: compared to what time? default: now
+    //raw: wheter you want in a format of "5 minutes ago", or "5 minutes"
+    return function(time, local, raw) {
+        if (!time) return "never";
+
+        if (!local) {
+            (local = Date.now());
+        }
+
+        if (angular.isDate(time)) {
+            time = time.getTime();
+        } else if (typeof time === "string") {
+            time = new Date(time).getTime();
+        }
+
+        if (angular.isDate(local)) {
+            local = local.getTime();
+        } else if (typeof local === "string") {
+            local = new Date(local).getTime();
+        }
+
+        if (typeof time !== 'number' || typeof local !== 'number') {
+            return;
+        }
+
+        var
+            offset = Math.abs((local - time) / 1000),
+            span = [],
+            MINUTE = 60,
+            HOUR = 3600,
+            DAY = 86400,
+            WEEK = 604800,
+            MONTH = 2629744,
+            YEAR = 31556926,
+            DECADE = 315569260;
+
+        if (offset <= MINUTE) span = ['', raw ? 'now' : 'just now'];
+        else if (offset < (MINUTE * 60)) span = [Math.round(Math.abs(offset / MINUTE)), 'min ago'];
+        else if (offset < (HOUR * 24)) span = [Math.round(Math.abs(offset / HOUR)), 'hr ago'];
+        else if (offset < (DAY * 7)) span = [Math.round(Math.abs(offset / DAY)), 'day ago'];
+        else if (offset < (WEEK * 52)) span = [Math.round(Math.abs(offset / WEEK)), 'week ago'];
+        else if (offset < (YEAR * 10)) span = [Math.round(Math.abs(offset / YEAR)), 'year ago'];
+        else if (offset < (DECADE * 100)) span = [Math.round(Math.abs(offset / DECADE)), 'decade ago'];
+        else span = ['', 'a long time'];
+
+        /*         span[1] += (span[0] === 0 || span[0] > 1) ? 's' : ''; */
+        span = span.join(' ');
+
+        if (raw === true) {
+            return span;
+        }
+        return (time <= local) ? span : 'in ' + span;
+    };
+});
+
+angular.module('pop.toolkit').filter('timeDiff', function() {
+    return function(input, maxDays) {
+        if (isNaN(input)) {
+            input = input.replace(' ', 'T');
+        } else {
+            // add 2 hrs for MST
+            input += 7200;
+            input *= 1000;
+        }
+
+        var date1 = new Date(input);
+        var date2 = new Date();
+        // convert input to mountain time
+        date1.setHours(date1.getHours() - 2);
+
+        var difference = date2.getTime() - date1.getTime();
+
+        var daysDifference = Math.floor(difference / 1000 / 60 / 60 / 24);
+        difference -= daysDifference * 1000 * 60 * 60 * 24
+
+        var hoursDifference = Math.floor(difference / 1000 / 60 / 60);
+        difference -= hoursDifference * 1000 * 60 * 60
+
+        var minutesDifference = Math.floor(difference / 1000 / 60);
+        difference -= minutesDifference * 1000 * 60
+
+        var secondsDifference = Math.floor(difference / 1000);
+
+        var s = '';
+        if (daysDifference > maxDays) {
+            var d = date1.toString();
+            return d.substr(0, d.length - 18);
+        } else if (daysDifference > 1) {
+            s += daysDifference + ' Days ';
+        } else if (daysDifference > 0) {
+            s += daysDifference + ' Day ';
+        }
+
+        if (hoursDifference > 1) {
+            s += hoursDifference + ' Hrs ';
+        } else if (hoursDifference > 0) {
+            s += hoursDifference + ' Hr ';
+        }
+
+        if (minutesDifference > 1) {
+            s += minutesDifference + ' mins ';
+        } else if (minutesDifference > 0) {
+            s += minutesDifference + ' min ';
+        }
+
+        if (minutesDifference == 0) {
+            s = 'Just Now';
+        } else {
+            s += ' ago';
+        }
+
+        return s;
+    }
 });
 
 angular.module('pop.toolkit').filter('secondsToDateTime', [function() {

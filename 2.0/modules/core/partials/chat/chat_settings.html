@@ -36,7 +36,7 @@
             <span class="pointer" ng-show="chat.session.is_sound == true || chat.session.is_sound == 'true'" href="#">Sound Off</span>
         </div>
 -->
-        <div ng-if="chat.session.is_group_chat || chat.contact.profile.online == true &&  chat.contact.presence.state != 'Offline'">
+        <div ng-if="!chat.attr.is_directory_chat && chat.session.is_group_chat || chat.contact.profile.online == true &&  chat.contact.presence.state != 'Offline'">
             <div href="#" class="cm-chat-user-option pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'invite');">
                 <!-- Option to invite another user to chat -->
                 <i class="fa fa-users"></i>
@@ -53,12 +53,12 @@
             <span href="#" class=" glyphicon glyphicon-tag"></span>
             <span class="pointer">Remove Tag</span>
         </div>
-        <div ng-if="!chat.session.topic.length" class="cm-chat-user-option pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'topic', true);">
+        <div ng-if="chat.admin && !chat.session.topic.length" class="cm-chat-user-option pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'topic', true);">
             <!-- Option to add topic to chat -->
             <span href="#" class="glyphicon glyphicon-star"></span>
             <span class="pointer">Add Topic</span>
         </div>
-        <div ng-if="chat.session.topic.length" class="cm-chat-user-option pointer" ng-click="ui.fx.removeChatTopic(chat.session.type, chat.session.session_key);">
+        <div ng-if="chat.admin && chat.session.topic.length" class="cm-chat-user-option pointer" ng-click="ui.fx.removeChatTopic(chat.session.type, chat.session.session_key);">
             <!-- Option to add topic to chat -->
             <span href="#" class="glyphicon glyphicon-star"></span>
             <span class="pointer">Remove Topic</span>

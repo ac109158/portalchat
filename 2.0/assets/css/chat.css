@@ -664,7 +664,6 @@ ul.nav.nav-tabs a:hover {
     overflow-x: hidden;
     background: rgba(255, 255, 255.5);
     pointer-events: all;
-    background-color: pink;
     z-index: 1;
 }
 

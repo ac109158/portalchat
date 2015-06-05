@@ -38,8 +38,8 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
 
     this.setFirebaseLocations = function() {
         if (UserManager.user.profile.id) {
-            that.fb.location.signals = new Firebase(CoreConfig.session.signals_root);
-            that.fb.location.storage = new Firebase(CoreConfig.session.storage_root);
+            that.fb.location.signals = new Firebase(CoreConfig.signals.url_root);
+            that.fb.location.sessions = new Firebase(CoreConfig.sessions.url_root);
             if (PermissionsManager.hasAdminRights()) {
                 // that.fb.group.location.sessions = new Firebase(CoreConfig.group_chat.url_root + CoreConfig.group_chat.active_session_reference);
             }
@@ -74,7 +74,13 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
 
     this.setUserChatSessionStorage = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
-            that.fb.location.storage.child(session_key.split(':')[0]).child(session_key.split(':')[1]).setWithPriority(ChatStorage[type].chat.list[session_key].session, ChatStorage[type].chat.list[session_key].session.order);
+            console.log('session:', ChatStorage[type].chat.list[session_key].session);
+            if (session_key.split(':')[1]) {
+                that.fb.location.sessions.child(session_key.split(':')[0]).child(session_key.split(':')[1]).setWithPriority(ChatStorage[type].chat.list[session_key].session, ChatStorage[type].chat.list[session_key].session.order);
+            } else {
+                that.fb.location.sessions.child(UserManager.user.profile.id).child(session_key).setWithPriority(ChatStorage[type].chat.list[session_key].session, ChatStorage[type].chat.list[session_key].session.order);
+            }
+
             return true;
         }
         return false;
@@ -82,7 +88,11 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
 
     this.updateContactChatSignals = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
-            that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).update(ChatStorage[type].chat.list[session_key].signals.user);
+             if (session_key.split(':')[1]) {
+                that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).update(ChatStorage[type].chat.list[session_key].signals.user);
+            } else {
+                that.fb.location.signals.child(session_key).update(ChatStorage[type].chat.list[session_key].signals.user);
+            }
             return true;
         }
         return false;
@@ -90,7 +100,12 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
 
     this.updateChatIsTypingSignal = function(type, session_key, value) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).update({'is_typing':value});
+            if (session_key.split(':')[1]) {
+                that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).child('is_typing').child(UserManager.user.profile.id).set(value);
+            } else {
+                console.log(that.fb.location.signals.child(session_key).child('is_typing').child(UserManager.user.profile.id).toString())
+                that.fb.location.signals.child(session_key).child('is_typing').child(UserManager.user.profile.id).set({id:value});
+            }
         }
 
     };

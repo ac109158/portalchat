@@ -73,12 +73,12 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     //Session
 
 
-    this.session = {};
-    this.session.parent_session_reference = 'Sessions' + '/';
-    this.session.url_root = that.chat.url_root + that.session.parent_session_reference;
-    this.session.signals_root = that.session.url_root + 'Chat-Signals' + '/';
-    this.session.storage_root = that.session.url_root + 'Storage' + '/';
-    this.session.root_reference = "Sessions" + '/'; // folder reference
+    this.sessions = {};
+    this.sessions.url_root = that.chat.url_root + 'Sessions' + '/';
+
+
+    this.signals = {};
+    this.signals.url_root = that.chat.url_root + 'Chat-Signals' + '/';
 
     //online
     this.online_check_reference = "Online-Check-In" + "/";

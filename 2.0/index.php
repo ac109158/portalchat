@@ -62,7 +62,6 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
         './modules/core/services/core.fact.coreManager.js',
         './modules/core/services/core.srv.coreApi.js',
         './modules/core/core.directives.js',
-        './modules/core/core.filters.js',
         './modules/core/components/browser/core.srv.browser.js',
 
         './modules/core/components/audio/core.srv.audio.js',

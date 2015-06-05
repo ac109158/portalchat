@@ -5,7 +5,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
     this.setting = {};
     this.setting.command_key = CoreConfig.module.setting.command_key;
 
-    this.showContactThatUserIsTyping = function(type, session_key) {
+    this.showChatThatUserIsTyping = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             // if (!ChatStorage[type].chat.list[session_key].message.text || !ChatStorage[type].chat.list[session_key].signals.user.active) {
             if (!ChatStorage[type].chat.list[session_key].message.text) {
@@ -15,36 +15,16 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
             }
             var signal = {};
-            ChatStorage[type].chat.list[session_key].signals.user.is_typing = true;
-            SessionsManager.updateChatIsTypingSignal(type, session_key, true);
+            ChatStorage[type].chat.list[session_key].signals.user.is_typing = UserManager.user.profile.id;
+            SessionsManager.updateChatIsTypingSignal(type, session_key, UserManager.user.profile.id);
             ChatStorage[type].chat.list[session_key].interval.is_user_typing = $timeout(function() {
-                ChatStorage[type].chat.list[session_key].signals.user.is_typing = false;
+                ChatStorage[type].chat.list[session_key].signals.user.is_typing = null;
                 // SessionsManager.updateContactChatSignals(type, session_key);
-                SessionsManager.updateChatIsTypingSignal(type, session_key, false);
+                SessionsManager.updateChatIsTypingSignal(type, session_key, null);
                 $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
             }, 1000);
         }
     };
-
-    this.showGroupthatUserIsTyping = function(type, session_key) {
-        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (!ChatStorage[type].chat.list[session_key].message.text) {
-                return false;
-            }
-            if (angular.isDefined(ChatStorage[type].chat.list[session_key].interval.is_user_typing)) {
-                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
-            }
-            if (ChatStorage[type].chat.list[session_key].fb.group.location.session) {
-                ChatStorage[type].chat.list[session_key].fb.group.location.session.child('is_typing/' + UserManager.user.profile.id).set(UserManager.user.avatar);
-
-            }
-            ChatStorage[type].chat.list[session_key].interval.is_user_typing = $timeout(function() {
-                ChatStorage[type].chat.list[session_key].fb.group.location.session.child('is_typing/' + UserManager._user_profile.user_id).set(null);
-                $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
-            }, 1000);
-        }
-    };
-
 
     this.resetCommonFocusSettings = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
@@ -499,6 +479,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
     };
 
     this.sendChatMessage = function(type, session_key) {
+        console.log('sendChatMessage', type, session_key);
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (angular.isUndefined(ChatStorage[type].chat.list[session_key].message.text) || ChatStorage[type].chat.list[session_key].message.text === null) {
                 that.setNextContactChatIntoFocus(session_key);
@@ -522,24 +503,32 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                     author: UserManager.user.profile.id,
                     text: message_text,
                     encryption: UserManager.user.profile.encryption || null,
-                    offline: !(ChatStorage[type].chat.list[session_key].contact.profile.online) || null,
                     reference: ChatStorage[type].chat.list[session_key].reference,
                     timestamp: Firebase.ServerValue.TIMESTAMP,
                     priority: ChatStorage[type].chat.list[session_key].priority.next
                 };
-                message.session_key = session_key.split(':')[1] + ':' + session_key.split(':')[0];
-                var contactFbKey = ChatStorage[type].session.list[session_key].fb.contact.location.messages.push(message); // messages have to be written in both spots with an individual chat, storage is the reason for doing this
-                ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = contactFbKey.key();
-                ChatStorage[type].session.list[session_key].fb.contact.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
+                if (ChatStorage[type].chat.list[session_key].session.is_group_chat === false) {
+                    message.session_key = session_key.split(':')[1] + ':' + session_key.split(':')[0];
+                    message.offline =  !(ChatStorage[type].chat.list[session_key].contact.profile.online) || null;
+                    var contactFbKey = ChatStorage[type].session.list[session_key].fb.contact.location.messages.push(message); // messages have to be written in both spots with an individual chat, storage is the reason for doing this
+                    ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = contactFbKey.key();
+                    ChatStorage[type].session.list[session_key].fb.contact.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
 
-                message.session_key = session_key;
-                var selfFireKey = ChatStorage[type].session.list[session_key].fb.user.location.messages.push(message); // assign this task after sending to the to_user location !important
-                ChatStorage[type].chat.list[session_key].attr.last_sent_user_message = selfFireKey.key();
-                ChatStorage[type].session.list[session_key].fb.user.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
+                    message.session_key = session_key;
+                    var selfFireKey = ChatStorage[type].session.list[session_key].fb.user.location.messages.push(message); // assign this task after sending to the to_user location !important
+                    ChatStorage[type].chat.list[session_key].attr.last_sent_user_message = selfFireKey.key();
+                    ChatStorage[type].session.list[session_key].fb.user.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_user_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
+                } else {
+                    message.session_key = session_key;
+                    var fireKey = ChatStorage[type].session.list[session_key].fb.group.location.messages.push(message); // assign this task after sending to the to_user location !important
+                    ChatStorage[type].chat.list[session_key].attr.last_sent_user_message = fireKey.key();
+                    ChatStorage[type].session.list[session_key].fb.group.location.messages.child(fireKey.key()).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
+                }
+
                 // SessionsManager.updateChatContactActiveSession(type, session_key);
                 $timeout(function() {
-                    ChatStorage[type].chat.list[session_key].signals.user.active = true;
-                    SessionsManager.updateContactChatSignals(type, session_key);
+                    // ChatStorage[type].chat.list[session_key].signals.user.active = true;
+                    // SessionsManager.updateContactChatSignals(type, session_key);
                     ChatStorage[type].chat.list[session_key].reference.key = null;
                     ChatStorage[type].chat.list[session_key].reference.author = null;
                     ChatStorage[type].chat.list[session_key].reference.name = null;

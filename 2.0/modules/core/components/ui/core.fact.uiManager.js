@@ -62,8 +62,8 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     this.ui.fx.sendChatMessage = function(type, session_key, media) {
         ChatModuleManager.sendChatMessage(type, session_key, media);
     };
-    this.ui.fx.showContactThatUserIsTyping = function(type, session_key) {
-        ChatModuleManager.showContactThatUserIsTyping(type, session_key);
+    this.ui.fx.showChatThatUserIsTyping = function(type, session_key) {
+        ChatModuleManager.showChatThatUserIsTyping(type, session_key);
     };
 
     this.ui.fx.setChatTag = function(type, session_key) {

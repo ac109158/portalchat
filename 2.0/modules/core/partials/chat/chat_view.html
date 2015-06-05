@@ -44,12 +44,12 @@
                     <div ng-if="module.tab.current.index_position == 0" id="contacts">
                         <contacts></contacts>
                     </div>
-                    <!--            <div ng-if="module.tab.current.index_position == 1" id="sm_group_chat">
-                        <group-chat></group-chat>
+                    <div ng-if="module.tab.current.index_position == 1" id="sm_group_chat" style="position:relative; display: block; width: 100%; margin: 0; padding: 0; height:100%;">
+                        <panel-contact-chat chat="module.chats.directory.chat.list.sm_group_chat" ui="ui" ux="ux" profiles="module.contacts.profiles" engine="module.engine"></panel-contact-chat>
                     </div>
-                    <div ng-if="module.tab.current.index_position == 2" id="sm_tech_chat">
-                        <tech-chat></tech-chat>
-                    </div> -->
+                    <div ng-if="module.tab.current.index_position == 2" id="sm_tech_chat" style="position:relative; display: block; width: 100%; margin: 0; padding: 0; height:100%;">
+                        <panel-contact-chat chat="module.chats.directory.chat.list.sm_tech_chat" ui="ui" ux="ux" profiles="module.contacts.profiles" engine="module.engine"></panel-contact-chat>
+                    </div>
 
                     <div ng-if="module.tab.current.index_position == 3" style="position:relative; display: block; width: 100%; margin: 0; padding: 0; height:100%;">
                         <panel-contact-chat chat="module.current.contact.chat" ui="ui" ux="ux" profiles="module.contacts.profiles" engine="module.engine"></panel-contact-chat>

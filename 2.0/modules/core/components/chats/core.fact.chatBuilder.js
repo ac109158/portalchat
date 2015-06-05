@@ -9,7 +9,9 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
     this.builder.attr.last_created_chat = undefined;
 
     this.builder.session = {};
-    this.builder.session.models = ['session_key', 'type', 'active', 'order', 'contact_id', 'name', 'avatar', 'is_directory_chat', 'is_group_chat', 'is_open', 'is_sound'];
+    this.builder.session.models = {};
+    this.builder.session.models.contact = ['session_key', 'type', 'active', 'order', 'contact_id', 'name', 'avatar', 'is_directory_chat', 'is_group_chat', 'is_open', 'is_sound'];
+    this.builder.session.models.directory = ['session_key', 'type', 'active', 'order', 'monitor', 'name', 'is_directory_chat', 'is_group_chat', 'is_open', 'is_sound'];
 
     this.fb = {};
     this.fb.location = {};
@@ -31,12 +33,22 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             return false;
         }
         var pass = true;
-        angular.forEach(that.builder.session.models, function(model) {
-            if (angular.isUndefined(session[model])) {
-                pass = false;
-                console.log('validateSessionModel: ', model, 'is undefined.');
-            }
-        });
+        if (session.type === 'contact') {
+            angular.forEach(that.builder.session.models.contact, function(model) {
+                if (angular.isUndefined(session[model])) {
+                    pass = false;
+                    console.log('validateSessionModel: ', model, 'is undefined.');
+                }
+            });
+        } else if (session.type === 'directory') {
+            angular.forEach(that.builder.session.models.directory, function(model) {
+                if (angular.isUndefined(session[model])) {
+                    pass = false;
+                    console.log('validateSessionModel: ', model, 'is undefined.');
+                }
+            });
+        }
+
         return pass;
     };
     this.setContactChatOrderMap = function() {
@@ -93,6 +105,13 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             ChatStorage[session.type].chat.list[session.session_key].tag.description = '';
             // on the bubble
 
+            // topic values
+            ChatStorage[session.type].chat.list[session.session_key].topic = {};
+            ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
+            ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
+            ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
+            ChatStorage[session.type].chat.list[session.session_key].topic.set = '';
+
             //scroll control
             ChatStorage[session.type].chat.list[session.session_key].scroll = {};
             ChatStorage[session.type].chat.list[session.session_key].scroll.to_bottom = true;
@@ -119,14 +138,20 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             ChatStorage[session.type].chat.list[session.session_key].session = session;
 
             ChatStorage[session.type].chat.list[session.session_key].topic = {};
-                ChatStorage[session.type].chat.list[session.session_key].topic.allow = true;
-                ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
-                ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
-                ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
-                ChatStorage[session.type].chat.list[session.session_key].topic.set = '';
+            ChatStorage[session.type].chat.list[session.session_key].topic.allow = true;
+            ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
+            ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
+            ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
+            ChatStorage[session.type].chat.list[session.session_key].topic.set = '';
 
 
             ChatStorage[session.type].chat.list[session.session_key].attr = {};
+            ChatStorage[session.type].chat.list[session.session_key].attr.self_fb_ref = 'user';
+            if (session.is_group_chat) {
+                ChatStorage[session.type].chat.list[session.session_key].attr.other_fb_ref = 'group';
+            } else {
+                ChatStorage[session.type].chat.list[session.session_key].attr.other_fb_ref = 'contact';
+            }
             ChatStorage[session.type].chat.list[session.session_key].attr.is_init = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_converted = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_new_message = false;
@@ -179,12 +204,13 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             ChatStorage[session.type].chat.list[session.session_key].user = UserManager.user;
             ChatStorage[session.type].chat.list[session.session_key].user.self_name = 'Me'; // variable for what the chat session should label messages that came from the user/self ex. "Me"
 
-            ChatStorage[session.type].chat.list[session.session_key].contacts = {};
-
 
 
             ChatStorage[session.type].session.list[session.session_key] = {};
             ChatStorage[session.type].session.list[session.session_key].fb = {};
+
+
+            ChatStorage[session.type].chat.list[session.session_key].contacts = {};
 
             if (!session.is_group_chat && !session.is_directory_chat) {
                 ChatStorage[session.type].chat.list[session.session_key].signals = {};
@@ -192,14 +218,14 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                 ChatStorage[session.type].chat.list[session.session_key].signals.user.type = session.type;
                 ChatStorage[session.type].chat.list[session.session_key].signals.user.active = false;
                 ChatStorage[session.type].chat.list[session.session_key].signals.user.nudge = false;
-                ChatStorage[session.type].chat.list[session.session_key].signals.user.is_typing = false;
+                ChatStorage[session.type].chat.list[session.session_key].signals.user.is_typing = null;
                 ChatStorage[session.type].chat.list[session.session_key].signals.user.topic = session.topic;
 
                 ChatStorage[session.type].chat.list[session.session_key].signals.contact = {};
                 ChatStorage[session.type].chat.list[session.session_key].signals.contact.type = session.type;
                 ChatStorage[session.type].chat.list[session.session_key].signals.contact.active = false;
                 ChatStorage[session.type].chat.list[session.session_key].signals.contact.nudge = false;
-                ChatStorage[session.type].chat.list[session.session_key].signals.contact.is_typing = false;
+                ChatStorage[session.type].chat.list[session.session_key].signals.contact.is_typing = [];
                 ChatStorage[session.type].chat.list[session.session_key].signals.contact.topic = session.topic;
 
                 ChatStorage[session.type].chat.list[session.session_key].contact = {};
@@ -215,14 +241,10 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
 
                 ChatStorage[session.type].session.list[session.session_key].fb.user = {};
                 ChatStorage[session.type].session.list[session.session_key].fb.user.location = {};
-
-                ChatStorage[session.type].session.list[session.session_key].fb.user = {};
-                ChatStorage[session.type].session.list[session.session_key].fb.user.location = {};
                 ChatStorage[session.type].session.list[session.session_key].fb.user.location.messages = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + UserManager.user.profile.id + '/' + session.contact_id);
 
                 ChatStorage[session.type].session.list[session.session_key].fb.contact = {};
                 ChatStorage[session.type].session.list[session.session_key].fb.contact.location = {};
-                ChatStorage[session.type].session.list[session.session_key].fb.contact.location.session = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.active_session_reference + session.contact_id + '/' + UserManager.user.profile.id);
                 ChatStorage[session.type].session.list[session.session_key].fb.contact.location.messages = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + session.contact_id + '/' + UserManager.user.profile.id);
 
 
@@ -230,32 +252,30 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                 ChatStorage[session.type].session.list[session.session_key].fb.group = {};
                 ChatStorage[session.type].session.list[session.session_key].fb.group.location = {};
 
-                // topic values
-                ChatStorage[session.type].chat.list[session.session_key].topic = {};
-                ChatStorage[session.type].chat.list[session.session_key].topic.allow = true;
-                ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
-                ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
-                ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
-                ChatStorage[session.type].chat.list[session.session_key].topic.set = '';
 
             } else if (session.is_directory_chat) {
+
+                ChatStorage[session.type].chat.list[session.session_key].signals = {};
+                ChatStorage[session.type].chat.list[session.session_key].signals.user = {};
+                ChatStorage[session.type].chat.list[session.session_key].signals.user.is_typing = null;
+
+                ChatStorage[session.type].chat.list[session.session_key].signals.group = {};
+                ChatStorage[session.type].chat.list[session.session_key].signals.group.is_typing = [];
+
                 ChatStorage[session.type].session.list[session.session_key].fb.group = {};
                 ChatStorage[session.type].session.list[session.session_key].fb.group.location = {};
-                ChatStorage[session.type].chat.list[session.session_key].description = session.description || 'Chat Description';
-                ChatStorage[session.type].chat.list[session.session_key].contacts.profiles = {};
+                ChatStorage[session.type].session.list[session.session_key].fb.group.location.messages = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + session.session_key + '/');
 
-                // topic values
-                ChatStorage[session.type].chat.list[session.session_key].topic = {};
-                ChatStorage[session.type].chat.list[session.session_key].topic.description = '';
-                ChatStorage[session.type].chat.list[session.session_key].topic.height = 0;
-                ChatStorage[session.type].chat.list[session.session_key].topic.truncated = false;
-                ChatStorage[session.type].chat.list[session.session_key].topic.set = '';
+                ChatStorage[session.type].chat.list[session.session_key].description = session.name || 'Chat Description';
+
+            }
+            if (session.type === 'contact') {
+                that.setContactChatOrderMap();
+                $timeout(function() {
+                    UxManager.ux.fx.evaluateChatModuleLayout();
+                });
             }
 
-            that.setContactChatOrderMap();
-            $timeout(function() {
-                UxManager.ux.fx.evaluateChatModuleLayout();
-            });
             return true;
         }
         return false;
@@ -283,6 +303,9 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
 
     this.clearContactSessionExpiredMessages = function(session, fb_ref_type) {
         if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
+            if (session.type === 'directory') {
+                return true;
+            }
             var expiration_timestamp = session.timestamp - CoreConfig.module.setting.store_time;
             ChatStorage[session.type].session.list[session.session_key].fb.user.location.messages.once('value', function(snapshot) {
                 var messages = snapshot.val();
@@ -303,6 +326,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
 
 
     this.watchForChangedChatMessages = function(session, fb_ref_type) {
+        return true;
         if (ChatStorage[session.type] && ChatStorage[session.type].session.list[session.session_key]) {
             ChatStorage[session.type].session.list[session.session_key].fb.user.location.messages.on("child_changed", function(snapshot, previous) {
                 var key = snapshot.key();
@@ -324,7 +348,8 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
     };
 
     this.setNewExistingChatMessages = function(session, fb_ref_type) {
-        if (ChatStorage[session.type] && ChatStorage[session.type].session.list[session.session_key]) {
+        if (ChatStorage[session.type] && ChatStorage[session.type].session.list[session.session_key] && fb_ref_type) {
+            console.log(session, fb_ref_type);
             var last_message, keys, messages;
             ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.once("value", function(snapshot) {
                 keys = Object.keys(snapshot.val() || {});
