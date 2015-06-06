@@ -60,6 +60,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
     };
 
     this.setDefaultChatTemplate = function(session) {
+        console.log('session',session);
         if (session) {
             if (session.order === -1) {
                 session.order = 0;
@@ -71,8 +72,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                 session.order = Object.size(ChatStorage[session.type].chat.list);
             }
             ChatStorage[session.type].chat.list[session.session_key] = {};
-
-            ChatStorage[session.type].chat.list[session.session_key].admin = true;
 
             ChatStorage[session.type].chat.list[session.session_key].message = {};
             ChatStorage[session.type].chat.list[session.session_key].message.text = '';
@@ -195,6 +194,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             ChatStorage[session.type].chat.list[session.session_key].menu.video = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.media = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.invite = false; // this is used to toggle ability to invite user into the chat
+            ChatStorage[session.type].chat.list[session.session_key].menu.color = false;
 
             ChatStorage[session.type].chat.list[session.session_key].interval = {};
             ChatStorage[session.type].chat.list[session.session_key].interval.invite_menu_close = undefined;
@@ -349,7 +349,6 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
 
     this.setNewExistingChatMessages = function(session, fb_ref_type) {
         if (ChatStorage[session.type] && ChatStorage[session.type].session.list[session.session_key] && fb_ref_type) {
-            console.log(session, fb_ref_type);
             var last_message, keys, messages;
             ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.once("value", function(snapshot) {
                 keys = Object.keys(snapshot.val() || {});
@@ -434,7 +433,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
         if (that.validateSessionModel(session)) {
             if (that.setDefaultChatTemplate(session)) {
                 if (SessionsManager.setUserChatSessionStorage(session.type, session.session_key)) {
-                    if (SessionsManager.updateContactChatSignals(session.type, session.session_key)) {
+                    if (SessionsManager.updateChatSignals(session.type, session.session_key)) {
                         if (that.clearContactSessionExpiredMessages(session, fb_ref_type)) {
                             if (that.setNewExistingChatMessages(session, fb_ref_type)) {
                                 if (that.watchForChangedChatMessages(session, fb_ref_type)) {
@@ -446,19 +445,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                 }
             }
         }
-        console.log("failed");
         return false;
-
-        $timeout(function() {
-            chat_session.firebase_location = new Firebase(session_root);
-            if (chat_session.topic_location.$value === null) {
-                chat_session.firebase_location.update({
-                    'topic': false
-                });
-            }
-            chat_session.group_user_location = chat_session.firebase_location.child(that._group_active_users_reference);
-            /*          clearInterval(build_delay); */
-        }, 500);
     };
 
     this.buildGroupChatSession = function(value, isopen, isfocus, store_length) // this function builds out the details of an individual chat sesssion
@@ -560,7 +547,7 @@ var n = parseInt(Firebase.ServerValue.TIMESTAMP);
                     groupChatSession.is_typing_list.push(snapshot.val());
                 });
             });
-            groupChatSession.group_typing_location.on('child_removed', function(snapshot) { /*          console.log(snapshot.val()); */
+            groupChatSession.group_typing_location.on('child_removed', function(snapshot) {
                 /*              delete newDirectoryChat.is_typing_list[snapshot.name()]; */
                 groupChatSession.is_typing_list.splice(groupChatSession.is_typing_list.indexOf(snapshot.val(), 1));
             });

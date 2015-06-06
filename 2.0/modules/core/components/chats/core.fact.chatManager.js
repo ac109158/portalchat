@@ -19,7 +19,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             SessionsManager.updateChatIsTypingSignal(type, session_key, UserManager.user.profile.id);
             ChatStorage[type].chat.list[session_key].interval.is_user_typing = $timeout(function() {
                 ChatStorage[type].chat.list[session_key].signals.user.is_typing = null;
-                // SessionsManager.updateContactChatSignals(type, session_key);
+                // SessionsManager.updateChatSignals(type, session_key);
                 SessionsManager.updateChatIsTypingSignal(type, session_key, null);
                 $timeout.cancel(ChatStorage[type].chat.list[session_key].interval.is_user_typing);
             }, 1000);
@@ -271,11 +271,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 ChatStorage[type].chat.list[session_key].session.topic = ChatStorage[type].chat.list[session_key].session.topic.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
                 ChatStorage[type].chat.list[session_key].signals.user.topic = ChatStorage[type].chat.list[session_key].session.topic;
                 if (ChatStorage[type].chat.list[session_key].signals.user.topic.length) {
-                    if (type === 'contact') {
-                        SessionsManager.updateContactChatSignals(type, session_key);
-                    } else {
-                        SessionsManager.updateDirectoryChatSignals(type, session_key);
-                    }
+                    SessionsManager.updateChatSignals(type, session_key);
                     SessionsManager.setUserChatSessionStorage(type, session_key);
                     ChatStorage[type].chat.list[session_key].topic.set = true;
                     that.resetCommonDefaultSettings(type, session_key);
@@ -293,11 +289,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             ChatStorage[type].chat.list[session_key].session.topic = '';
             ChatStorage[type].chat.list[session_key].signals.user.topic = '';
-            if (type === 'contact') {
-                SessionsManager.updateContactChatSignals(type, session_key);
-            } else {
-                SessionsManager.updateDirectoryChatSignals(type, session_key);
-            }
+            SessionsManager.updateChatSignals(type, session_key);
             SessionsManager.setUserChatSessionStorage(type, session_key);
             that.resetCommonDefaultSettings(type, session_key);
             $timeout(function() {
@@ -308,9 +300,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.updateChatTopic = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            console.log('#' + session_key + ':topic');
             var new_chat_topic = $(document.getElementById(session_key + ':topic')).text().replace(/&/g, '').replace(/</g, '').replace(/>/g, '').replace(/"/g, ''); // sanitze the string
-            console.log('new_chat_topic: ', new_chat_topic);
             if (new_chat_topic === 'null' || new_chat_topic === '' || new_chat_topic.length < 5) {
                 ChatStorage[type].chat.list[session_key].session.topic = ChatStorage[type].chat.list[session_key].signals.user.topic;
                 $(document.getElementById(session_key + ':topic')).text(ChatStorage[type].chat.list[session_key].signals.user.topic);
@@ -318,11 +308,8 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             }
             ChatStorage[type].chat.list[session_key].session.topic = new_chat_topic;
             ChatStorage[type].chat.list[session_key].signals.user.topic = new_chat_topic;
-            if (type === 'contact') {
-                SessionsManager.updateContactChatSignals(type, session_key);
-            } else {
-                SessionsManager.updateDirectoryChatSignals(type, session_key);
-            }
+
+            SessionsManager.updateChatSignals(type, session_key);
             SessionsManager.setUserChatSessionStorage(type, session_key);
             that.resetCommonDefaultSettings(type, session_key);
             $timeout(function() {
@@ -479,13 +466,9 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
     };
 
     this.sendChatMessage = function(type, session_key) {
-        console.log('sendChatMessage', type, session_key);
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (angular.isUndefined(ChatStorage[type].chat.list[session_key].message.text) || ChatStorage[type].chat.list[session_key].message.text === null) {
                 that.setNextContactChatIntoFocus(session_key);
-            } else if (ChatStorage[type].chat.list[session_key].message.text.substring(0, 1) === that.setting.command_key) {
-                that.checkForCommand(type, session_key, ChatStorage[type].chat.list[session_key].message);
-                return;
             } else if (angular.isDefined(ChatStorage[type].chat.list[session_key].message.text) && ChatStorage[type].chat.list[session_key].message.text !== '' && ChatStorage[type].chat.list[session_key].message.text.length < 1000) {
                 var message_text = String(ChatStorage[type].chat.list[session_key].message.text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
                 message_text = message_text.replace(/\n/g, '<br>');
@@ -528,7 +511,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 // SessionsManager.updateChatContactActiveSession(type, session_key);
                 $timeout(function() {
                     // ChatStorage[type].chat.list[session_key].signals.user.active = true;
-                    // SessionsManager.updateContactChatSignals(type, session_key);
+                    // SessionsManager.updateChatSignals(type, session_key);
                     ChatStorage[type].chat.list[session_key].reference.key = null;
                     ChatStorage[type].chat.list[session_key].reference.author = null;
                     ChatStorage[type].chat.list[session_key].reference.name = null;
@@ -663,7 +646,6 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.addReferenceToChatMessage = function(type, session_key, message) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            console.log('addReferenceToChatMessage: ', type, session_key, message);
             $timeout(function() {
                 if (message.author === UserManager.user.profile.id) {
                     ChatStorage[type].chat.list[session_key].reference.name = ChatStorage[type].chat.list[session_key].user.self_name;

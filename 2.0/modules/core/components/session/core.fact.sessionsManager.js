@@ -74,7 +74,6 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
 
     this.setUserChatSessionStorage = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
-            console.log('session:', ChatStorage[type].chat.list[session_key].session);
             if (session_key.split(':')[1]) {
                 that.fb.location.sessions.child(session_key.split(':')[0]).child(session_key.split(':')[1]).setWithPriority(ChatStorage[type].chat.list[session_key].session, ChatStorage[type].chat.list[session_key].session.order);
             } else {
@@ -86,7 +85,7 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
         return false;
     };
 
-    this.updateContactChatSignals = function(type, session_key) {
+    this.updateChatSignals = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
              if (session_key.split(':')[1]) {
                 that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).update(ChatStorage[type].chat.list[session_key].signals.user);
@@ -101,9 +100,8 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
     this.updateChatIsTypingSignal = function(type, session_key, value) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (session_key.split(':')[1]) {
-                that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).child('is_typing').child(UserManager.user.profile.id).set(value);
+                that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).child('is_typing').child(UserManager.user.profile.id).set({id:value});
             } else {
-                console.log(that.fb.location.signals.child(session_key).child('is_typing').child(UserManager.user.profile.id).toString())
                 that.fb.location.signals.child(session_key).child('is_typing').child(UserManager.user.profile.id).set({id:value});
             }
         }

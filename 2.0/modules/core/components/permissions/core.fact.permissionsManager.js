@@ -1,4 +1,4 @@
-angular.module('portalchat.core').factory('PermissionsManager', ['$rootScope', '$log', '$timeout', 'UserManager', function($rootScope, $log, $timeout, UserManager) {
+angular.module('portalchat.core').factory('PermissionsManager', ['$rootScope', '$log', '$timeout', 'UserManager', 'ContactsManager', function($rootScope, $log, $timeout, UserManager, ContactsManager) {
     var that = this;
 
     this.setting = {};
@@ -40,6 +40,32 @@ angular.module('portalchat.core').factory('PermissionsManager', ['$rootScope', '
     this.permissions.hasSupervisorRights = function(){
         if(that.group.admin.indexOf(UserManager.user.additional_profile.role) != -1){
             return true;
+        }
+        return false;
+    };
+
+    this.permissions.hasTopicRights = function(session_key){
+        if(session_key === 'sm_group_chat'){
+            if (UserManager.user.profile.id === ContactsManager.contacts.tod || that.permissions.hasSuperAdminRights()){
+                return true;
+            }
+        } else if(session_key === 'sm_tech_chat'){
+            if(UserManager.user.profile.id === ContactsManager.contacts.tod || that.permissions.hasSuperAdminRights()){
+                return true;
+            }
+        }
+        return false;
+    };
+
+    this.permissions.hasMediaRights = function(session_key){
+        if(session_key === 'sm_group_chat'){
+            if (UserManager.user.profile.id === ContactsManager.contacts.tod || that.permissions.hasSuperAdminRights()){
+                return true;
+            }
+        } else if(session_key === 'sm_tech_chat'){
+            if(UserManager.user.profile.id === ContactsManager.contacts.tod || that.permissions.hasSuperAdminRights()){
+                return true;
+            }
         }
         return false;
     };

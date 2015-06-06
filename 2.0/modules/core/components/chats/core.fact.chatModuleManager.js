@@ -231,7 +231,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     this.getContactChatSessionDetails = function(contact) {
         if (contact && contact.user_id && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + contact.user_id]]) {
             var session = {};
-            session.admin = true;
+            session.admin = false;
             session.type = 'contact';
             session.session_key = UserManager.user.profile.id + ':' + contact.user_id;
             session.active = false;
@@ -243,6 +243,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.is_open = true;
             session.timestamp = new Date().getTime();
             session.is_sound = true;
+            session.primary_color = '82, 179, 217';
+            session.other_color = '244, 179, 80';
+            session.accent_color = '149, 165, 166';
             session.topic = '';
             session.tag = '';
             session.order = -1;
@@ -265,6 +268,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.timestamp = new Date().getTime();
             session.monitor = config.monitor;
             session.is_sound = config.is_sound;
+            session.primary_color = config.primary_color;
+            session.other_color = config.other_color;
+            session.accent_color = config.accent_color;
             session.topic = '';
             session.tag = '';
             session.order = config.order;
@@ -349,26 +355,34 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             that.module.config.directory.default_chats['sm_group_chat'] = {
                 type: 'directory',
                 session_key: 'sm_group_chat',
-                name: 'PlusOne - Group Chat',
-                admin: false,
+                name: 'Group Chat',
+                admin: true,
                 watch_users: false,
                 store_length: 1,
                 order: 0,
                 monitor: false,
                 is_sound: false,
-                active: true
+                active: true,
+                primary_color: '82, 179, 217',
+                other_color: '244, 179, 80',
+                accent_color: '149, 165, 166',
+                icon_class: 'fa fa-users fa-2x'
             };
             that.module.config.directory.default_chats['sm_tech_chat'] = {
                 type: 'directory',
                 session_key: 'sm_tech_chat',
-                name: 'Tech Support - Group Chat',
-                admin: false,
+                name: 'Tech Support',
+                admin: true,
                 watch_users: false,
                 store_length: 2,
                 order: 1,
                 monitor: false,
                 is_sound: false,
-                active: true
+                active: true,
+                primary_color: '82, 179, 217',
+                other_color: '244, 179, 80',
+                accent_color: '149, 165, 166',
+                icon_class: 'fa fa-wrench fa-2x'
             };
         }
     };
@@ -379,6 +393,9 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             angular.forEach(that.module.config.directory.default_chats, function(config) {
                 if (that.validateDirectoryChatConfiguration(config)) {
                     ChatBuilder.buildChatForSession(that.getDirectoryChatSessionDetails(config));
+                    if (ChatStorage.directory && ChatStorage.directory.chat.list[config.session_key]) {
+                        ChatStorage.directory.chat.list[config.session_key].ux.icon = config.icon_class;
+                    }
                 }
             });
             angular.forEach(that.module.chats.directory.session.list, function(value, session_key) {
@@ -388,12 +405,22 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                         if (ChatStorage.directory.chat.list[session_key].session.active && signals) {
                             if (ChatStorage.directory && ChatStorage.directory.chat.list[session_key]) {
                                 $rootScope.$evalAsync(function() {
+                                    if (signals.is_typing) {
+                                        delete signals.is_typing[UserManager.user.profile.id];
+                                    }
+                                    if (!Object.size(signals.is_typing)) {
+                                        delete signals.is_typing;
+                                    }
                                     ChatStorage.directory.chat.list[session_key].signals.group = signals;
-                                    console.log(session_key, ChatStorage.directory.chat.list[session_key].signals.group);
                                     if (signals.topic != ChatStorage.directory.chat.list[session_key].session.topic) {
-                                        ChatStorage.directory.chat.list[session_key].session.topic = signals.topic;
+                                        if (signals.topic) {
+                                            ChatStorage.directory.chat.list[session_key].session.topic = signals.topic;
+                                        } else {
+                                            ChatStorage.directory.chat.list[session_key].session.topic = '';
+                                        }
+
                                         ChatStorage.directory.chat.list[session_key].topic.truncated = false;
-                                        SessionsManager.setUserChatSessionStorage(signals.type, session_key);
+                                        SessionsManager.setUserChatSessionStorage('directory', session_key);
                                     }
                                 });
                             }
