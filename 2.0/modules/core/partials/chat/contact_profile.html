@@ -1,8 +1,7 @@
-<div id="cm-user-profile" class="min-scroll">
-    <div>
-        <span class="cm-profile-span-label" style="color:white;">Profile</span>
+<div id="cm-user-profile" class="min-scroll" style="border:2px solid rgb({{chat.session.accent_color}});">
+    <div style="position:relative; display: block; width: 100%; clear: both; height:20px;">
+        <div class="btn btn-default btn-xs slim pull-right"><span class="glyphicon glyphicon-remove" style="color:red;"></span></div>
     </div>
-    <div class="btn btn-default pull-right"><span class="glyphicon glyphicon-remove" style="color:red;"></span></div>
     <div style="width:100%; display:block; min-height:20px;">
         <div style="width:40%; padding:2px; float:left">
             <!-- <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="/components/com_callcenter/images/avatars/{{avatar}}-90.jpg" alt="..."> -->
@@ -48,7 +47,6 @@
                 <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.isp" class="cm-profile-span">ISP: {{chat.contact.additional_profile.isp}}</span>
                 <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.platform.ip && user == 113" class="cm-profile-span">IP: {{chat.contact.additional_profile.platform.ip}}</span>
             </div>
-
             <div ng-show="chat.contact.additional_profile.lng != null && chat.contact.additional_profile.lat != null" class="well well-sm well-slim">
                 <img ng-src="https://maps.googleapis.com/maps/api/staticmap?center={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&markers={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&zoom=8&size=300x300&sensor=false" style="max-width:100%; max-height:100%;" alt="Aproximate location of your internet connection">
             </div>
