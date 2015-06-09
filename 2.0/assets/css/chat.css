@@ -17,7 +17,7 @@
 }
 
 .slim {
-    margin:0;
+    margin: 0;
     padding: 2px;
 }
 
@@ -173,6 +173,7 @@
     top: 6px;
     width: 96%;
     left: 2%;
+    margin-top:2px;
     color: red;
     text-align: center;
     font-weight: bold;
@@ -356,8 +357,8 @@ ul.nav.nav-tabs a:hover {
     min-height: 20px;
 }
 
-.cm-chat-user-option{
-    color:black;
+.cm-chat-user-option {
+    color: black;
 }
 
 #cm-user-profile {
@@ -367,11 +368,12 @@ ul.nav.nav-tabs a:hover {
     padding: 5px 2px;
     margin: 0px auto;
     background: white;
-    border-top: 1px solid white;
+    border: 2px solid grey;
     clear: both;
     min-height: 50px;
     z-index: 8;
-    pointer-events:all;
+    pointer-events: all;
+    padding-bottom: 15;
 }
 
 .cm-profile-span {
@@ -644,7 +646,7 @@ ul.nav.nav-tabs a:hover {
 }
 
 .cm-contact-chat-add-wrapper {
-    padding:0px 2px;
+    padding: 0px 2px;
     position: relative;
     display: block;
     margin-top: 1px;
@@ -717,7 +719,7 @@ ul.nav.nav-tabs a:hover {
     position: relative;
     padding: 0;
     bottom: 10px;
-    width:auto;
+    width: auto;
     resize: none;
     min-height: 52px;
     pointer-events: all;
@@ -741,6 +743,7 @@ ul.nav.nav-tabs a:hover {
     background-color: rgba(98, 162, 189, 1);
     border: 1px solid rgba(98, 162, 189, 1);
     /*color: rgba(98, 162, 189, 1);*/
+
     color: white;
     text-align: center;
     font-weight: bold;
@@ -756,11 +759,9 @@ ul.nav.nav-tabs a:hover {
 /*********************     Chat  *************************/
 
 .cm-chat-message-wrapper-full {
-    margin-top: 5px;
+    margin-top: 10px;
     position: relative;
     background: white;
-    display: block;
-    width: 100%;
     padding: 0;
     min-height: 40px;
     word-break: break-word;
@@ -772,8 +773,6 @@ ul.nav.nav-tabs a:hover {
 .cm-chat-message-wrapper-ext {
     position: relative;
     background: white;
-    display: block;
-    width: 100%;
     margin: 0;
     padding: 0;
     min-height: 15px;
@@ -825,68 +824,65 @@ ul.nav.nav-tabs a:hover {
 
 .cm-chat-message-user-content-wrapper-full {
     position: relative;
+    float: left;
     margin: 0;
-    padding: 2px 2px 5px 2px;
+    width: auto;
+    padding: 0px 0px 5px 0px;
     min-height: 40px;
     margin-left: 40px;
-    width: auto;
-    border-top: 1px solid grey;
-    border-left: 1px solid grey;
-    border-right: 1px solid grey;
-    background-color: rgba(98, 162, 189, .4);
     color: rgba(98, 162, 189, 1);
-    padding-top: 22px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+    border-radius: 5px;
+    border: 1px solid grey;
+    margin-bottom:2px;
 }
 
 .cm-chat-message-user-content-wrapper-ext {
     position: relative;
+    float: left;
+    width: auto;
     margin: 0;
     padding: 0;
     min-height: 20px;
     margin-left: 40px;
-    width: auto;
-    border-left: 1px solid grey;
-    border-right: 1px solid grey;
-    background-color: rgba(98, 162, 189, .4);
-    color: rgba(98, 162, 189, 1);
+    border-radius: 5px;
+    border: 1px solid grey;
+    margin-bottom:2px;
 }
 
 .cm-chat-message-contact-content-wrapper-full {
     position: relative;
+    float: right;
     margin: 0;
-    padding: 2px 2px 5px 2px;
+    width: auto;
+    padding: 0px 0px 5px 0px;
     min-height: 40px;
     margin-right: 40px;
-    width: auto;
-    border-top: 1px solid grey;
-    border-left: 1px solid grey;
-    border-right: 1px solid grey;
-    padding-top: 22px;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+    border-radius: 5px;
+    border: 1px solid grey;
+    margin-bottom:2px;
 }
 
 .cm-chat-message-contact-content-wrapper-ext {
     position: relative;
-    margin: 0;
-    padding: 2px 2px 5px 2px;
-    min-height: 20px;
+    float: right;
     width: auto;
+    margin: 0;
+    padding: 0;
+    min-height: 20px;
     margin-right: 40px;
-    border-left: 1px solid grey;
-    border-right: 1px solid grey;
+    border-radius: 5px;
+    border: 1px solid grey;
+    margin-bottom:2px;
 }
 
 .cm-chat-message-user-header-bar {
-    position: absolute;
+    position: relative;
     top: 0;
     left: 0;
     display: block;
+    min-width: 100%;
     margin: 0;
     padding: 2px 5px;
-    width: 100%;
     min-height: 15px;
     clear: both;
     font-size: .8em;
@@ -895,16 +891,17 @@ ul.nav.nav-tabs a:hover {
     color: white;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
+    line-height: 10px;
 }
 
 .cm-chat-message-contact-header-bar {
-    position: absolute;
+    position: relative;
     top: 0;
-    left: 0;
+    right: 0;
+    min-width: 100%;
     display: block;
     margin: 0;
     padding: 2px 5px;
-    width: 100%;
     min-height: 15px;
     font-size: .8em;
     font-weight: bold;
@@ -912,31 +909,29 @@ ul.nav.nav-tabs a:hover {
     clear: both;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
+    line-height: 10px;
 }
 
 .cm-chat-message-text-wrapper-full {
     position: relative;
-    display: block;
     margin: 0;
     padding: 0 5px 0 5px;
-    width: 100%;
+    min-width: 20px;
     min-height: 14px;
     clear: both;
 }
 
 .cm-chat-message-text-wrapper-ext {
     position: relative;
-    display: block;
     margin: 0;
     padding: 0 5px 2px 5px;
-    width: 100%;
+    min-width: 20px;
     min-height: 14px;
     clear: both;
 }
 
 .cm-chat-message-text {
     position: relative;
-    display: block;
     width: 100%;
     pointer-events: all;
     text-decoration: none;
@@ -946,7 +941,8 @@ ul.nav.nav-tabs a:hover {
 .cm-chat-message-text-ref {
     position: relative;
     margin: 0;
-    width: 100%;
+    display: inline-block;
+    max-width: 200px;
     min-height: 14px;
     clear: both;
     font-size: .8em;
@@ -994,7 +990,7 @@ ul.nav.nav-tabs a:hover {
     margin-left: 2px;
     margin-right: 2px;
     width: auto;
-    padding: 0px;
+    padding: 2px;
     position: relative;
     min-height: 1em;
     font-size: .7em;
@@ -1002,7 +998,7 @@ ul.nav.nav-tabs a:hover {
     border: 1px solid #ccc;
     font-weight: bold;
     line-height: 10px;
-    border-radius: 5px 20px 5px;
+    border-radius: 5px;
     background: rgba(255, 255, 255, .3);
     clear: both;
 }
@@ -1012,13 +1008,13 @@ ul.nav.nav-tabs a:hover {
     display: block;
     left: 2px;
     right: 2px;
-    top: 0;
+    top: 35px;
     min-height: 35px;
     width: auto;
     text-align: left;
     font-weight: bold;
     font-size: .9em;
-    z-index: 6;
+    z-index: 3;
     background: #ffffff;
     /* Old browsers */
 

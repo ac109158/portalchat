@@ -364,10 +364,15 @@ var n = Firebase.ServerValue.TIMESTAMP;
     };
 
     this.updateSessionDetail = function(session_key, detail, value) {
-        if (session_key && detail && value) {
+        if (session_key && detail && angular.isDefined(value)) {
             that.update = {};
             that.update[detail] = value;
-            that.fb.location.sessions.child(session_key).update(that.update);
+            if(session_key.split(':')[1]){
+                that.fb.location.sessions.child(session_key.split(':')[0]).child(session_key.split(':')[1]).update(that.update);
+            } else{
+                that.fb.location.sessions.child(session_key).update(that.update);
+            }
+
         }
     };
     this.removeChatSession = function(type, session_key, removeScope, removeLocation) {

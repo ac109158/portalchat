@@ -1,6 +1,7 @@
-<div id="cm-user-profile" class="min-scroll" style="border:2px solid rgb({{chat.session.accent_color}});">
-    <div style="position:relative; display: block; width: 100%; clear: both; height:20px;">
-        <div class="btn btn-default btn-xs slim pull-right"><span class="glyphicon glyphicon-remove" style="color:red;"></span></div>
+<div id="cm-user-profile" class="min-scroll" style="border:2px solid rgb({{chat.session.accent_color}}); background: rgba({{chat.session.accent_color}}, .4);">
+    <div style="position:relative; display: block; width: 100%; clear: both; height:25px; margin-bottom: 10px;">
+        <div ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'profile', false);" class="btn btn-default btn-xs slim" style="position: absolute; top: 2px; right: 2px;"><span class="glyphicon glyphicon-remove" style="color:red;"></span></div>
+        <legend>Contact Profile</legend>
     </div>
     <div style="width:100%; display:block; min-height:20px;">
         <div style="width:40%; padding:2px; float:left">
@@ -23,32 +24,75 @@
             <span class="cm-profile-span-label">Email</span>
             <span class="cm-profile-span pointer">{{chat.contact.additional_profile.email}}</span>
         </div>
-        <div ng-show="chat.contact.profile.online && chat.contact.additional_profile.city && chat.contact.additional_profile.state || chat.contact.profile.online && chat.contact.additional_profile.checkInTime" class="well well-sm well-slim">
-            <span class="cm-profile-span-label">Sign-In</span>
-            <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.city && chat.contact.additional_profile.state" class="cm-profile-span">{{chat.contact.additional_profile.city +', ' + chat.contact.additional_profile.state}}</span>
-            <span ng-show="chat.contact.additional_profile.office" class="cm-profile-span">{{chat.contact.additional_profile.office}}</span>
-            <span ng-show="chat.contact.additional_profile.checkInTime" ng-show="chat.contact.additional_profile.checkInTime" class="cm-profile-span">{{chat.contact.additional_profile.checkInTime | date:'MM/dd @ h:mma'}}</span>
-        </div>
-        <div ng-show="!chat.contact.profile.online && chat.contact.additional_profile.city && chat.contact.additional_profile.state || !chat.contact.profile.online && chat.contact.additional_profile.checkOutTime" class="well well-sm well-slim">
-            <span class="cm-profile-span-label">Sign-Out</span>
-            <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.city && chat.contact.additional_profile.state" class="cm-profile-span">{{chat.contact.additional_profile.city +', ' + chat.contact.additional_profile.state}}</span>
-            <span ng-show="chat.contact.additional_profile.office" class="cm-profile-span">{{chat.contact.additional_profile.office}}</span>
-            <span ng-show="chat.contact.additional_profile.checkOutTime" class="cm-profile-span">{{chat.contact.additional_profile.checkOutTime | date:'MM/dd @ h:mma'}}</span>
-        </div>
-        <div ng-if="ux.fx.hasAdminRights()">
-            <div ng-show="chat.contact.additional_profile.platform" class="well well-sm well-slim">
-                <span class="cm-profile-span-label">Platform</span>
-                <span class="cm-profile-span">Browser: {{chat.contact.additional_profile.platform.browser + ' | ' + chat.contact.additional_profile.platform.browserVersion}}</span>
-                <span class="cm-profile-span">Operating System: {{chat.contact.additional_profile.platform.os + ' | ' +  chat.contact.additional_profile.platform.osVersion}}</span>
-                <span class="cm-profile-span">Flash: {{chat.contact.additional_profile.platform.flashVersion == 'no check' ? 'N/A' : chat.contact.additional_profile.platform.flashVersion}}</span>
-                <span class="cm-profile-span">Cookies: {{chat.contact.additional_profile.platform.cookies == true ? 'Enabled' : 'Disabled'}}</span>
-                <span ng-if="!chat.contact.additional_profile.platform.mobile" class="cm-profile-span">Device: {{'Computer' + ' | ' + chat.contact.additional_profile.platform.screen}}</span>
-                <span ng-if="chat.contact.additional_profile.platform.mobile" class="cm-profile-span">Device: {{'Mobile | ' + chat.contact.additional_profile.platform.screen}}</span>
-                <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.isp" class="cm-profile-span">ISP: {{chat.contact.additional_profile.isp}}</span>
-                <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.platform.ip && user == 113" class="cm-profile-span">IP: {{chat.contact.additional_profile.platform.ip}}</span>
+        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default" ng-show="chat.contact.profile.online && chat.contact.additional_profile.city && chat.contact.additional_profile.state || chat.contact.profile.online && chat.contact.additional_profile.checkInTime">
+                <div class="panel-heading slim" role="tab" id="headingOne" style="margin: 0px; padding: 2px;">
+                    <h4 class="panel-title slim" style="margin: 0px; padding: 2px;">
+                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-controls="collapseOne" style="margin: 0px; padding: 2px;">
+                              Sign In
+                            </a>
+                          </h4>
+                </div>
+                <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne" style="margin: 0px; padding: 2px;">
+                    <div class="panel-body" style="margin: 0px; padding: 2px;">
+                        <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.city && chat.contact.additional_profile.state" class="cm-profile-span">{{chat.contact.additional_profile.city +', ' + chat.contact.additional_profile.state}}</span>
+                        <span ng-show="chat.contact.additional_profile.office" class="cm-profile-span">{{chat.contact.additional_profile.office}}</span>
+                        <span ng-show="chat.contact.additional_profile.checkInTime" ng-show="chat.contact.additional_profile.checkInTime" class="cm-profile-span">{{chat.contact.additional_profile.checkInTime | date:'MM/dd @ h:mma'}}</span>
+                    </div>
+                </div>
             </div>
-            <div ng-show="chat.contact.additional_profile.lng != null && chat.contact.additional_profile.lat != null" class="well well-sm well-slim">
-                <img ng-src="https://maps.googleapis.com/maps/api/staticmap?center={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&markers={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&zoom=8&size=300x300&sensor=false" style="max-width:100%; max-height:100%;" alt="Aproximate location of your internet connection">
+            <div class="panel panel-default" style="margin: 0px; padding: 2px;" ng-show="!chat.contact.profile.online && chat.contact.additional_profile.city && chat.contact.additional_profile.state || !chat.contact.profile.online && chat.contact.additional_profile.checkOutTime">
+                <div class="panel-heading" role="tab" id="headingTwo" style="margin: 0px; padding: 2px;">
+                    <h4 class="panel-title" style="margin: 0px; padding: 2px;">
+                                <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                  Sign Out
+                                </a>
+                              </h4>
+                </div>
+                <div id="collapseTwo" class="panel-collapse collapse" style="margin: 0px; padding: 2px;" role="tabpanel" aria-labelledby="headingTwo">
+                    <div class="panel-body" style="margin: 0px; padding: 2px;">
+                        <span ng-repeat="color in ux.colors track by $index" href="#" class="fa fa-square pointer" style="color:rgb({{color}});" ng-click="chat.session.primary_color = color"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default" ng-if="ux.fx.hasAdminRights()" style="margin: 0px; padding: 2px;">
+                <div class="panel-heading" style="margin: 0px; padding: 2px;" role="tab" id="headingThree">
+                    <h4 class="panel-title" style="margin: 0px; padding: 2px;">
+                                <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                  Platform
+                                </a>
+                              </h4>
+                </div>
+                <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                    <div class="panel-body" style="margin: 0px; padding: 2px;">
+                        <div ng-show="chat.contact.additional_profile.platform" class="well well-sm well-slim">
+                            <span class="cm-profile-span-label">Platform</span>
+                            <span class="cm-profile-span">Browser: {{chat.contact.additional_profile.platform.browser + ' | ' + chat.contact.additional_profile.platform.browserVersion}}</span>
+                            <span class="cm-profile-span">Operating System: {{chat.contact.additional_profile.platform.os + ' | ' +  chat.contact.additional_profile.platform.osVersion}}</span>
+                            <span class="cm-profile-span">Flash: {{chat.contact.additional_profile.platform.flashVersion == 'no check' ? 'N/A' : chat.contact.additional_profile.platform.flashVersion}}</span>
+                            <span class="cm-profile-span">Cookies: {{chat.contact.additional_profile.platform.cookies == true ? 'Enabled' : 'Disabled'}}</span>
+                            <span ng-if="!chat.contact.additional_profile.platform.mobile" class="cm-profile-span">Device: {{'Computer' + ' | ' + chat.contact.additional_profile.platform.screen}}</span>
+                            <span ng-if="chat.contact.additional_profile.platform.mobile" class="cm-profile-span">Device: {{'Mobile | ' + chat.contact.additional_profile.platform.screen}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-default" style="margin: 0px; padding: 2px;" ng-if="ux.fx.hasAdminRights()">
+                <div class="panel-heading" style="margin: 0px; padding: 2px;" role="tab" id="headingFive">
+                    <span class="panel-title" style="margin: 0px; padding: 2px;">
+                        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                          ISP
+                        </a>
+                      </span>
+                </div>
+                <div id="collapseFive" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive" style="margin: 0px; padding: 2px;">
+                    <div class="panel-body" style="margin: 0px; padding: 2px;">
+                        <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.isp" class="cm-profile-span">ISP: {{chat.contact.additional_profile.isp}}</span>
+                        <div ng-show="chat.contact.additional_profile.lng != null && chat.contact.additional_profile.lat != null" class="well well-sm well-slim">
+                            <img ng-src="https://maps.googleapis.com/maps/api/staticmap?center={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&markers={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&zoom=8&size=300x300&sensor=false" style="max-width:100%; max-height:100%;" alt="Aproximate location of your internet connection">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -91,6 +91,12 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         }
     };
 
+    this.ui.fx.toggleChatSound = function(type, session_key) {
+        ChatModuleManager.toggleChatSound(type, session_key);
+        NotificationManager.playSound('action');
+    };
+
+
     this.ui.fx.increasePanelVerticalAdjustment = function() {
         SettingsManager.increasePanelVerticalAdjustment();
     };
@@ -240,6 +246,9 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
 
     this.ui.fx.removeChat = function(type, session_key) {
         ChatModuleManager.removeChat(type, session_key);
+    };
+    this.ui.fx.deactivateChat = function(type, session_key) {
+        ChatModuleManager.deactivateChat(type, session_key);
     };
 
     this.ui.fx.loadPreviousChatMessages = function(type, session_key) {

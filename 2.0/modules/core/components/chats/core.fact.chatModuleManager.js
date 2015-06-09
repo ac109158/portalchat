@@ -197,6 +197,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                                 }
                             }
                         });
+                        that.setActiveContactChatMap();
                     });
                 }, 750);
 
@@ -1174,6 +1175,25 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         return;
 
     };
+    this.toggleChatSound = function(type, session_key) {
+        ChatManager.toggleChatSound(type, session_key);
+    };
+
+    this.deactivateChat = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            that.module.current[type].chat = {};
+            that.module.current[type].session_key = undefined;
+            ChatStorage[type].chat.list[session_key].session.active = false;
+
+            var count = ChatStorage[type].chat.count;
+            var current_order_position = ChatStorage[type].chat.list[session_key].session.order;
+            while(count--){
+                if(count > current_order_position){
+                    console.log(ChatStorage[type].chat.list[ChatStorage[type].chat.order_map[count]].session.session_key, ChatStorage[type].chat.list[ChatStorage[type].chat.order_map[count]].session.order);
+                }
+            }
+        }
+    };
 
     this.removeChat = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
@@ -1201,6 +1221,17 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             that.evaluateChatModuleLayout();
         }
     };
+
+    this.setActiveContactChatMap = function(){
+        ChatStorage.contact.chat.map = {};
+        angular.forEach(ChatStorage.contact.chat.list, function(contact_chat){
+            if(contact_chat.session.active){
+                ChatStorage.contact.chat.map[contact_chat.session.session_key] = contact_chat.session.order;
+            }
+        });
+
+    };
+
 
     this.showInGeneralPanelContactList = function(contact) { // this function will determine the client has filtered the user out of the general directory user list
         if (angular.isDefined(UserManager.user.group) && UserManager.user.group.indexOf(CoreConfig.common.reference.user_prefix + contact.user_id) > -1) {

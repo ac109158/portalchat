@@ -158,13 +158,13 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         var html = '';
         if (config.different_author || config.time_lapse) {
             html += '<div class="cm-chat-message-user-avatar-wrapper img-circle">';
-            html += '<img class="cm-chat-message-avatar img-circle" ng-src="{{chat.user.profile.avatar_url}}" alt="...">';
+            html += '<img title=""class="cm-chat-message-avatar img-circle" ng-src="{{chat.user.profile.avatar_url}}" alt="...">';
             html += '</div>';
         }
         if (config.different_author || config.time_lapse) {
-            html += '<div class="cm-chat-message-user-content-wrapper-full" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}" style="background-color:rgba({{chat.session.primary_color}}, .4); color:rgba({{chat.session.primary_color}}, 1);">';
+            html += '<div class="cm-chat-message-user-content-wrapper-full" style="background-color:rgba({{chat.session.primary_color}}, .4); color:rgba({{chat.session.primary_color}}, 1);">';
             html += '<div class="cm-chat-message-user-header-bar" style="background-color:rgba({{chat.session.primary_color}}, 1);">';
-            html += '<span class="pull-left" ng-bind="chat.user.self_name"></span>';
+            html += '<span style="margin-right: 20px;" class="pull-left" ng-bind="chat.user.self_name"></span>';
             html += '<span class="pull-right" ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
             html += '</div>';
         } else {
@@ -183,7 +183,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         }
         html += '<span class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | parseUrl | colonToSmiley" id="{{message.session_key + ' + "':'" + ' + message.priority}}"></span>';
         if (message.reference && message.reference.key) {
-            html += '<div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
+            html += '<br><div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
             if (message.reference.author === UserManager.user.profile.id) {
                 html += ' cm-chat-message-text-ref-self';
             } else {
@@ -208,9 +208,9 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             html += '</div>';
         }
         if (config.different_author || config.time_lapse) {
-            html += '<div class="cm-chat-message-contact-content-wrapper-full" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}" style="background-color:rgba({{chat.session.other_color}}, .4); color:rgba({{chat.session.other_color}}, 1);">';
+            html += '<div class="cm-chat-message-contact-content-wrapper-full"  style="background-color:rgba({{chat.session.other_color}}, .4); color:rgba({{chat.session.other_color}}, 1);">';
             html += '<div class="cm-chat-message-contact-header-bar" style="background-color:rgba({{chat.session.other_color}}, 1);">';
-            html += '<span class="pull-left">' + config.contact.name + '</span>';
+            html += '<span style="margin-right: 20px;" class="pull-left">' + config.contact.name + '</span>';
             html += '<span class="pull-right" ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
             html += '</div>';
         } else {
@@ -219,7 +219,6 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
                 html += '<div class="no-select cm-contact-chat-extend-timestamp">';
                 html += '<span ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
                 html += '</div>';
-
             }
         }
         if (config.different_author) {
@@ -229,7 +228,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         }
         html += '<span class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | parseUrl | colonToSmiley" id="{{message.session_key + ' + "':'" + ' + message.priority}}"></span>';
         if (message.reference && message.reference.key) {
-            html += '<div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
+            html += '<br><div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
             if (message.reference.author === UserManager.user.profile.id) {
                 html += ' cm-chat-message-text-ref-self';
             } else {

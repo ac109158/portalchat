@@ -54,7 +54,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
     this.setContactChatOrderMap = function() {
         ChatStorage.contact.chat.order_map = {};
         angular.forEach(ChatStorage.contact.chat.list, function(value, key) {
-            ChatStorage.contact.chat.order_map[value.order] = key;
+            ChatStorage.contact.chat.order_map[value.session.order] = key;
         });
         ChatStorage.contact.chat.count = Object.size(ChatStorage.contact.chat.list);
     };
@@ -152,6 +152,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                 ChatStorage[session.type].chat.list[session.session_key].attr.other_fb_ref = 'contact';
             }
             ChatStorage[session.type].chat.list[session.session_key].attr.is_init = false;
+            ChatStorage[session.type].chat.list[session.session_key].attr.min_width = 1;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_converted = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_new_message = false;
             ChatStorage[session.type].chat.list[session.session_key].attr.is_previous_messages = true;

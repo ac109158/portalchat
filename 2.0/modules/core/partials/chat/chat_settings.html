@@ -38,7 +38,7 @@
             <span class="pointer" ng-show="chat.session.is_sound == true || chat.session.is_sound == 'true'" href="#">Sound Off</span>
         </div>
 -->
-        <div ng-if="!chat.session.is_directory_chat && chat.session.is_group_chat || chat.contact.profile.online == true &&  chat.contact.presence.state != 'Offline'">
+        <div ng-if="!chat.session.is_directory_chat && chat.session.is_group_chat || chat.contact.profile.online == true && chat.contact.presence.state != 'Offline'">
             <div href="#" class="pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'invite');">
                 <!-- Option to invite another user to chat -->
                 <i class="fa fa-users"></i>

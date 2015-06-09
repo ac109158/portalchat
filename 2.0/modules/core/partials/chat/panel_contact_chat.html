@@ -1,9 +1,12 @@
 <div class="cm-contact-chat">
+    <div ng-if="!chat.menu.topic && chat.session.topic" class="cm-contact-chat-topic-wrapper one-edge-shadow" style="color:orange;">
+        <span ng-click="chat.topic.truncated = !chat.topic.truncated;" title="Topic" class="glyphicon glyphicon-pushpin pointer" style="position:absolute; left: 4px; top:10px;"></span>
+        <div class="cm-contact-chat-topic min-scroll" id="{{chat.session.session_key}}:topic" maxlength=60 spellcheck="false" ng-enter="ui.fx.updateChatTopic(chat.session.type, chat.session.session_key)" ng-blur="ui.fx.updateChatTopic(chat.session.type, chat.session.session_key);" contenteditable="{{!chat.session.admin || ux.fx.hasTopicRights(chat.session.session_key)}}" ng-class="{'truncated':chat.topic.truncated == true, 'pointer' : !chat.session.admin || ux.fx.hasTopicRights(chat.session.session_key)}" ng-bind="chat.session.topic"></div>
+    </div>
     <div class="cm-contact-chat-header one-edge-shadow" class="cm-main-panel-label one-edge-shadow" style="background-color:rgba({{chat.session.accent_color}}, 1);">
         <div ng-if="!chat.session.is_group_chat">
             <img class="pointer" style="position:relative; left: 2px; top:2px; width: 32px; height: 32px; pointer-events:all;" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'profile');" ng-src="{{chat.contact.profile.avatar_url}}" />
-            <span style="margin-left:5px; font-size:1.2em; font-weight: bold;" ng-bind="chat.session.tag || chat.contact.profile.name"></span>
-            <span style="position:absolute; background:white; width:60px; border-radius:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em; top:6px; right: 60px;" ng-class="{'Busy' : chat.contact.profile.presence.state != 'Online' && chat.contact.profile.presence.state != 'Offline' && chat.contact.profile.online == true ,'Offline' : chat.contact.profile.online == false || chat.contact.profile.presence.state == 'Offline','Online' : chat.contact.profile.presence.state == 'Online' && chat.contact.profile.online == true}">{{chat.contact.profile.presence.state}}</span>
+            <i ng-show="chat.session.tag" class="fa fa-slack" style="margin: 2px 0px 2px 2px;"></i><span style="margin-left:5px; font-size:1.2em; font-weight: bold;" ng-bind="chat.session.tag || chat.contact.profile.name"></span>
         </div>
         <div ng-if="chat.session.is_group_chat">
             <i class="{{chat.ux.icon}}" style="position:relative; width:35px; height:35px; left: 5px; top: 5px;" />
@@ -11,8 +14,11 @@
             <span></span>
         </div>
         <div style="position:absolute; top: 2px; right: 2px; min-width: 1px;">
-            <div class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.closeChat();">
+            <div class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.deactivateChat(chat.session.type, chat.session.session_key);">
                 <center><span class="fa fa-times fa-1x"></span></center>
+            </div>
+            <div title="Toggle Notifcations" class="btn btn-xs btn-default pointer" style="min-width: 22px;" ng-click="ui.fx.toggleChatSound(chat.session.type, chat.session.session_key);">
+                <center><span ng-show="chat.session.is_sound" class="fa fa-bell-o"></span><span ng-show="!chat.session.is_sound" class="fa fa-bell-slash-o"></span></center>
             </div>
             <div class="btn btn-xs btn-default pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'options');">
                 <center><span class="fa fa-cog"></span></center>
@@ -21,57 +27,59 @@
     </div>
     <div class="cm-contact-chat-status-top min-scroll">
         <div ng-if="!chat.attr.is_directory_chat && chat.menu.invite == true" class="cm-contact-chat-add-wrapper">
-            <select chosen multiple ng-model="chat.invite.contact_list" ng-options="contact as contact.name for contact in profiles.list |filter: {online:true} | orderBy:'name'">
-                <option value=''>Search User</option>
-            </select>
-            <div style="position: absolute; display:block; width: 25px; min-height: 40px; padding:0; right:2px; top:2px;">
-                <div ng-disabled="!chat.invite.contact_list.length" class="btn btn-xs btn-default pull-right">
-                    <center><i class="fa fa-user-plus"></i></center>
+            <div style="position:relative; display: block; width: 100%; clear: both; min-height:25px; background: white; border-bottom: 2px solid rgb({{chat.session.accent_color}});">
+                <select chosen multiple ng-model="chat.invite.contact_list" ng-options="contact as contact.name for contact in profiles.list |filter: {online:true} | orderBy:'name'">
+                    <option value=''>Search User</option>
+                </select>
+                <div class="modal-footer slim">
+                    <button type="button" class="btn btn-xs btn-default slim">Cancel</button>
+                    <button type="button" class="btn btn-xs btn-primary slim" ng-disabled="!chat.invite.contact_list.length"><i class="fa fa-user-plus"></i>Invite</button>
                 </div>
+                <div class="clearfix"></div>
             </div>
-            <div class="clearfix"></div>
         </div>
         <div ng-if="chat.menu.color == true" class="cm-contact-chat-add-wrapper min-scroll">
             <div style="position:absolute; display: block; width: 100%; min-height: 20px; padding: 5px; background: white; border-bottom: 2px solid rgba({{chat.session.accent_color}},1);">
                 <div style="position:relative; display: block; width: 100%; clear: both; height:25px;">
                     <label>Color Menu</label>
                     <div class="btn btn-default btn-xs slim pull-right" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'color', false);"><span class="glyphicon glyphicon-remove" style="color:red;"></span></div>
+                    <div class="btn btn-default btn-xs slim pull-right" ng-click="ui.fx.defaultColorScheme(chat.session.type, chat.session.session_key);">Default</div>
                 </div>
                 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                     <div class="panel panel-default">
-                        <div class="panel-heading slim" role="tab" id="headingOne">
+                        <div class="panel-heading slim" role="tab" id="headingOne" style="background-color:rgba({{chat.session.accent_color}}, 1);">
                             <h4 class="panel-title slim">
-                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            <span class="collapsed pointer"data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
                               Primary
-                            </a>
+                            </span>
                           </h4>
                         </div>
                         <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
                             <div class="panel-body slim">
-                                <span ng-repeat="color in ux.colors track by $index" href="#" class="fa fa-square pointer" style="color:rgb({{color}});" ng-click="chat.session.accent_color = color"></span>
+                                <span ng-repeat="color in ux.colors track by $index" href="#" class="fa fa-square pointer" style="color:rgb({{color}}); border:1px solid white;" ng-click="chat.session.accent_color = color"></span>
                             </div>
                         </div>
                     </div>
                     <div class="panel panel-default slim">
-                        <div class="panel-heading slim" role="tab" id="headingTwo">
+                        <div class="panel-heading slim" role="tab" id="headingTwo" style="background-color:rgba({{chat.session.primary_color}}, 1);">
                             <h4 class="panel-title slim">
-                                <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                <span class="pointer collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
                                   Your Chats
-                                </a>
+                                </span>
                               </h4>
                         </div>
                         <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
                             <div class="panel-body slim">
-                                <span ng-repeat="color in ux.colors track by $index" href="#" class="fa fa-square pointer" style="color:rgb({{color}});" ng-click="chat.session.primary_color = color"></span>
+                                <span ng-repeat="color in ux.colors track by $index" href="#" class="fa fa-square pointer" style="color:rgb({{color}});border:1px solid white;" ng-click="chat.session.primary_color = color"></span>
                             </div>
                         </div>
                     </div>
                     <div class="panel panel-default">
-                        <div class="panel-heading slim" role="tab" id="headingThree">
+                        <div class="panel-heading slim" role="tab" id="headingThree" style="background-color:rgba({{chat.session.other_color}}, 1);border:1px solid white;">
                             <h4 class="panel-title slim">
-                                <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                <span class="collapsed pointer" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
                                   Other Chats
-                                </a>
+                                </span>
                               </h4>
                         </div>
                         <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
@@ -97,10 +105,6 @@
             </div>
             <button type="submit" style="width:0px;" class='hidden'> </button>
         </form>
-        <div ng-if="!chat.menu.topic && chat.session.topic" class="cm-contact-chat-topic-wrapper one-edge-shadow" style="color:rgba({{chat.session.primary_color}},1);">
-            <span ng-click="chat.topic.truncated = !chat.topic.truncated;" title="Topic" class="glyphicon glyphicon-pushpin pointer" style="position:absolute; left: 4px; top:10px;"></span>
-            <div class="cm-contact-chat-topic min-scroll" id="{{chat.session.session_key}}:topic" maxlength=60 spellcheck="false" ng-enter="ui.fx.updateChatTopic(chat.session.type, chat.session.session_key)" ng-blur="ui.fx.updateChatTopic(chat.session.type, chat.session.session_key);" contenteditable="{{!chat.session.admin || ux.fx.hasTopicRights(chat.session.session_key)}}" ng-class="{'truncated':chat.topic.truncated == true, 'pointer' : !chat.session.admin || ux.fx.hasTopicRights(chat.session.session_key)}" ng-bind="chat.session.topic"></div>
-        </div>
     </div>
     <div ng-show="chat.menu.options" style="position:absolute; right:0;">
         <cm-chat-settings class="cm-menu-panel"></cm-chat-settings>
@@ -137,14 +141,14 @@
     </div>
     <div style="position:absolute; z-index: 2; width: 100%; left:0; right:0; bottom:0; background-color:rgba({{chat.session.accent_color}},.8); border: 2px solid rgb({{chat.session.accent_color}}); border-top:none; min-height:125px; z-index: 2;" class="pointer">
         <div style="position:absolute; bottom:30px; width:100%; z-index:2; pointer-events:all;">
-        <div emoji-form>
-            <textarea id="messageInput" placeholder="Enter Chat to {{chat.description || chat.contact.profile.first_name}}" ng-model="chat.message.text"></textarea>
-            <button style="position: absolute; bottom:-20px; right:6px;" id="emojibtn">
-                <i class="icon icon-emoji pointer"></i>
-            </button>
+            <div emoji-form>
+                <textarea id="messageInput" placeholder="Enter Chat to {{chat.description || chat.contact.profile.first_name}}" ng-model="chat.message.text"></textarea>
+                <button style="position: absolute; bottom:-20px; right:6px;" id="emojibtn">
+                    <i class="icon icon-emoji pointer"></i>
+                </button>
+            </div>
         </div>
-    </div>
-        <div class="cm-main-label-decal-description" style="color: rgba({{chat.session.accent_color}}, .9);"><i style="font-size: 1.2em;" class="{{chat.ux.icon}}"></i><span style="margin-left: 5px; font-size: 1.5em;" ng-bind="chat.description ||  'Chat With ' + chat.contact.profile.first_name"></span><i style="margin-left: 5px; font-size: 1.2em;" class="{{chat.ux.icon}}"></i></div>
+        <div class="cm-main-label-decal-description" style="position: relative; top: 5px; color: rgba({{chat.session.accent_color}}, .9);"><i style="font-size: 1.2em;" class="{{chat.ux.icon}}"></i><span style="margin-left: 5px; font-size: 1.5em;" ng-bind="chat.description ||  'Chat With ' + chat.contact.profile.first_name"></span><i style="margin-left: 5px; font-size: 1.2em;" class="{{chat.ux.icon}}"></i></div>
         <div class="cm-contact-chat-status-bottom min-scroll">
             <div ng-if="chat.signals[chat.attr.other_fb_ref].is_typing" style="position:absolute; z-index: 7; top:0px; left:0px; width: 100%; background:rgba(255,255,255,.5);">
                 <i ng-show="chat.signals[chat.attr.other_fb_ref].is_typing" class="fa fa-spinner fa-2x fa-pulse cm-chat-typing-icon"></i>
@@ -166,7 +170,7 @@
                 <span ng-bind="chat.contact.profile.presence.message"></span>
             </div>
             <div ng-show="chat.reference.text" class="cm-contact-chat-reference-text">
-                <span ng-bind="'@' + chat.reference.name"></span>&nbsp;<span ng-bind-html="' : ' + chat.reference.text | colonToSmiley"></span>
+                <span ng-bind="'@' + chat.reference.name"></span>&nbsp;<span ng-bind-html="' : ' + chat.reference.text | colonToSmiley "></span>
             </div>
         </div>
     </div>
