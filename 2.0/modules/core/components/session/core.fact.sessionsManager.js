@@ -72,6 +72,12 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
         }
     };
 
+    this.sendChatInviteSignal = function(contact_id, signal) {
+        if (signal && signal.type && signal.session_key) {
+            that.fb.location.signals.child('contact').child(contact_id).child(signal.session_key).update(signal);
+        }
+    };
+
     this.setUserChatSessionStorage = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
             if (session_key.split(':')[1]) {
@@ -87,10 +93,14 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
 
     this.updateChatSignals = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
-             if (session_key.split(':')[1]) {
-                that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).update(ChatStorage[type].chat.list[session_key].signals.user);
+            if (session_key.split(':')[1]) {
+                that.fb.location.signals.child(type).child(session_key.split(':')[1]).child(session_key.split(':')[0]).update(ChatStorage[type].chat.list[session_key].signals.user);
             } else {
-                that.fb.location.signals.child(session_key).update(ChatStorage[type].chat.list[session_key].signals.user);
+                if (type === 'contact' && ChatStorage[type] && ChatStorage[type].session.list[session_key].session.is_group_chat) {
+                    that.fb.location.signals.child('group').child(session_key).update(ChatStorage[type].chat.list[session_key].signals.user);
+                } else {
+                    that.fb.location.signals.child(type).child(session_key).update(ChatStorage[type].chat.list[session_key].signals.user);
+                }
             }
             return true;
         }
@@ -100,12 +110,61 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
     this.updateChatIsTypingSignal = function(type, session_key, value) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (session_key.split(':')[1]) {
-                that.fb.location.signals.child(session_key.split(':')[1]).child(session_key.split(':')[0]).child('is_typing').child(UserManager.user.profile.id).set({id:value});
+                that.fb.location.signals.child(type).child(session_key.split(':')[1]).child(session_key.split(':')[0]).child('is_typing').child(UserManager.user.profile.id).set({
+                    id: value
+                });
             } else {
-                that.fb.location.signals.child(session_key).child('is_typing').child(UserManager.user.profile.id).set({id:value});
+                if (type === 'contact' && ChatStorage[type] && ChatStorage[type].chat.list[session_key].session.is_group_chat) {
+                    that.fb.location.signals.child('group').child(session_key).child('is_typing').child(UserManager.user.profile.id).set({
+                        id: value
+                    });
+                } else {
+                    that.fb.location.signals.child(type).child(session_key).child('is_typing').child(UserManager.user.profile.id).set({
+                        id: value
+                    });
+                }
             }
         }
 
+    };
+    this.updateChatSignalPriority = function(type, session_key, priority) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (session_key.split(':')[1]) {
+                that.fb.location.signals.child(type).child(session_key.split(':')[1]).child(session_key.split(':')[0]).update({
+                    priority: priority
+                });
+            } else {
+                if (type === 'contact' && ChatStorage[type] && ChatStorage[type].chat.list[session_key].session.is_group_chat) {
+                    that.fb.location.signals.child('group').child(session_key).update({
+                        priority: priority
+                    });
+                } else {
+                    that.fb.location.signals.child(type).child(session_key).update({
+                        priority: priority
+                    });
+                }
+            }
+        }
+
+    };
+    this.updateChatSignalTopic = function(type, session_key, topic) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (session_key.split(':')[1]) {
+                that.fb.location.signals.child(type).child(session_key.split(':')[1]).child(session_key.split(':')[0]).update({
+                    topic: topic
+                });
+            } else {
+                if (type === 'contact' && ChatStorage[type] && ChatStorage[type].chat.list[session_key].session.is_group_chat) {
+                    that.fb.location.signals.child('group').child(session_key).update({
+                        topic: topic
+                    });
+                } else {
+                    that.fb.location.signals.child(type).child(session_key).update({
+                        topic: topic
+                    });
+                }
+            }
+        }
     };
 
     this.updateContactChatSession = function(type, session_key) {
@@ -116,10 +175,35 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
         return false;
     };
 
+    this.setContactChatOrderMap = function() {
+        ChatStorage.contact.chat.count = 0;
+        ChatStorage.contact.chat.order_map = {};
+        angular.forEach(ChatStorage.contact.chat.list, function(chat, key) {
+            if (chat.session.active) {
+                ChatStorage.contact.chat.order_map[chat.session.order] = key;
+                ChatStorage.contact.chat.count++;
+            }
+            that.setUserChatSessionStorage('contact', key);
+        });
+    };
 
+    this.getNewGroupChatSessionKey = function(contact_id_array) {
+        if (angular.isArray(contact_id_array)) {
+            contact_id_array.unshift(UserManager.user.profile.id);
+            var contacts = {};
+            angular.forEach(contact_id_array, function(contact_id) {
+                contacts[contact_id] = 0;
+            });
 
-
-
+            var key = that.fb.location.signals.child('group').push({
+                priority: 0,
+                contacts: contacts,
+                timestamp: Firebase.ServerValue.TIMESTAMP
+            }).key();
+            return key;
+        }
+        return undefined;
+    };
 
     //*************************************************************************//
 
@@ -367,9 +451,9 @@ var n = Firebase.ServerValue.TIMESTAMP;
         if (session_key && detail && angular.isDefined(value)) {
             that.update = {};
             that.update[detail] = value;
-            if(session_key.split(':')[1]){
+            if (session_key.split(':')[1]) {
                 that.fb.location.sessions.child(session_key.split(':')[0]).child(session_key.split(':')[1]).update(that.update);
-            } else{
+            } else {
                 that.fb.location.sessions.child(session_key).update(that.update);
             }
 

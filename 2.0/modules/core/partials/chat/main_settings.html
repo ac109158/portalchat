@@ -18,10 +18,5 @@
             <input class="pointer" style="position:relative; width:50px;" type="range" min="0" max="10" value="{{module.global.sound_level}}" step="1" ng-model="module.global.sound_level" ng-mouseup="ui.fx.updateSoundLevel(module.global.sound_level)" />
         </div>
     </div>
-    <div class="well well-sm" style="font-size:.8em; margin-top:2px 0px; color:black">
-        <div ng-repeat="chat in module.config.directory.default_chats track by $index" style="width:100%;clear:both; padding:2px; background:rgba(255,255,255,.5); border-radius:2px; margin-bottom:2px;">
-            <span>{{chat.chat_description}} Notifications: <input class="pointer" style="position:absolute; right:15px;" ng-change="updateChatSettings(chat.session_key)" type="checkbox" ng-model="sm_group_chat.monitor"></span>
-        </div>
-    </div>
     <div class="clearfix"></div>
 </div>

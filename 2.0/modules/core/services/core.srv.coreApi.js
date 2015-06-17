@@ -15,6 +15,7 @@ angular.module('portalchat.core').service('CoreApi', ['$rootScope', '$http', '$t
                     //     })
                     // });
                     // return the promise to the controllerx
+                    console.log('Browser: ', BrowserService.platform.browser);
                     if (BrowserService.platform.browser == "Firefox") {
                         var promise = $http.get('./modules/core/user.json')
                             .success(function(data) {
@@ -27,8 +28,20 @@ angular.module('portalchat.core').service('CoreApi', ['$rootScope', '$http', '$t
                                 });
                             });
                         return promise;
-                    } else {
+                    } else if (BrowserService.platform.browser == "Chrome") {
                         var promise = $http.get('./modules/core/user2.json')
+                            .success(function(data) {
+                                return data;
+                            }).error(function(msg, code) {
+                                $log.error(msg, code);
+                                $rootScope.$broadcast('user-toast', {
+                                    type: 'warning',
+                                    body: code + ' : ' + msg
+                                });
+                            });
+                        return promise;
+                    }else {
+                        var promise = $http.get('./modules/core/user3.json')
                             .success(function(data) {
                                 return data;
                             }).error(function(msg, code) {

@@ -345,6 +345,7 @@ ul.nav.nav-tabs a:hover {
     clear: both;
     min-height: 50px;
     z-index: 1;
+    color:black;
 }
 
 .cm-chat-setting-menu {
@@ -609,6 +610,19 @@ ul.nav.nav-tabs a:hover {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+}
+
+.cm-main-panel-recent-contact {
+    padding: 2px 5px;
+    height: 50px;
+    width: 99%;
+    margin: 0 auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    margin-bottom: 1px;
+    background-color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    pointer-events: all;
 }
 /*********************     Contacts ^   *************************/
 /*********************     Chat v  *************************/

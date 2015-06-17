@@ -267,11 +267,12 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
 
     this.addChatTopic = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            console.log('here');
             if (angular.isDefined(ChatStorage[type].chat.list[session_key].session.topic) && ChatStorage[type].chat.list[session_key].session.topic.length > 5 && ChatStorage[type].chat.list[session_key].session.topic.length <= 100) {
                 ChatStorage[type].chat.list[session_key].session.topic = ChatStorage[type].chat.list[session_key].session.topic.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
                 ChatStorage[type].chat.list[session_key].signals.user.topic = ChatStorage[type].chat.list[session_key].session.topic;
                 if (ChatStorage[type].chat.list[session_key].signals.user.topic.length) {
-                    SessionsManager.updateChatSignals(type, session_key);
+                    SessionsManager.updateChatSignalTopic(type, session_key, ChatStorage[type].chat.list[session_key].session.topic);
                     SessionsManager.setUserChatSessionStorage(type, session_key);
                     ChatStorage[type].chat.list[session_key].topic.set = true;
                     that.resetCommonDefaultSettings(type, session_key);
@@ -289,7 +290,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             ChatStorage[type].chat.list[session_key].session.topic = '';
             ChatStorage[type].chat.list[session_key].signals.user.topic = '';
-            SessionsManager.updateChatSignals(type, session_key);
+            SessionsManager.updateChatSignalTopic(type, session_key, null);
             SessionsManager.setUserChatSessionStorage(type, session_key);
             that.resetCommonDefaultSettings(type, session_key);
             $timeout(function() {
@@ -309,7 +310,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             ChatStorage[type].chat.list[session_key].session.topic = new_chat_topic;
             ChatStorage[type].chat.list[session_key].signals.user.topic = new_chat_topic;
 
-            SessionsManager.updateChatSignals(type, session_key);
+            SessionsManager.updateChatSignalTopic(type, session_key, new_chat_topic);
             SessionsManager.setUserChatSessionStorage(type, session_key);
             that.resetCommonDefaultSettings(type, session_key);
             $timeout(function() {
@@ -378,6 +379,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                     timestamp: Firebase.ServerValue.TIMESTAMP,
                     priority: ChatStorage[type].chat.list[session_key].priority.next
                 };
+                SessionsManager.updateChatSignalPriority(type, session_key, ChatStorage[type].chat.list[session_key].priority.next);
                 if (ChatStorage[type].chat.list[session_key].session.is_group_chat === false) {
                     message.session_key = session_key.split(':')[1] + ':' + session_key.split(':')[0];
                     message.offline =  !(ChatStorage[type].chat.list[session_key].contact.profile.online) || null;

@@ -69,7 +69,7 @@ service('UtilityManager', ['$rootScope', '$firebase', '$log', '$http', '$window'
 
     this.pingPortal = function() {
         that.engine.portal.online = false;
-        var imageAddr = "//chat.app/2.0/favicon.ico?rand=" + new Date().getTime();
+        var imageAddr = "//favicon.ico?rand=" + new Date().getTime();
         var download = new Image(); // jshint ignore:line
         download.onload = function() {
             that.engine.portal.online = true;

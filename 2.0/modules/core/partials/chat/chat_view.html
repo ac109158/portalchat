@@ -52,7 +52,25 @@
                     </div>
 
                     <div ng-if="module.tab.current.index_position == 3" style="position:relative; display: block; width: 100%; margin: 0; padding: 0; height:100%;">
-                        <panel-contact-chat chat="module.current.contact.chat" ui="ui" ux="ux" profiles="module.contacts.profiles" engine="module.engine"></panel-contact-chat>
+                        <panel-contact-chat chat="module.current.contact.chat" ng-if="module.current.contact.session_key"  ui="ui" ux="ux" profiles="module.contacts.profiles" engine="module.engine"></panel-contact-chat>
+                        <div ng-if="!module.current.contact.session_key" class="pointer">
+                            <legend style="margin-bottom: 0;">Recent Converstions</legend>
+                            <div class="min-scroll" style="position: relative; display:block; width: 100%; clear: both; min-height: 200px; max-height: 100%;">
+                                <div ng-repeat="chat in module.chats.contact.chat.list | toArray | orderBy: 'session.timestamp': true">
+                                    <div ng-click="ui.fx.setChatAsCurrent(chat.session.type, chat.session.session_key);" class="cm-main-panel-recent-contact">
+                                        <div ng-if="!chat.session.is_group_chat">
+                                            <img ng-src="{{chat.contact.profile.avatar_url}}" width=46 height=46/><span class="cm-main-panel-contact-name" ng-bind="chat.session.tag || chat.contact.profile.name | chars: 20"></span>
+                                            <span style="position: absolute; right: 50px; margin-top: 13px;" ng-bind="chat.session.timestamp | timeago"></span>
+                                            <div class="chat-status cm-main-panel-contact-status {{chat.contact.profile.state}}" style="position:relative; top:15px;"></div>
+                                        </div>
+                                        <div ng-if="chat.session.is_group_chat">
+                                            <i class="{{chat.ux.icon}} fa-3x" style="width: 46px; height: 46px;"/></i><span class="cm-main-panel-contact-name" ng-bind="chat.session.tag || chat.description | chars: 20"></span>
+                                            <span style="position: absolute; right: 50px; margin-top: 13px;" ng-bind="chat.session.timestamp | timeago"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

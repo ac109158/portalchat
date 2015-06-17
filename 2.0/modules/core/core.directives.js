@@ -65,57 +65,12 @@ directive('panelContactChat', function() {
         link: function(scope, elm, attrs) {}
     };
 }).
-directive('chatbox', function() {
+directive('recentChats', function() {
     return {
-        scope: true,
-        restrict: 'EA',
+        restrict: 'E',
+        scope: false,
         replace: true,
-        templateUrl: './modules/core/partials/chat/chatbox.html',
-        link: function(scope, elm, attrs) {}
-    };
-}).
-directive('groupChat', function() {
-    return {
-        scope: true,
-        restrict: 'EA',
-        replace: true,
-        templateUrl: './modules/core/partials/chat/group.html',
-        link: function(scope, elm, attrs) {}
-    };
-}).
-directive('techChat', function() {
-    return {
-        scope: true,
-        restrict: 'EA',
-        replace: true,
-        templateUrl: './modules/core/partials/chat/tech_chat.html',
-        link: function(scope, elm, attrs) {}
-    };
-}).
-directive('mcChat', function() {
-    return {
-        scope: true,
-        restrict: 'EA',
-        replace: true,
-        templateUrl: './modules/core/partials/chat/mc_chat.html',
-        link: function(scope, elm, attrs) {}
-    };
-}).
-directive('adminChat', function() {
-    return {
-        scope: true,
-        restrict: 'EA',
-        replace: true,
-        templateUrl: './modules/core/partials/chat/admin_chat.html',
-        link: function(scope, elm, attrs) {}
-    };
-}).
-directive('directoryChat', function() {
-    return {
-        scope: true,
-        restrict: 'EA',
-        replace: true,
-        templateUrl: './modules/core/partials/chat/directory_chat.html',
+        templateUrl: './modules/core/partials/chat/recent.html',
         link: function(scope, elm, attrs) {}
     };
 }).
@@ -232,7 +187,7 @@ directive('windowResize', function($rootScope, $window, $timeout) {
         //scope: true,   // optionally create a child scope
         link: function(scope, elem, attrs) {
             angular.element($window).on('resize', function() {
-                if (scope.module.interval.window_resize) {
+                if (scope.module.interval && scope.module.interval.window_resize) {
                     $timeout.cancel(scope.module.interval.window_resize);
                 }
                 scope.module.interval.window_resize = $timeout(function() {

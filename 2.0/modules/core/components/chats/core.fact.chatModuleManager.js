@@ -112,6 +112,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     this.module.interval.window_resize = null;
 
     this.load = function() {
+        that.setDefaultDirectoryChatConfiguration();
         that.establishUserChat();
         ChatBuilder.load();
         $timeout(function() {
@@ -128,7 +129,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 });
             });
         });
-        that.setDefaultDirectoryChats();
     };
 
     this.addUnloadListener = function() {
@@ -143,17 +143,18 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             NotificationManager.mute();
             ChatStorage.contact.session.list = [];
             ChatStorage.contact.session.map = {};
+
             // look at the active session folder of the user, and create chatSession for an calling card objects present
             SessionsManager.fb.location.sessions.child(UserManager.user.profile.id).once('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
                 var sessions = snapshot.val();
                 angular.forEach(sessions, function(session) {
-                    if (session && session.type === 'contact') {
+                    if (session) {
                         ChatBuilder.buildChatForSession(session);
                     }
                 });
                 $timeout(function() {
                     var discard_last_child = true;
-                    SessionsManager.fb.location.signals.child(UserManager.user.profile.id).once("value", function(snap) {
+                    SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).once("value", function(snap) {
                         var keys = Object.keys(snap.val() || {});
                         angular.forEach(keys, function(key) {
                             that.createSessionifNotExists('contact', UserManager.user.profile.id + ':' + key);
@@ -163,7 +164,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                             discard_last_child = false;
                         }
 
-                        SessionsManager.fb.location.signals.child(UserManager.user.profile.id).on("child_changed", function(snapshot) {
+                        SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).on("child_changed", function(snapshot) {
                             var key = snapshot.key();
                             var signals = snapshot.val();
                             var session_key = UserManager.user.profile.id + ':' + key;
@@ -181,17 +182,34 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                                 }
                             }
                         });
-                        SessionsManager.fb.location.signals.child(UserManager.user.profile.id).startAt(null, last_child).on("child_added", function(snapshot) {
+                        SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).startAt(null, last_child).on("child_added", function(snapshot) {
                             var location_id = snapshot.ref().key();
                             var signal = snapshot.val();
                             if (signal) {
                                 if (discard_last_child) {
                                     discard_last_child = false;
                                 } else {
-                                    if (signal && signal.type === 'contact') {
-                                        var contact_tag = CoreConfig.common.reference.user_prefix + location_id;
-                                        if (angular.isDefined(ContactsManager.contacts.profiles.map[contact_tag]) && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]]) {
-                                            that.createSessionifNotExists('contact', that.getSessionKey(location_id));
+                                    if (signal && signal.type) {
+                                        if (signal.type === 'contact') {
+                                            var contact_tag = CoreConfig.common.reference.user_prefix + location_id;
+                                            if (angular.isDefined(ContactsManager.contacts.profiles.map[contact_tag]) && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]]) {
+                                                that.createSessionifNotExists('contact', that.getSessionKey(location_id));
+                                            }
+                                        } else if (signal.type === 'group' && signal.session_key) {
+                                            console.log('group invite signal', signal);
+                                            if (signal.type === 'group') {
+                                                var config = {};
+                                                config.type = 'contact'
+                                                config.session_key = signal.session_key;
+                                                config.admin = true;
+                                                config.name = 'Group Chat';
+                                                config.topic = '';
+                                                config.active = true;
+                                                if (ChatBuilder.buildChatForSession(that.getContactGroupChatSessionDetails(config))) {
+                                                    console.log('remove signal');
+                                                    SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).child(signal.session_key).set(null);
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -199,8 +217,10 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                         });
                         that.setActiveContactChatMap();
                     });
+                    $timeout(function() {
+                        that.setDefaultDirectoryChats();
+                    }, 750);
                 }, 750);
-
             });
             $timeout(function() {
                 NotificationManager.unmute();
@@ -250,6 +270,32 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.topic = '';
             session.tag = '';
             session.order = -1;
+            session.last_read_priority = 0;
+            return session;
+        }
+        return false;
+    };
+
+    this.getContactGroupChatSessionDetails = function(config) {
+        if (angular.isObject(config)) {
+            var session = {};
+            session.admin = config.admin || false;
+            session.type = 'contact';
+            session.session_key = config.session_key || null;
+            session.active = config.active || false;
+            session.name = config.name;
+            session.is_directory_chat = false;
+            session.is_group_chat = true;
+            session.is_open = true;
+            session.timestamp = new Date().getTime();
+            session.is_sound = true;
+            session.primary_color = '82, 179, 217';
+            session.other_color = '244, 179, 80';
+            session.accent_color = '149, 165, 166';
+            session.topic = config.topic || '';
+            session.tag = '';
+            session.order = -1;
+            session.last_read_priority = 0;
             return session;
         }
         return false;
@@ -275,6 +321,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.topic = '';
             session.tag = '';
             session.order = config.order;
+            session.last_read_priority = 0;
             return session;
         }
         return false;
@@ -356,7 +403,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             that.module.config.directory.default_chats['sm_group_chat'] = {
                 type: 'directory',
                 session_key: 'sm_group_chat',
-                name: 'Group Chat',
+                name: 'PlusOne Chat',
                 admin: true,
                 watch_users: false,
                 store_length: 1,
@@ -389,47 +436,47 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
 
     this.setDefaultDirectoryChats = function() {
-        that.setDefaultDirectoryChatConfiguration();
         if (that.module.config.directory.default_chats) {
             angular.forEach(that.module.config.directory.default_chats, function(config) {
                 if (that.validateDirectoryChatConfiguration(config)) {
-                    ChatBuilder.buildChatForSession(that.getDirectoryChatSessionDetails(config));
-                    if (ChatStorage.directory && ChatStorage.directory.chat.list[config.session_key]) {
-                        ChatStorage.directory.chat.list[config.session_key].ux.icon = config.icon_class;
+                    if (!ChatStorage.directory.chat.list[config.session_key]) {
+                        ChatBuilder.buildChatForSession(that.getDirectoryChatSessionDetails(config));
                     }
-                }
-            });
-            angular.forEach(that.module.chats.directory.session.list, function(value, session_key) {
-                if (value.fb && value.fb.group) {
-                    SessionsManager.fb.location.signals.child(session_key).on("value", function(snapshot) {
-                        var signals = snapshot.val();
-                        if (ChatStorage.directory.chat.list[session_key].session.active && signals) {
-                            if (ChatStorage.directory && ChatStorage.directory.chat.list[session_key]) {
-                                $rootScope.$evalAsync(function() {
-                                    if (signals.is_typing) {
-                                        delete signals.is_typing[UserManager.user.profile.id];
-                                    }
-                                    if (!Object.size(signals.is_typing)) {
-                                        delete signals.is_typing;
-                                    }
-                                    ChatStorage.directory.chat.list[session_key].signals.group = signals;
-                                    if (signals.topic != ChatStorage.directory.chat.list[session_key].session.topic) {
-                                        if (signals.topic) {
-                                            ChatStorage.directory.chat.list[session_key].session.topic = signals.topic;
-                                        } else {
-                                            ChatStorage.directory.chat.list[session_key].session.topic = '';
-                                        }
+                    $timeout(function() {
+                        if (ChatStorage.directory && ChatStorage.directory.chat.list[config.session_key]) {
+                            ChatStorage.directory.chat.list[config.session_key].ux.icon = config.icon_class;
+                            SessionsManager.fb.location.signals.child('directory').child(config.session_key).on("value", function(snapshot) {
+                                var signals = snapshot.val();
+                                if (ChatStorage.directory.chat.list[config.session_key].session.active && signals) {
+                                    if (ChatStorage.directory && ChatStorage.directory.chat.list[config.session_key]) {
+                                        $rootScope.$evalAsync(function() {
+                                            if (signals.is_typing) {
+                                                delete signals.is_typing[UserManager.user.profile.id];
+                                            }
+                                            if (!Object.size(signals.is_typing)) {
+                                                delete signals.is_typing;
+                                            }
+                                            ChatStorage.directory.chat.list[config.session_key].signals.group = signals;
+                                            if (signals.topic != ChatStorage.directory.chat.list[config.session_key].session.topic) {
+                                                if (signals.topic) {
+                                                    ChatStorage.directory.chat.list[config.session_key].session.topic = signals.topic;
+                                                } else {
+                                                    ChatStorage.directory.chat.list[config.session_key].session.topic = '';
+                                                }
 
-                                        ChatStorage.directory.chat.list[session_key].topic.truncated = false;
-                                        SessionsManager.setUserChatSessionStorage('directory', session_key);
+                                                ChatStorage.directory.chat.list[config.session_key].topic.truncated = false;
+                                                SessionsManager.setUserChatSessionStorage('directory', config.session_key);
+                                            }
+                                        });
                                     }
-                                });
-                            }
+                                }
+                            });
                         }
-                    });
+                    })
+
+                    return;
                 }
             });
-
         }
     };
 
@@ -641,12 +688,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         $log.debug('finished $scope.establishLayout()');
     };
 
-    this.setContactChatOrderMap = function() {
-        ChatStorage.contact.chat.order_map = {};
-        angular.forEach(ChatStorage.contact.chat.list, function(value, key) {
-            ChatStorage.contact.chat.order_map[value.order] = key;
-        });
-    };
     this.toggleMainPanelMenu = function(menu, value) {
         if (that.module.menu && angular.isDefined(that.module.menu[menu])) {
             if (that.module.current.contact.chat.menu) {
@@ -655,7 +696,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 });
             }
             if (that.module.current.directory.chat.menu) {
-                angular.forEach(that.module.directory.chat.menu, function(value, key) {
+                angular.forEach(that.module.current.directory.chat.menu, function(value, key) {
                     that.module.current.directory.chat.menu[key] = false;
                 });
             }
@@ -913,8 +954,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 that.module.current.directory.session_key = session_key;
                 that.module.current.directory.stored_session_key = session_key;
                 ChatStorage.directory.chat.list[session_key].attr.is_active = true;
-                ChatStorage.directory.chat.list[session_key].attr.is_active = true;
-                ChatStorage.directory.chat.list[session_key].session.active = true;
                 that.module.current.directory.chat = ChatStorage.directory.chat.list[session_key];
                 SettingsManager.updateGlobalSetting('last_panel_tab', session_key, true);
             }
@@ -925,13 +964,18 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 that.module.current.contact.session_key = session_key;
                 that.module.current.contact.stored_session_key = session_key;
                 ChatStorage[type].chat.list[session_key].attr.is_active = true;
-                ChatStorage[type].chat.list[session_key].session.active = true;
                 that.module.current.contact.chat = ChatStorage[type].chat.list[session_key];
+                console.log(that.module.current.contact)
 
                 SettingsManager.updateGlobalSetting('last_contact_chat', session_key, true);
+                if (!ChatStorage[type].chat.list[session_key].session.active) {
+                    ChatStorage[type].chat.list[session_key].session.active = true;
+                    SessionsManager.setContactChatOrderMap();
+                }
             }
             ChatManager.resetCommonDefaultSettings(type, session_key);
             $timeout(function() {
+                UxManager.ux.fx.evaluateChatModuleLayout();
                 ChatManager.scrollChatToBottom(type, session_key);
             }, 250);
         }
@@ -1067,13 +1111,15 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         if (parseInt(tab_index_position, 10) > -1 && that.module.tab.current.index_position != tab_index_position) {
             that.module.tab.current = that.module.tab.list[tab_index_position];
             if (that.module.tab.current.type === 'contact') {
-                that.module.tab.current.session_key = that.module.current.contact.stored_session_key;
+                that.module.tab.current.session_key = that.module.current.contact.session_key;
             }
             if (that.module.tab.current.session_key === 'contacts') {
                 that.setPanelContactListIntoFocus();
             } else {
                 that.unsetPanelContactListFocus();
-                that.setChatAsCurrent(that.module.tab.current.type, that.module.tab.current.session_key);
+                if (that.module.tab.current.session_key) {
+                    that.setChatAsCurrent(that.module.tab.current.type, that.module.tab.current.session_key);
+                }
             }
             $timeout(function() {
                 UxManager.ux.fx.evaluateChatModuleLayout();
@@ -1187,11 +1233,18 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
             var count = ChatStorage[type].chat.count;
             var current_order_position = ChatStorage[type].chat.list[session_key].session.order;
-            while(count--){
-                if(count > current_order_position){
-                    console.log(ChatStorage[type].chat.list[ChatStorage[type].chat.order_map[count]].session.session_key, ChatStorage[type].chat.list[ChatStorage[type].chat.order_map[count]].session.order);
+            while (count--) {
+                if (count > current_order_position && ChatStorage[type].chat.list[ChatStorage[type].chat.order_map[count]].session.active) {
+                    ChatStorage[type].chat.list[ChatStorage[type].chat.order_map[count]].session.order--;
                 }
             }
+
+            ChatStorage[type].chat.list[session_key].session.order = -1
+            delete ChatStorage[type].chat.order_map[current_order_position];
+            SessionsManager.setContactChatOrderMap();
+            that.module.current[type].chat = null;
+            that.module.current[type].session_key = null;
+            UxManager.ux.fx.evaluateChatModuleLayout();
         }
     };
 
@@ -1213,7 +1266,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             }
 
             SessionsManager.removeChatSession(type, session_key, true, true);
-
             ChatStorage[type].chat.list[session_key] = null;
             delete ChatStorage[type].chat.list[session_key];
 
@@ -1222,10 +1274,47 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         }
     };
 
-    this.setActiveContactChatMap = function(){
+    this.inviteIntoChat = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (ChatStorage[type].chat.list[session_key].session.is_group_chat === false) {
+                that.toggleChatMenu(type, session_key, 'invite', false);
+
+                if (ChatStorage[type].chat.list[session_key].invite.contact_list.indexOf(ChatStorage[type].chat.list[session_key].contact.profile.user_id == -1)) {
+                    ChatStorage[type].chat.list[session_key].invite.contact_list.push(ChatStorage[type].chat.list[session_key].contact.profile.user_id);
+                }
+
+                var config = {};
+                config.type = 'contact'
+                config.session_key = SessionsManager.getNewGroupChatSessionKey(ChatStorage[type].chat.list[session_key].invite.contact_list);
+                config.admin = true;
+                config.name = 'Group Chat';
+                config.topic = '';
+                config.active = true;
+                console.log('ChatStorage[type].chat.list[session_key].invite.contact_list', ChatStorage[type].chat.list[session_key].invite.contact_list);
+                angular.forEach(ChatStorage[type].chat.list[session_key].invite.contact_list, function(contact_id) {
+                    console.log('contact_id', contact_id);
+                    SessionsManager.sendChatInviteSignal(contact_id, {
+                        type: 'group',
+                        session_key: config.session_key
+                    });
+                });
+                ChatStorage[type].chat.list[session_key].invite.contact_list = [];
+                ChatBuilder.buildChatForSession(that.getContactGroupChatSessionDetails(config));
+                that.deactivateChat(type, session_key);
+                that.setChatAsCurrent(config.type, config.session_key);
+
+            } else {
+                angular.forEach(ChatStorage[type].chat.list[session_key].invite.contact_list, function(contact) {
+                    console.log(contact)
+                })
+            }
+        }
+    };
+
+    this.setActiveContactChatMap = function() {
         ChatStorage.contact.chat.map = {};
-        angular.forEach(ChatStorage.contact.chat.list, function(contact_chat){
-            if(contact_chat.session.active){
+        angular.forEach(ChatStorage.contact.chat.list, function(contact_chat) {
+            if (contact_chat.session.active) {
                 ChatStorage.contact.chat.map[contact_chat.session.session_key] = contact_chat.session.order;
             }
         });

@@ -59,6 +59,11 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         ChatModuleManager.chatContact(contact);
     };
 
+    this.ui.fx.setChatAsCurrent = function(type, session_key){
+        ChatModuleManager.setMainPanelTab(3);
+        ChatModuleManager.setChatAsCurrent(type, session_key);
+    };
+
     this.ui.fx.sendChatMessage = function(type, session_key, media) {
         ChatModuleManager.sendChatMessage(type, session_key, media);
     };
@@ -82,6 +87,10 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     };
     this.ui.fx.removeChatTopic = function(type, session_key) {
         ChatModuleManager.removeChatTopic(type, session_key);
+    };
+
+    this.ui.fx.inviteIntoChat = function(type, session_key){
+        ChatModuleManager.inviteIntoChat(type, session_key);
     };
     this.ui.fx.updateSoundLevel = function(level) {
         if (parseInt(level) && level > -1 && level <= CoreConfig.max.sound_level) {

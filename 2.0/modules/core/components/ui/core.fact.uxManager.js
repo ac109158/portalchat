@@ -78,8 +78,17 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.ux.fx.evaluateChatModuleLayout = function() {
         that.setChatModuleSectionHeights();
     };
-    this.ux.fx.alertNewChat = function() {
-        NotificationManager.playSound('new_chat');
+    this.ux.fx.alertNewChat = function(type, session_key, message) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            ChatStorage[type].chat.list[session_key].session.timestamp =  new Date().getTime();
+            if(UserManager.user.profile.id != message.author){
+                NotificationManager.playSound('new_chat');
+            }
+            if(ChatStorage[type].chat.list[session_key].attr.is_active){
+                ChatStorage[type].chat.list[session_key].ux.unread = 0;
+            } else{
+            }
+        }
     };
 
     this.ux.fx.isBrowserOffline = function() {
