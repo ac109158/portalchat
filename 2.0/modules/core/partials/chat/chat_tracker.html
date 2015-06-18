@@ -9,8 +9,8 @@
             <div ng-if="contact_chat.session.active" class="cm-main-panel-tracker-chat">
                 <div ng-click="ui.fx.setChatAsCurrent(contact_chat.session.type, contact_chat.session.session_key)" class="cm-main-panel-tracker-chat-content" ng-click="setDirectoryChat($index, true); openChatModule();" ng-class="{'cm-main-panel-tracker-active-chat': $index == directory_index, 'cm-main-panel-tracker-new-chat': chat.isNewMessage == true && $index != directory_index}">
                     <div ng-if="!contact_chat.session.is_group_chat" class="cm-main-panel-tracker-chat-truncate-title">
-                        <i class="glyphicon glyphicon-user pull-left" ng-class="{'Online' : contact_chat.contact.profile.presence == 'Online' && contact_chat.contact.profile.online == true }"></i>
-                        <span  style="position:relative; top:-2px; margin-left:2px;" ng-bind="contact_chat.session.tag || contact_chat.contact.profile.name" ng-class="{'Busy' : contact_chat.contact.profile.presence.state != 'Online' && contact_chat.session.is_group_chat === false}"></span>
+                        <i class="glyphicon glyphicon-user pull-left" style="position:relative; top: 2px;" ng-class="{'Online' : contact_chat.contact.profile.presence == 'Online' && contact_chat.contact.profile.online == true }"></i>
+                        <span  style="position:relative; margin-left:2px;" ng-bind="contact_chat.session.tag || contact_chat.contact.profile.name" ng-class="{'Busy' : contact_chat.contact.profile.presence.state != 'Online' && contact_chat.session.is_group_chat === false}"></span>
                         <!--Name of the Person the user is Chatting, hover when group chat to display of participating users -->
                         <!-- <span class="Busy" ng-show="contact_chat.contact.profile.presence == 'Busy' && contact_chat.session.is_group_chat == false">{{contact_chat.contact.profile.first_name}} is Busy</span> -->
                         <!-- Show only when User sets chat-presence to busy -->
@@ -20,9 +20,9 @@
                     <div ng-if="contact_chat.session.is_group_chat" class="cm-main-panel-tracker-chat-truncate-title">
                         <span class="pull-left">
                             <i  class="fa fa-comments"></i>
-                            <span>({{contact_chat.group_count}})</span>
+                            <span>({{contact_chat.contacts.count}})</span>
                         </span>
-                        <span  style="position:relative; top:-2px; margin-left:2px;" ng-bind="contact_chat.session.tag || contact_chat.description"></span>
+                        <span  style="position:relative; margin-left:2px;" ng-bind="contact_chat.session.tag || contact_chat.contacts.name_list || contact_chat.description"></span>
                         <!--Name of the Person the user is Chatting, hover when group chat to display of participating users -->
                         <!-- <span class="Busy" ng-show="contact_chat.contact.profile.presence == 'Busy' && contact_chat.session.is_group_chat == false">{{contact_chat.contact.profile.first_name}} is Busy</span> -->
                         <!-- Show only when User sets chat-presence to busy -->

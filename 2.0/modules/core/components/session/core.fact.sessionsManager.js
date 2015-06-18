@@ -187,23 +187,32 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
         });
     };
 
-    this.getNewGroupChatSessionKey = function(contact_id_array) {
-        if (angular.isArray(contact_id_array)) {
-            contact_id_array.unshift(UserManager.user.profile.id);
-            var contacts = {};
-            angular.forEach(contact_id_array, function(contact_id) {
-                contacts[contact_id] = 0;
+    this.getNewGroupChatSessionKey = function(invite) {
+        if (invite && invite.contact_list) {
+            console.log('invite', angular.copy(invite))
+            invite.contact_list.unshift(UserManager.user.profile.id);
+            var session = {};
+            session.priority = 0;
+            session.contacts = {};
+            session.timestamp = Firebase.ServerValue.TIMESTAMP;
+            session.topic = angular.copy(invite.copy) || '';
+            angular.forEach(invite.contact_list, function(contact_id) {
+                session.contacts[contact_id] = 0;
             });
-
-            var key = that.fb.location.signals.child('group').push({
-                priority: 0,
-                contacts: contacts,
-                timestamp: Firebase.ServerValue.TIMESTAMP
-            }).key();
-            return key;
+            if(angular.copy(invite.admin)){
+                session.admin = UserManager.user.profile.id;
+            } else{
+                session.admin = false;
+            }
+            console.log('session', session)
+            return that.fb.location.signals.child('group').push(session).key();
         }
         return undefined;
     };
+
+    this.getGroupChatContacts = function(session){
+        return that.fb.location.signals.child('group').child(session.session_key).child('contacts');
+    }
 
     //*************************************************************************//
 

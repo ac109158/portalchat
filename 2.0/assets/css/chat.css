@@ -486,6 +486,7 @@ ul.nav.nav-tabs a:hover {
     border-radius: 10px/30px;
     cursor: pointer;
     margin: 0;
+    padding-left: 2px;
 }
 /*********************     tracker ^   *************************/
 
@@ -517,7 +518,6 @@ ul.nav.nav-tabs a:hover {
 
 .cm-main-panel-tracker-icons {
     position: absolute;
-    padding: 1px;
     width: 35%;
     font-size: 10px;
     /*      background: green; */
@@ -593,6 +593,13 @@ ul.nav.nav-tabs a:hover {
     position: relative;
     float: right;
     top: 5px;
+    margin-right: 5px;
+}
+.cm-main-panel-invite-status {
+    position: relative;
+    float: left;
+    top: 5px;
+    margin-left: 5px;
     margin-right: 5px;
 }
 
@@ -782,6 +789,7 @@ ul.nav.nav-tabs a:hover {
     word-wrap: break-word;
     clear: both;
     background: transparent;
+    min-width: 100px;
 }
 
 .cm-chat-message-wrapper-ext {
@@ -794,10 +802,11 @@ ul.nav.nav-tabs a:hover {
     word-wrap: break-word;
     clear: both;
     background: transparent;
+    min-width: 100px;
 }
 
 .cm-chat-message-author-break {
-    padding-bottom: 5px;
+    padding-bottom: 2px;
     border-bottom: 1px solid grey;
     -webkit-box-shadow: 0 2px 1.5px -1.5px black;
     -moz-box-shadow: 0 2px 1.5px -1.5px black;
@@ -815,6 +824,7 @@ ul.nav.nav-tabs a:hover {
     -webkit-box-shadow: 1px 0 .75px .75px grey;
     -moz-box-shadow: 1px 0 .75px .75px grey;
     box-shadow: 1px 0 .75px .75px grey;
+    z-index: 1;
 }
 
 .cm-chat-message-contact-avatar-wrapper {
@@ -828,6 +838,7 @@ ul.nav.nav-tabs a:hover {
     -moz-box-shadow: -2px 0 .75px .75px grey;
     box-shadow: -2px 0 .75px .75px grey;
     background-color: transparent;
+    z-index: 1;
 }
 
 .cm-chat-message-avatar {
@@ -846,7 +857,6 @@ ul.nav.nav-tabs a:hover {
     margin-left: 40px;
     color: rgba(98, 162, 189, 1);
     border-radius: 5px;
-    border: 1px solid grey;
     margin-bottom:2px;
 }
 
@@ -859,7 +869,6 @@ ul.nav.nav-tabs a:hover {
     min-height: 20px;
     margin-left: 40px;
     border-radius: 5px;
-    border: 1px solid grey;
     margin-bottom:2px;
 }
 
@@ -872,7 +881,6 @@ ul.nav.nav-tabs a:hover {
     min-height: 40px;
     margin-right: 40px;
     border-radius: 5px;
-    border: 1px solid grey;
     margin-bottom:2px;
 }
 
@@ -885,7 +893,6 @@ ul.nav.nav-tabs a:hover {
     min-height: 20px;
     margin-right: 40px;
     border-radius: 5px;
-    border: 1px solid grey;
     margin-bottom:2px;
 }
 
@@ -921,8 +928,8 @@ ul.nav.nav-tabs a:hover {
     font-weight: bold;
     color: white;
     clear: both;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
     line-height: 10px;
 }
 

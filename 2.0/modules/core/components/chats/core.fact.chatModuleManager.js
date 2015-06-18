@@ -99,7 +99,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     this.module.current.contact.chat = {};
     this.module.current.contact.session_key = undefined;
     this.module.current.contact.stored_session_key = undefined;
-    this.module.current.contact.is_invite = undefined;
 
     this.module.menu = {};
     this.module.menu.profile = false;
@@ -199,11 +198,12 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                                             console.log('group invite signal', signal);
                                             if (signal.type === 'group') {
                                                 var config = {};
-                                                config.type = 'contact'
+                                                config.type = 'contact',
+                                                config.priority = signal.priority,
                                                 config.session_key = signal.session_key;
-                                                config.admin = true;
+                                                config.admin = signal.admin || false;
                                                 config.name = 'Group Chat';
-                                                config.topic = '';
+                                                config.topic = signal.topic || '';
                                                 config.active = true;
                                                 if (ChatBuilder.buildChatForSession(that.getContactGroupChatSessionDetails(config))) {
                                                     console.log('remove signal');
@@ -270,7 +270,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.topic = '';
             session.tag = '';
             session.order = -1;
-            session.last_read_priority = 0;
+            session.start_at_priority = 0;
             return session;
         }
         return false;
@@ -295,7 +295,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.topic = config.topic || '';
             session.tag = '';
             session.order = -1;
-            session.last_read_priority = 0;
+            session.start_at_priority = config.priority;
             return session;
         }
         return false;
@@ -321,7 +321,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.topic = '';
             session.tag = '';
             session.order = config.order;
-            session.last_read_priority = 0;
+            session.start_at_priority = 0;
             return session;
         }
         return false;
@@ -1234,7 +1234,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             var count = ChatStorage[type].chat.count;
             var current_order_position = ChatStorage[type].chat.list[session_key].session.order;
             while (count--) {
-                if (count > current_order_position && ChatStorage[type].chat.list[ChatStorage[type].chat.order_map[count]].session.active) {
+                if (count > current_order_position && ChatStorage[type].chat.order_map[count] && ChatStorage[type].chat.list[ChatStorage[type].chat.order_map[count]] && ChatStorage[type].chat.list[ChatStorage[type].chat.order_map[count]].session.active) {
                     ChatStorage[type].chat.list[ChatStorage[type].chat.order_map[count]].session.order--;
                 }
             }
@@ -1284,29 +1284,63 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 }
 
                 var config = {};
-                config.type = 'contact'
-                config.session_key = SessionsManager.getNewGroupChatSessionKey(ChatStorage[type].chat.list[session_key].invite.contact_list);
-                config.admin = true;
                 config.name = 'Group Chat';
-                config.topic = '';
+                config.topic = ChatStorage[type].chat.list[session_key].invite.topic || null;
                 config.active = true;
-                console.log('ChatStorage[type].chat.list[session_key].invite.contact_list', ChatStorage[type].chat.list[session_key].invite.contact_list);
-                angular.forEach(ChatStorage[type].chat.list[session_key].invite.contact_list, function(contact_id) {
-                    console.log('contact_id', contact_id);
-                    SessionsManager.sendChatInviteSignal(contact_id, {
+                config.type = 'contact'
+                config.session_key = SessionsManager.getNewGroupChatSessionKey(ChatStorage[type].chat.list[session_key].invite);
+                if (angular.copy(ChatStorage[type].chat.list[session_key].invite.admin)) {
+                    config.admin = UserManager.user.profile.id;
+                } else {
+                    config.admin = false;
+                }
+                if (config.session_key) {
+                    var signal = {
                         type: 'group',
-                        session_key: config.session_key
+                        admin: config.admin,
+                        session_key: config.session_key,
+
+                        priority: 0
+                    };
+                    angular.forEach(ChatStorage[type].chat.list[session_key].invite.contact_list, function(contact_id) {
+                        SessionsManager.sendChatInviteSignal(contact_id, signal);
                     });
-                });
-                ChatStorage[type].chat.list[session_key].invite.contact_list = [];
-                ChatBuilder.buildChatForSession(that.getContactGroupChatSessionDetails(config));
-                that.deactivateChat(type, session_key);
-                that.setChatAsCurrent(config.type, config.session_key);
+                    $rootScope.$evalAsync(function() {
+                        ChatStorage[config.type].chat.list[config.session_key].invite.admin = false;
+                        ChatStorage[config.type].chat.list[config.session_key].invite.add_topic = false;
+                        ChatStorage[config.type].chat.list[config.session_key].invite.topic = null;
+                        ChatStorage[config.type].chat.list[config.session_key].invite.contact_list = [];
+                        ChatStorage[config.type].chat.list[config.session_key].invite.contact_id = '';
+
+                        ChatBuilder.buildChatForSession(that.getContactGroupChatSessionDetails(config));
+                        that.deactivateChat(type, session_key);
+                        that.setChatAsCurrent(config.type, config.session_key);
+                    });
+                }
 
             } else {
-                angular.forEach(ChatStorage[type].chat.list[session_key].invite.contact_list, function(contact) {
-                    console.log(contact)
-                })
+                $rootScope.$evalAsync(function() {
+                    that.toggleChatMenu(type, session_key, 'invite', false);
+                    var signal = {
+                        type: 'group',
+                        admin: ChatStorage[type].chat.list[session_key].session.admin,
+                        session_key: ChatStorage[type].chat.list[session_key].session.session_key,
+                        topic: ChatStorage[type].chat.list[session_key].session.topic,
+                        priority: ChatStorage[type].chat.list[session_key].priority.next
+                    };
+                    angular.forEach(ChatStorage[type].chat.list[session_key].invite.contact_list, function(contact_id) {
+                        if(!ChatStorage[type].chat.list[session_key].contacts.active[contact_id]){
+                            ChatStorage[type].session.list[session_key].fb.group.location.contacts.child(contact_id).set(ChatStorage[type].chat.list[session_key].session.start_at_priority);
+                            SessionsManager.sendChatInviteSignal(contact_id, signal);
+                        }
+                        
+                    });
+                    ChatStorage[type].chat.list[session_key].invite.admin = false;
+                    ChatStorage[type].chat.list[session_key].invite.add_topic = false;
+                    ChatStorage[type].chat.list[session_key].invite.topic = null;
+                    ChatStorage[type].chat.list[session_key].invite.contact_list = [];
+                    ChatStorage[type].chat.list[session_key].invite.contact_id = '';
+                });
             }
         }
     };

@@ -80,14 +80,13 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     };
     this.ux.fx.alertNewChat = function(type, session_key, message) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            ChatStorage[type].chat.list[session_key].session.timestamp =  new Date().getTime();
-            if(UserManager.user.profile.id != message.author){
+            ChatStorage[type].chat.list[session_key].session.timestamp = new Date().getTime();
+            if (UserManager.user.profile.id != message.author) {
                 NotificationManager.playSound('new_chat');
             }
-            if(ChatStorage[type].chat.list[session_key].attr.is_active){
+            if (ChatStorage[type].chat.list[session_key].attr.is_active) {
                 ChatStorage[type].chat.list[session_key].ux.unread = 0;
-            } else{
-            }
+            } else {}
         }
     };
 
@@ -113,6 +112,24 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.ux.fx.getMessageHtml = function(type, session_key, message) {
         return that.returnMessageHtml(type, session_key, message);
     };
+
+    this.ux.fx.addContactToInviteList = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (ChatStorage[type].chat.list[session_key].invite.contact_id) {
+                if (ChatStorage[type].chat.list[session_key].invite.contact_list.indexOf(ChatStorage[type].chat.list[session_key].invite.contact_id)) {
+                    ChatStorage[type].chat.list[session_key].invite.contact_list.push(ChatStorage[type].chat.list[session_key].invite.contact_id);
+                    ChatStorage[type].chat.list[session_key].invite.contact_id = '';
+                }
+            }
+        }
+    }
+    this.ux.fx.removeContactFromInviteList = function(type, session_key, contact_id) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && contact_id) {
+            if (ChatStorage[type].chat.list[session_key].invite.contact_list.indexOf(contact_id) > -1) {
+                ChatStorage[type].chat.list[session_key].invite.contact_list.splice(ChatStorage[type].chat.list[session_key].invite.contact_list.indexOf(contact_id), 1);
+            }
+        }
+    }
 
     // this.ux.fx.isReferencedMessage = function(message) {
     //     if (message && message.priority) {
@@ -171,13 +188,13 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             html += '</div>';
         }
         if (config.different_author || config.time_lapse) {
-            html += '<div class="cm-chat-message-user-content-wrapper-full" style="background-color:rgba({{chat.session.primary_color}}, .4); color:rgba({{chat.session.primary_color}}, 1);">';
+            html += '<div class="cm-chat-message-user-content-wrapper-full cm-chat-message-author-break" style="background-color:rgba({{chat.session.primary_color}}, .4); color:rgba({{chat.session.primary_color}}, 1); border: 2px solid rgba({{chat.session.primary_color}}, 1);">';
             html += '<div class="cm-chat-message-user-header-bar" style="background-color:rgba({{chat.session.primary_color}}, 1);">';
             html += '<span style="margin-right: 20px;" class="pull-left" ng-bind="chat.user.self_name"></span>';
             html += '<span class="pull-right" ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
             html += '</div>';
         } else {
-            html += '<div class="cm-chat-message-user-content-wrapper-ext" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}" style="background-color:rgba({{chat.session.primary_color}}, .4); color:rgba({{chat.session.primary_color}}, 1);">';
+            html += '<div class="cm-chat-message-user-content-wrapper-ext cm-chat-message-author-break" style="background-color:rgba({{chat.session.primary_color}}, .4); color:rgba({{chat.session.primary_color}}, 1); border: 2px solid rgba({{chat.session.primary_color}}, 1);">';
             if (config.minute_from_last) {
                 html += '<div class="no-select cm-contact-chat-extend-timestamp">';
                 html += '<span ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
@@ -217,13 +234,13 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             html += '</div>';
         }
         if (config.different_author || config.time_lapse) {
-            html += '<div class="cm-chat-message-contact-content-wrapper-full"  style="background-color:rgba({{chat.session.other_color}}, .4); color:rgba({{chat.session.other_color}}, 1);">';
-            html += '<div class="cm-chat-message-contact-header-bar" style="background-color:rgba({{chat.session.other_color}}, 1);">';
+            html += '<div class="cm-chat-message-contact-content-wrapper-full cm-chat-message-author-break"  style="background-color:rgba({{chat.session.other_color}}, .4); color:rgba({{chat.session.other_color}}, 1); border:2px solid rgba({{chat.session.other_color}}, 1);">';
+            html += '<div class="cm-chat-message-contact-header-bar" style=" background-color:rgba({{chat.session.other_color}}, 1);">';
             html += '<span style="margin-right: 20px;" class="pull-left">' + config.contact.name + '</span>';
             html += '<span class="pull-right" ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
             html += '</div>';
         } else {
-            html += '<div class="cm-chat-message-contact-content-wrapper-ext" ng-class="{' + "'cm-chat-message-author-break' : message.is_author_break || $last" + '}" style="background-color:rgba({{chat.session.other_color}}, .4); color:rgba({{chat.session.other_color}}, 1);">';
+            html += '<div class="cm-chat-message-contact-content-wrapper-ext cm-chat-message-author-break" style="background-color:rgba({{chat.session.other_color}}, .4); color:rgba({{chat.session.other_color}}, 1); border:2px solid rgba({{chat.session.other_color}}, 1);">';
             if (config.minute_from_last) {
                 html += '<div class="no-select cm-contact-chat-extend-timestamp">';
                 html += '<span ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';

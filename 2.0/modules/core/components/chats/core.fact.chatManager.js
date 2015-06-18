@@ -70,9 +70,10 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             ChatStorage[type].chat.list[session_key].ux.unread = 0;
 
 
-            ChatStorage[type].chat.list[session_key].invite.show = false;
-            ChatStorage[type].chat.list[session_key].invite.contact = '';
-            ChatStorage[type].chat.list[session_key].invite.set_contact = false;
+            ChatStorage[type].chat.list[session_key].invite.contact_id = '';
+            ChatStorage[type].chat.list[session_key].invite.add_topic = false;
+            ChatStorage[type].chat.list[session_key].invite.topic = '';
+            ChatStorage[type].chat.list[session_key].invite.admin = null;
 
             ChatStorage[type].chat.list[session_key].reference.key = null;
             ChatStorage[type].chat.list[session_key].reference.author = null;
