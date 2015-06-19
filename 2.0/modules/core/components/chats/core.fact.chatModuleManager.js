@@ -153,12 +153,13 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 });
                 $timeout(function() {
                     var discard_last_child = true;
+                    var last_child;
                     SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).once("value", function(snap) {
                         var keys = Object.keys(snap.val() || {});
                         angular.forEach(keys, function(key) {
                             that.createSessionifNotExists('contact', UserManager.user.profile.id + ':' + key);
                         });
-                        var last_child = keys[keys.length - 1];
+                        last_child = keys[keys.length - 1];
                         if (angular.isUndefined(last_child)) {
                             discard_last_child = false;
                         }
@@ -195,18 +196,41 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                                                 that.createSessionifNotExists('contact', that.getSessionKey(location_id));
                                             }
                                         } else if (signal.type === 'group' && signal.session_key) {
-                                            console.log('group invite signal', signal);
                                             if (signal.type === 'group') {
-                                                var config = {};
-                                                config.type = 'contact',
-                                                config.priority = signal.priority,
-                                                config.session_key = signal.session_key;
-                                                config.admin = signal.admin || false;
-                                                config.name = 'Group Chat';
-                                                config.topic = signal.topic || '';
-                                                config.active = true;
+                                                var set_as_current = false;
+                                                var config;
+                                                if (ChatStorage.contact && ChatStorage.contact.chat.list[signal.session_key]){
+                                                    config = angular.copy(ChatStorage.contact.chat.list[signal.session_key].session);
+                                                    config.end_at_priority = -1;
+                                                    config.admin = signal.admin || false;
+                                                    config.topic = signal.topic || '';
+                                                    config.active = true;
+                                                    if(that.module.current.contact.session_key === signal.session_key){
+                                                        that.module.current.contact.session_key = undefined;
+                                                        that.module.current.contact.chat = undefined;
+                                                        set_as_current = true;
+                                                    }
+                                                    delete ChatStorage.contact.chat.list[signal.session_key];
+                                                    delete ChatStorage.contact.session.list[signal.session_key];
+
+                                                } else{
+
+                                                    config = {};
+                                                    config.type = 'contact',
+                                                    config.start_at_priority = signal.priority,
+                                                    config.session_key = signal.session_key;
+                                                    config.admin = signal.admin || false;
+                                                    config.name = 'Group Chat';
+                                                    config.topic = signal.topic || '';
+                                                    config.active = true;
+                                                }
+                                                console.log('config', config)
+
                                                 if (ChatBuilder.buildChatForSession(that.getContactGroupChatSessionDetails(config))) {
                                                     console.log('remove signal');
+                                                    if(set_as_current){
+                                                        that.setChatAsCurrent(config.type, config.session_key);
+                                                    }
                                                     SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).child(signal.session_key).set(null);
                                                 }
                                             }
@@ -271,6 +295,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.tag = '';
             session.order = -1;
             session.start_at_priority = 0;
+            session.end_at_priority = -1;
             return session;
         }
         return false;
@@ -288,14 +313,15 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.is_group_chat = true;
             session.is_open = true;
             session.timestamp = new Date().getTime();
-            session.is_sound = true;
+            session.is_sound = config.is_sound || true;
             session.primary_color = '82, 179, 217';
             session.other_color = '244, 179, 80';
             session.accent_color = '149, 165, 166';
             session.topic = config.topic || '';
-            session.tag = '';
+            session.tag = config.tag || '';
             session.order = -1;
-            session.start_at_priority = config.priority;
+            session.start_at_priority = config.start_at_priority;
+            session.end_at_priority = -1;
             return session;
         }
         return false;
@@ -322,6 +348,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             session.tag = '';
             session.order = config.order;
             session.start_at_priority = 0;
+            session.end_at_priority = -1;
             return session;
         }
         return false;
@@ -454,7 +481,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                                                 delete signals.is_typing[UserManager.user.profile.id];
                                             }
                                             if (!Object.size(signals.is_typing)) {
-                                                delete signals.is_typing;
+                                                signals.is_typing = [];
                                             }
                                             ChatStorage.directory.chat.list[config.session_key].signals.group = signals;
                                             if (signals.topic != ChatStorage.directory.chat.list[config.session_key].session.topic) {
@@ -1247,6 +1274,31 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
             UxManager.ux.fx.evaluateChatModuleLayout();
         }
     };
+    this.leaveChat = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            that.toggleChatMenu(type, session_key, 'settings', false);
+            if(ChatStorage[type].chat.list[session_key].session.is_directory_chat){
+                that.setMainPanelTab(3);
+                return;
+            }
+            that.deactivateChat(type, session_key);
+            if(ChatStorage[type].chat.list[session_key].session.is_group_chat){
+                ChatStorage[type].session.list[session_key].fb.group.location.contacts.child(UserManager.user.profile.id).remove();
+                angular.forEach(ChatStorage.contact.session.list[session_key].fb.group.location, function(fb_location){
+                    console.log('location:', fb_location.toString());
+                    fb_location.off('value');
+                    fb_location.off('child_added');
+                    fb_location.off('child_removed');
+                    fb_location.off('child_changed');
+                    fb_location = null;
+                });
+                ChatStorage[type].chat.list[session_key].session.end_at_priority = ChatStorage[type].chat.list[session_key].priority.next;
+                ChatStorage[type].chat.list[session_key].session.topic = '';
+                SessionsManager.setUserChatSessionStorage(type, session_key);
+
+            }
+        }
+    };
 
     this.removeChat = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
@@ -1329,11 +1381,11 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                         priority: ChatStorage[type].chat.list[session_key].priority.next
                     };
                     angular.forEach(ChatStorage[type].chat.list[session_key].invite.contact_list, function(contact_id) {
-                        if(!ChatStorage[type].chat.list[session_key].contacts.active[contact_id]){
+                        if (!ChatStorage[type].chat.list[session_key].contacts.active[contact_id]) {
                             ChatStorage[type].session.list[session_key].fb.group.location.contacts.child(contact_id).set(ChatStorage[type].chat.list[session_key].session.start_at_priority);
                             SessionsManager.sendChatInviteSignal(contact_id, signal);
                         }
-                        
+
                     });
                     ChatStorage[type].chat.list[session_key].invite.admin = false;
                     ChatStorage[type].chat.list[session_key].invite.add_topic = false;

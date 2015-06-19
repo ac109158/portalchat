@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'UtilityManager', 'UserManager', 'ContactsManager', 'SessionsManager', 'PermissionsManager', 'ChatBuilder', 'ChatStorage', 'AudioService', function($log, $http, $timeout, $sce, CoreConfig, UtilityManager, UserManager, ContactsManager, SessionsManager, PermissionsManager, ChatBuilder, ChatStorage, AudioService) {
+service('ChatManager', ['$rootScope', '$log', '$http', '$timeout', '$sce', 'CoreConfig', 'UtilityManager', 'UserManager', 'ContactsManager', 'SessionsManager', 'PermissionsManager', 'ChatBuilder', 'ChatStorage', 'AudioService', function($rootScope, $log, $http, $timeout, $sce, CoreConfig, UtilityManager, UserManager, ContactsManager, SessionsManager, PermissionsManager, ChatBuilder, ChatStorage, AudioService) {
     var that = this;
 
     this.setting = {};
@@ -328,7 +328,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
             that.resetCommonDefaultSettings(type, session_key);
         }
     };
-    this.toggleChatSound = function(type, session_key){
+    this.toggleChatSound = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             ChatStorage[type].chat.list[session_key].session.is_sound = !ChatStorage[type].chat.list[session_key].session.is_sound;
             SessionsManager.setUserChatSessionStorage(type, session_key);
@@ -383,7 +383,7 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 SessionsManager.updateChatSignalPriority(type, session_key, ChatStorage[type].chat.list[session_key].priority.next);
                 if (ChatStorage[type].chat.list[session_key].session.is_group_chat === false) {
                     message.session_key = session_key.split(':')[1] + ':' + session_key.split(':')[0];
-                    message.offline =  !(ChatStorage[type].chat.list[session_key].contact.profile.online) || null;
+                    message.offline = !(ChatStorage[type].chat.list[session_key].contact.profile.online) || null;
                     var contactFbKey = ChatStorage[type].session.list[session_key].fb.contact.location.messages.push(message); // messages have to be written in both spots with an individual chat, storage is the reason for doing this
                     ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message = contactFbKey.key();
                     ChatStorage[type].session.list[session_key].fb.contact.location.messages.child(ChatStorage[type].chat.list[session_key].attr.last_sent_contact_message).setPriority(ChatStorage[type].chat.list[session_key].priority.next);
@@ -403,15 +403,20 @@ service('ChatManager', ['$log', '$http', '$timeout', '$sce', 'CoreConfig', 'Util
                 $timeout(function() {
                     // ChatStorage[type].chat.list[session_key].signals.user.active = true;
                     // SessionsManager.updateChatSignals(type, session_key);
-                    ChatStorage[type].chat.list[session_key].reference.key = null;
-                    ChatStorage[type].chat.list[session_key].reference.author = null;
-                    ChatStorage[type].chat.list[session_key].reference.name = null;
-                    ChatStorage[type].chat.list[session_key].reference.text = null;
-                    ChatStorage[type].chat.list[session_key].reference.priority = null;
-                    if (ChatStorage[type].chat.list[session_key].scroll.to_top === true) {
-                        ChatStorage[type].chat.list[session_key].scroll.to_top = false;
-                    }
-                    ChatStorage[type].chat.list[session_key].scroll.to_bottom = true;
+                    $rootScope.$evalAsync(function() {
+                        ChatStorage[type].chat.list[session_key].message.text = '';
+                        ChatStorage[type].chat.list[session_key].message.rawhtml = '';
+                        ChatStorage[type].chat.list[session_key].reference.key = null;
+                        ChatStorage[type].chat.list[session_key].reference.author = null;
+                        ChatStorage[type].chat.list[session_key].reference.name = null;
+                        ChatStorage[type].chat.list[session_key].reference.text = null;
+                        ChatStorage[type].chat.list[session_key].reference.priority = null;
+                        if (ChatStorage[type].chat.list[session_key].scroll.to_top === true) {
+                            ChatStorage[type].chat.list[session_key].scroll.to_top = false;
+                        }
+                        ChatStorage[type].chat.list[session_key].scroll.to_bottom = true;
+                    })
+
                 });
                 // $scope.directory_index = chat.attr.index_position;
 

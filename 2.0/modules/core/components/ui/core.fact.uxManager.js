@@ -116,11 +116,11 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.ux.fx.addContactToInviteList = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (ChatStorage[type].chat.list[session_key].invite.contact_id) {
-                if (ChatStorage[type].chat.list[session_key].invite.contact_list.indexOf(ChatStorage[type].chat.list[session_key].invite.contact_id)) {
+                if (ChatStorage[type].chat.list[session_key].invite.contact_list.indexOf(ChatStorage[type].chat.list[session_key].invite.contact_id) === -1) {
                     ChatStorage[type].chat.list[session_key].invite.contact_list.push(ChatStorage[type].chat.list[session_key].invite.contact_id);
-                    ChatStorage[type].chat.list[session_key].invite.contact_id = '';
                 }
             }
+            ChatStorage[type].chat.list[session_key].invite.contact_id = '';
         }
     }
     this.ux.fx.removeContactFromInviteList = function(type, session_key, contact_id) {

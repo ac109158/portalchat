@@ -20,8 +20,8 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
         }
     };
     this.unload = function() {
-        angular.forEach(Object.keys(ChatStorage.contact.chat.list), function(key) {
-            that.updateUserChatSessionStorage(contact, key);
+        angular.forEach(Object.keys(ChatStorage.contact.chat.list), function(session_key) {
+            // that.setUserChatSessionStorage('contact', session_key);
         });
     };
 
@@ -151,16 +151,16 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (session_key.split(':')[1]) {
                 that.fb.location.signals.child(type).child(session_key.split(':')[1]).child(session_key.split(':')[0]).update({
-                    topic: topic
+                    topic: topic || ''
                 });
             } else {
                 if (type === 'contact' && ChatStorage[type] && ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                     that.fb.location.signals.child('group').child(session_key).update({
-                        topic: topic
+                        topic: topic || ''
                     });
                 } else {
                     that.fb.location.signals.child(type).child(session_key).update({
-                        topic: topic
+                        topic: topic || ''
                     });
                 }
             }
@@ -192,9 +192,11 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
             console.log('invite', angular.copy(invite))
             invite.contact_list.unshift(UserManager.user.profile.id);
             var session = {};
+            session.is_typing = '';
+            session.type = "group",
             session.priority = 0;
             session.contacts = {};
-            session.timestamp = Firebase.ServerValue.TIMESTAMP;
+            session.timestamp = new Date().getTime();
             session.topic = angular.copy(invite.copy) || '';
             angular.forEach(invite.contact_list, function(contact_id) {
                 session.contacts[contact_id] = 0;

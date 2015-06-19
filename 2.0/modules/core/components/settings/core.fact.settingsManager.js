@@ -23,7 +23,7 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
     this.global.sound_level = CoreConfig.inital.sound_level;
     this.global.last_contact_chat = false;
     this.global.last_panel_tab = false;
-    this.global.session_id = undefined;
+    this.global.session_id = null;
     this.global.is_window_visible = true;
     this.global.panel_width_adjust = 0;
     this.global.panel_vertical_adjust = 0;

@@ -17,13 +17,13 @@
             <div ng-if="!chat.session.is_directory_chat" class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.deactivateChat(chat.session.type, chat.session.session_key);">
                 <center><span class="fa fa-times fa-1x"></span></center>
             </div>
-            <div ng-if="chat.session.is_directory_chat" class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.setMainPanelTab(0);">
+            <div ng-if="chat.session.is_directory_chat" class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.leaveChat(chat.session.type, chat.session.session_key);">
                 <center><span class="fa fa-times fa-1x"></span></center>
             </div>
-            <div title="Toggle Notifcations" class="btn btn-xs btn-default pointer" style="min-width: 22px;" ng-click="ui.fx.toggleChatSound(chat.session.type, chat.session.session_key);">
+            <div title="Toggle Notifcations" class="btn btn-xs btn-default pointer" style="min-width: 22px;" ng-disabled="chat.session.end_at_priority > -1"  ng-click="ui.fx.toggleChatSound(chat.session.type, chat.session.session_key);">
                 <center><span ng-show="chat.session.is_sound" class="fa fa-bell-o"></span><span ng-show="!chat.session.is_sound" class="fa fa-bell-slash-o"></span></center>
             </div>
-            <div class="btn btn-xs btn-default pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'options');">
+            <div class="btn btn-xs btn-default pointer" ng-disabled="chat.session.end_at_priority > -1"  ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'options');">
                 <center><span class="fa fa-cog"></span></center>
             </div>
         </div>
@@ -42,7 +42,7 @@
                     <option value=''>Search User</option>
                 </select>
                 <div class="well well-sm" style="position: relative; display: block; width: 100%; clear: both; padding: 2px; margin:0; padding: 2px; margin-top:2px; min-height: 30px; max-height: 300px; overflow-y: auto; overflow-x: hidden;">
-                    <div style="position: relative; display: block; width: 100%; clear: both; padding: 2px; margin-top:2px; overflow-x: hidden;" ng-repeat="contact_id in chat.invite.contact_list">
+                    <div style="position: relative; display: block; width: 100%; clear: both; padding: 2px; margin-top:2px; overflow-x: hidden;" ng-repeat="contact_id in chat.invite.contact_list track by $index">
                         <div class="cm-main-panel-contact-online">
                             <div class="chat-status cm-main-panel-invite-status {{profiles.list[profiles.map['user_' + contact_id]].state}}"></div>
                             <img ng-src="{{profiles.list[profiles.map['user_' + contact_id]].avatar_url}}" width=20 height=20/>
@@ -161,7 +161,7 @@
         <!-- end of chat format container -->
     </div>
     <div style="position:absolute; z-index: 2; width: 100%; left:0; right:0; bottom:0; background-color:rgba({{chat.session.accent_color}},.8); border: 2px solid rgb({{chat.session.accent_color}}); border-top:none; min-height:125px; z-index: 2;" class="pointer">
-        <div style="position:absolute; bottom:30px; width:100%; z-index:2; pointer-events:all;">
+        <div ng-if="chat.session.end_at_priority === -1" style="position:absolute; bottom:30px; width:100%; z-index:2; pointer-events:all;">
             <div emoji-form>
                 <textarea id="messageInput" placeholder="Enter Chat to {{chat.description || chat.contact.profile.first_name}}" ng-model="chat.message.text"></textarea>
                 <button style="position: absolute; bottom:-20px; right:6px;" id="emojibtn">
@@ -169,8 +169,9 @@
                 </button>
             </div>
         </div>
-        <div class="cm-main-label-decal-description" style="position: relative; top: 5px; color: rgba({{chat.session.accent_color}}, .9);"><i style="font-size: 1.2em;" class="{{chat.ux.icon}}"></i><span style="margin-left: 5px; font-size: 1.5em;" ng-bind="chat.session.tag || chat.description ||  'Chat With ' + chat.contact.profile.first_name"></span><i style="margin-left: 5px; font-size: 1.2em;" class="{{chat.ux.icon}}"></i></div>
-        <div class="cm-contact-chat-status-bottom min-scroll">
+        <div ng-if="chat.session.end_at_priority > -1" class="cm-main-label-decal-description" style="position: relative; top: 5px; color: rgba({{chat.session.accent_color}}, .9);"><i style="font-size: 1.2em;" class="{{chat.ux.icon}}"></i><span style="margin-left: 5px; font-size: 1.5em;" ng-bind="'Closed'"></span><i style="margin-left: 5px; font-size: 1.2em;" class="{{chat.ux.icon}}"></i></div>
+        <div ng-if="chat.session.end_at_priority === -1" class="cm-main-label-decal-description" style="position: relative; top: 5px; color: rgba({{chat.session.accent_color}}, .9);"><i style="font-size: 1.2em;" class="{{chat.ux.icon}}"></i><span style="margin-left: 5px; font-size: 1.5em;" ng-bind="chat.session.tag || chat.description ||  'Chat With ' + chat.contact.profile.first_name"></span><i style="margin-left: 5px; font-size: 1.2em;" class="{{chat.ux.icon}}"></i></div>
+        <div ng-if="chat.session.end_at_priority === -1" class="cm-contact-chat-status-bottom min-scroll">
             <div ng-if="chat.signals[chat.attr.other_fb_ref].is_typing" style="position:absolute; z-index: 7; top:0px; left:0px; width: 100%; background:rgba(255,255,255,.5);">
                 <i ng-show="chat.signals[chat.attr.other_fb_ref].is_typing" class="fa fa-spinner fa-2x fa-pulse cm-chat-typing-icon"></i>
                 <div style="position:absolute; top:3px; left:35px;">
@@ -186,7 +187,7 @@
         </div>
         <!-- end of chat message repeat -->
         <!-- end of individual message section -->
-        <div class="cm-contact-chat-message-reference-wrapper">
+        <div ng-if="chat.session.end_at_priority === -1" class="cm-contact-chat-message-reference-wrapper">
             <div ng-if="!chat.attr.is_group_chat && chat.contact.profile.presence.post && chat.contact.profile.presence.message" class="cm-contact-chat-banner min-scroll">
                 <span ng-bind="chat.contact.profile.presence.message"></span>
             </div>

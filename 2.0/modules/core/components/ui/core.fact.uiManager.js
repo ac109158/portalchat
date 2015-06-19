@@ -260,6 +260,10 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         ChatModuleManager.deactivateChat(type, session_key);
     };
 
+    this.ui.fx.leaveChat = function(type, session_key) {
+        ChatModuleManager.leaveChat(type, session_key);
+    };
+
     this.ui.fx.loadPreviousChatMessages = function(type, session_key) {
         ChatModuleManager.loadPreviousChatMessages(type, session_key);
     };
