@@ -1,7 +1,11 @@
 <div id="cm-user-profile" class="min-scroll">
-    <div style="position:relative; display: block; width: 100%; clear: both; height:25px; margin-bottom: 10px;" ng-click="ui.fx.toggleMainPanelMenu('profile');">
-        <div class="btn btn-default btn-xs slim" style="position: absolute; top: 2px; right: 2px;"><span class="glyphicon glyphicon-remove" style="color:red;"></span></div>
-        <legend>User Profile</legend>
+    <div style="position:relative; display: block; width: 100%; clear: both; height:25px; margin-bottom: 10px;">
+        <div style="position: absolute; top: 2px; right: 5px;" ng-click="ui.fx.toggleMainPanelMenu('profile');"><span class="glyphicon glyphicon-remove pointer"></span></div>
+        <div class="cm-main-label-decal one-edge-shadow">
+            <div ng-class="{'cm-label-decal-description': ux.platform.browser  == 'Firefox','cm-label-decal-description-inset': ux.platform.browser  != 'Firefox'}">
+                <span style="font-weight: bold; font-size: 1.5em;">Profile</span>
+            </div>
+        </div>
     </div>
     <div style="width:100%; display:block; min-height:20px;">
         <div style="width:40%; padding:2px; float:left">
@@ -10,7 +14,7 @@
         </div>
         <div <div style="width:60%; padding:4px; float:left">
             <div class="well well-sm well-slim">
-                <span class="cm-profile-span pointer" ng-bind="module.user.profile.name"><br></span>
+                <span class="cm-profile-span-label pointer" ng-bind="module.user.profile.name"><br></span>
                 <span class="cm-profile-span pointer" ng-if="module.user.additional_profile.role" ng-bind="module.user.additional_profile.role"><br></span>
                 <span class="cm-profile-span pointer" ng-if="module.user.profile.additional_profile.pc" style="font-size:.8em;">PC: {{module.user.profile.additional_profile.pc.name}}<br></span>
                 <span class="cm-profile-span pointer" ng-if="module.user.profile.additional_profile.mc" style="font-size:.8em;">MC: {{module.user.profile.additional_profile.mc.name}}<br></span>
@@ -25,7 +29,7 @@
             <span class="cm-profile-span pointer">{{module.user.additional_profile.email}}</span>
         </div>
     </div>
-    <div style="position:relative; display:block; width:100%; min-height: 50px; float:left; padding:2px; margin:0px; clear:none; background:rgba(69,106,151,0.8); color:black;">
+    <div style="position:relative; display:block; width:100%; min-height: 50px; float:left; padding:2px; margin:0px; clear:none; color:black;">
         <div style="width:100%; min-height:20px; background:rgba(255,255,255,.8); border-radius:2px; margin-bottom:2px; padding:2px;">
             <center>
                 <span>Chat Status: </span>

@@ -188,7 +188,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
             ChatStorage[session.type].chat.list[session.session_key].menu.tag = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.topic = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.emoticons = false; // toggle flag tht determines if the emotion dox should be displayed to the user
-            ChatStorage[session.type].chat.list[session.session_key].menu.user_list = false;
+            ChatStorage[session.type].chat.list[session.session_key].menu.contact_list = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.image = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.audio = false;
             ChatStorage[session.type].chat.list[session.session_key].menu.video = false;
@@ -359,8 +359,10 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                 ChatStorage[session.type].session.list[session.session_key].fb.group.location.contacts.child(UserManager.user.profile.id).set(session.start_at_priority);
                 ChatStorage[session.type].session.list[session.session_key].fb.group.location.contacts.once('value', function(snapshot) {
                     angular.forEach(snapshot.val(), function(value, key) {
-                        ChatStorage[session.type].chat.list[session.session_key].contacts.active[key] = value;
-                        ChatStorage[session.type].chat.list[session.session_key].contacts.participated[key] = value;
+                        if (key != UserManager.user.profile.id) {
+                            ChatStorage[session.type].chat.list[session.session_key].contacts.active[key] = value;
+                            ChatStorage[session.type].chat.list[session.session_key].contacts.participated[key] = value;
+                        }
                     });
                     that.setGroupListNames(session.type, session.session_key);
                     that.setGroupCount(session.type, session.session_key);
@@ -368,7 +370,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                 ChatStorage[session.type].session.list[session.session_key].fb.group.location.contacts.on('child_added', function(snapshot) {
                     var key = snapshot.key();
                     var value = snapshot.val();
-                    if (angular.isUndefined(ChatStorage[session.type].chat.list[session.session_key].contacts.active[key])) {
+                    if (key != UserManager.user.profile.id && angular.isUndefined(ChatStorage[session.type].chat.list[session.session_key].contacts.active[key])) {
                         $rootScope.$evalAsync(function() {
                             ChatStorage[session.type].chat.list[session.session_key].contacts.active[key] = value;
                             if (angular.isUndefined(ChatStorage[session.type].chat.list[session.session_key].contacts.participated[key])) {
@@ -381,9 +383,11 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                 });
                 ChatStorage[session.type].session.list[session.session_key].fb.group.location.contacts.on('child_removed', function(snapshot) {
                     $rootScope.$evalAsync(function() {
-                        delete ChatStorage[session.type].chat.list[session.session_key].contacts.active[snapshot.key()];
-                        that.setGroupListNames(session.type, session.session_key);
-                        that.setGroupCount(session.type, session.session_key);
+                        if (snapshot.key() != UserManager.user.profile.id) {
+                            delete ChatStorage[session.type].chat.list[session.session_key].contacts.active[snapshot.key()];
+                            that.setGroupListNames(session.type, session.session_key);
+                            that.setGroupCount(session.type, session.session_key);
+                        }
                     });
                 });
             }
@@ -394,55 +398,73 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
     this.setNewExistingChatMessages = function(session, fb_ref_type) {
         if (ChatStorage[session.type] && ChatStorage[session.type].session.list[session.session_key] && fb_ref_type) {
             var last_priority, keys, messages;
-            ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.orderByPriority().startAt(session.start_at_priority).endAt(session.end_at_priority).once("value", function(snapshot) {
-                keys = Object.keys(snapshot.val() || {});
-                messages = snapshot.val();
-                angular.forEach(messages, function(message, key) {
-                    message.key = key;
-                    if (message && message.key) {
-                        that.storeChatMessageInChatMessageList(session.type, session.session_key, message);
-                    }
+            if (session.end_at_priority > -1) {
+                ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.orderByPriority().startAt(session.start_at_priority).endAt(session.end_at_priority).once("value", function(snapshot) {
+                    keys = Object.keys(snapshot.val() || {});
+                    messages = snapshot.val();
+                    angular.forEach(messages, function(message, key) {
+                        message.key = key;
+                        if (message && message.key) {
+                            that.storeChatMessageInChatMessageList(session.type, session.session_key, message);
+                        }
 
+                    });
                 });
-                if (ChatStorage[session.type].chat.list[session.session_key].messages.list && ChatStorage[session.type].chat.list[session.session_key].messages.list.length) {
-                    last_priority = ChatStorage[session.type].chat.list[session.session_key].messages.list.length - 1;
-                } else {
-                    last_priority = 0;
-                }
-                if (session.end_at_priority === -1) {
-                    $timeout(function() {
-                        ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.orderByPriority().startAt(last_priority).on('child_added', function(snapshot) { // detects a ref_location.push(Json) made to the reference location
-                            if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
-                                if (last_priority) {
-                                    last_priority = null;
-                                } else {
-                                    var key = snapshot.key();
-                                    var message = snapshot.val();
-                                    message.key = key;
-                                    if (message && key != ChatStorage[session.type].chat.list[session.session_key].attr.last_logged_chat) {
-                                        if (!ChatStorage[session.type].chat.list[session.session_key].session.active) {
-                                            ChatStorage[session.type].chat.list[session.session_key].session.active = true;
-                                            SessionsManager.setContactChatOrderMap();
-                                        }
-                                        that.storeChatMessageInChatMessageList(session.type, session.session_key, message);
-                                        UxManager.ux.fx.alertNewChat(session.type, session.session_key, message);
-                                        return;
-                                    } else {
-                                        $log.debug('Looks like this is a tremor request recieving an message', message);
-                                    }
-                                }
-                                return;
-                            }
-                        });
-                    }, 500);
-                } else {
-                    console.log('read only');
-                }
-            });
+            } else {
+                ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.orderByPriority().startAt(session.start_at_priority).once("value", function(snapshot) {
+                    keys = Object.keys(snapshot.val() || {});
+                    messages = snapshot.val();
+                    angular.forEach(messages, function(message, key) {
+                        message.key = key;
+                        if (message && message.key) {
+                            that.storeChatMessageInChatMessageList(session.type, session.session_key, message);
+                        }
+
+                    });
+                    if (ChatStorage[session.type].chat.list[session.session_key].messages.list && ChatStorage[session.type].chat.list[session.session_key].messages.list.length) {
+                        last_priority = ChatStorage[session.type].chat.list[session.session_key].messages.list[ChatStorage[session.type].chat.list[session.session_key].messages.list.length - 1].priority;
+                        if(session.type === 'contact'){
+                            ChatStorage[session.type].chat.list[session.session_key].ux.unread = last_priority - session.last_read_priority;
+                        }
+                    } else {
+                        last_priority = 0;
+                    }
+                    that.setNewChatMessages(session, fb_ref_type, last_priority);
+                });
+            }
             return true;
         }
         return false;
     };
+
+    this.setNewChatMessages = function(session, fb_ref_type, last_priority) {
+        $timeout(function() {
+            ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.orderByPriority().startAt(last_priority).on('child_added', function(snapshot) { // detects a ref_location.push(Json) made to the reference location
+                if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
+                    if (last_priority) {
+                        last_priority = null;
+                    } else {
+                        var key = snapshot.key();
+                        var message = snapshot.val();
+                        message.key = key;
+                        if (message && key != ChatStorage[session.type].chat.list[session.session_key].attr.last_logged_chat) {
+                            if (!ChatStorage[session.type].chat.list[session.session_key].session.active) {
+                                ChatStorage[session.type].chat.list[session.session_key].session.active = true;
+                                SessionsManager.setContactChatOrderMap();
+                            }
+
+                            that.storeChatMessageInChatMessageList(session.type, session.session_key, message);
+                            UxManager.ux.fx.alertNewChat(session.type, session.session_key, message);
+                            return;
+                        } else {
+                            $log.debug('Looks like this is a tremor request recieving an message', message);
+                        }
+                    }
+                    return;
+                }
+            });
+        }, 500);
+    }
 
 
     this.storeChatMessageInChatMessageList = function(type, session_key, message) {

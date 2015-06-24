@@ -60,7 +60,9 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     };
 
     this.ui.fx.setChatAsCurrent = function(type, session_key){
-        ChatModuleManager.setMainPanelTab(3);
+        if(SettingsManager.global.layout === 1){
+            ChatModuleManager.setMainPanelTab(3);
+        }
         ChatModuleManager.setChatAsCurrent(type, session_key);
     };
 
@@ -92,6 +94,13 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     this.ui.fx.inviteIntoChat = function(type, session_key){
         ChatModuleManager.inviteIntoChat(type, session_key);
     };
+
+    this.ui.fx.removeContactFromChat = function(type, session_key, contact_id){
+        console.log('here');
+        ChatModuleManager.removeContactFromChat(type, session_key, contact_id);
+    };
+
+    
     this.ui.fx.updateSoundLevel = function(level) {
         if (parseInt(level) && level > -1 && level <= CoreConfig.max.sound_level) {
             NotificationManager.updateSoundLevel(level);

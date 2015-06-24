@@ -44,7 +44,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
 
                 if (document.getElementById("cm-main-panel-contacts-list")) {
                     that.ux.main_panel.content.wrapper.lower_panel.contacts_list.top = document.getElementById("cm-main-panel-contacts-list").offsetTop;
-                    that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height = that.ux.main_panel.content.wrapper.lower_panel.height - that.ux.main_panel.content.wrapper.lower_panel.contacts_list.top - 10;
+                    that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height = that.ux.main_panel.content.wrapper.lower_panel.height - that.ux.main_panel.content.wrapper.lower_panel.contacts_list.top - 8;
                     document.getElementById("cm-main-panel-contacts-list").style.height = that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height + "px";
                 }
             });
@@ -78,6 +78,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.ux.fx.evaluateChatModuleLayout = function() {
         that.setChatModuleSectionHeights();
     };
+
     this.ux.fx.alertNewChat = function(type, session_key, message) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             ChatStorage[type].chat.list[session_key].session.timestamp = new Date().getTime();
@@ -86,7 +87,10 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             }
             if (ChatStorage[type].chat.list[session_key].attr.is_active) {
                 ChatStorage[type].chat.list[session_key].ux.unread = 0;
-            } else {}
+                ChatStorage[type].chat.list[session_key].session.last_read_priority = message.priority;
+            } else {
+                ChatStorage[type].chat.list[session_key].ux.unread++;
+            }
         }
     };
 
@@ -199,7 +203,6 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
                 html += '<div class="no-select cm-contact-chat-extend-timestamp">';
                 html += '<span ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
                 html += '</div>';
-
             }
         }
         if (config.different_author) {
@@ -208,6 +211,9 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
         html += '<span class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | parseUrl | colonToSmiley" id="{{message.session_key + ' + "':'" + ' + message.priority}}"></span>';
+        if (message.offline) {
+            html += '<span title="Offline Message" class="pointer" style="margin: 0px 2px; color:red; font-size:1.2em;" class="pull-left" ng-bind="' + "'*'" + '"></span>';
+        }
         if (message.reference && message.reference.key) {
             html += '<br><div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
             if (message.reference.author === UserManager.user.profile.id) {
@@ -253,6 +259,9 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             html += '<div class="cm-chat-message-text-wrapper-ext">';
         }
         html += '<span class="cm-chat-message-text" scroll-on-click="ux.fx.isReferencedMessage(message.priority);" ng-dblclick="ui.fx.addReferenceToChatMessage(chat.session.type, chat.session.session_key, message);" ng-bind-html="message.text | parseUrl | colonToSmiley" id="{{message.session_key + ' + "':'" + ' + message.priority}}"></span>';
+        if (message.offline) {
+            html += '<span title="Offline Message" class="pointer" style="position:relative; margin: 0px 2px; top: 5px; color:red; font-size:1.2em;" class="pull-left" ng-bind="' + "'*'" + '"></span>';
+        }
         if (message.reference && message.reference.key) {
             html += '<br><div ng-click="ux.fx.referenceMessage(chat.session.type, chat.session.session_key, message.reference.priority);" class="cm-chat-message-text-ref';
             if (message.reference.author === UserManager.user.profile.id) {

@@ -2,11 +2,11 @@
 <html>
 <head>
     <title>Portal Chat</title>
-     <link href="./assets/css/chat.css" rel="stylesheet" type="text/css">
      <link href="./assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
      <link href="./assets/css/compiled_vendor.css" rel="stylesheet" type="text/css">
      <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
      <link href="./vendor/emoji/emoji.min.css" rel="stylesheet"  />
+     <link href="./assets/css/chat.css" rel="stylesheet" type="text/css">
 </head>
 <body>
     <div ng-cloak presence="MOUSE TOUCH KEYBOARD" ng-controller="core.main" ng-init="initUser();">

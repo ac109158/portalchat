@@ -21,7 +21,7 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
     };
     this.unload = function() {
         angular.forEach(Object.keys(ChatStorage.contact.chat.list), function(session_key) {
-            // that.setUserChatSessionStorage('contact', session_key);
+            that.setUserChatSessionStorage('contact', session_key);
         });
     };
 
@@ -77,6 +77,15 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
             that.fb.location.signals.child('contact').child(contact_id).child(signal.session_key).update(signal);
         }
     };
+
+    this.sendChatExitSignal = function(type, session_key, contact_id) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && ChatStorage[type].chat.list[session_key].contacts && ChatStorage[type].chat.list[session_key].contacts.active && angular.isDefined(ChatStorage[type].chat.list[session_key].contacts.active[contact_id])) {
+            console.log('here 3')
+            ChatStorage[type].session.list[session_key].fb.group.location.contacts.child(contact_id).remove();
+            that.fb.location.signals.child('contact').child(contact_id).child(session_key).update({type: 'group', session_key: session_key, exit: true});
+        }
+    };
+
 
     this.setUserChatSessionStorage = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
@@ -194,16 +203,16 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
             var session = {};
             session.is_typing = '';
             session.type = "group",
-            session.priority = 0;
+                session.priority = 0;
             session.contacts = {};
             session.timestamp = new Date().getTime();
             session.topic = angular.copy(invite.copy) || '';
             angular.forEach(invite.contact_list, function(contact_id) {
                 session.contacts[contact_id] = 0;
             });
-            if(angular.copy(invite.admin)){
+            if (angular.copy(invite.admin)) {
                 session.admin = UserManager.user.profile.id;
-            } else{
+            } else {
                 session.admin = false;
             }
             console.log('session', session)
@@ -212,9 +221,30 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
         return undefined;
     };
 
-    this.getGroupChatContacts = function(session){
+    this.getGroupChatContacts = function(session) {
         return that.fb.location.signals.child('group').child(session.session_key).child('contacts');
     }
+
+    this.closeChatSession = function(type, session_key) {
+        if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
+            if (ChatStorage[type].chat.list[session_key].session.is_group_chat) {
+                ChatStorage[type].session.list[session_key].fb.group.location.contacts.child(UserManager.user.profile.id).remove();
+                angular.forEach(ChatStorage.contact.session.list[session_key].fb.group.location, function(fb_location) {
+                    console.log('location:', fb_location.toString());
+                    fb_location.off('value');
+                    fb_location.off('child_added');
+                    fb_location.off('child_removed');
+                    fb_location.off('child_changed');
+                    fb_location = null;
+                });
+                ChatStorage[type].chat.list[session_key].session.end_at_priority = ChatStorage[type].chat.list[session_key].priority.next;
+                ChatStorage[type].chat.list[session_key].session.topic = '';
+                ChatStorage[type].chat.list[session_key].contacts.active = {};
+                that.setUserChatSessionStorage(type, session_key);
+
+            }
+        }
+    };
 
     //*************************************************************************//
 

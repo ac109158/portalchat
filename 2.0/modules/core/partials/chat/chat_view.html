@@ -4,7 +4,7 @@
             <i ng-click="ui.fx.openChatModule();" class="cm-open-icon fa fa-comment fa-4x pointer" ng-class="{'Busy':alertToOpen == true}"></i>
         </div>
         <div id="cm-main-panel" ng-if="module.global.is_open && module.setting.is_external_window_instance == false">
-            <div id="cm-main-panel-header">
+            <div id="cm-main-panel-header" class="one-edge-shadow">
                 <!-- <img style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/> -->
                 <img class="pointer" style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="{{module.contact_list.setting.default_avatar}}" width=35 height=35/>
                 <span style="margin-left:5px; line-height:20px;" ng-bind="module.user.profile.name"></span>
@@ -26,20 +26,14 @@
             </div>
             <div id="cm-main-panel-content-wrapper">
                 <div id="cm-main-panel-upper-panel">
-                    <div ng-if="module.global.layout == 1">
-                        <cm-chat-tracker></cm-chat-tracker>
-                        <chat-module-nav-panel></chat-module-nav-panel>
+                    <cm-chat-tracker></cm-chat-tracker>
+                    <div ng-if="module.global.layout == 2" style="position:relative; display: block; width: 100%; margin: 0; padding: 0; min-height: 350px; height:100%; clear:both;">
+                        <panel-contact-chat chat="module.current.contact.chat" ng-if="module.current.contact.session_key" ui="ui" ux="ux" profiles="module.contacts.profiles" engine="module.engine" style="position: absolute; top:0; left: 0; right: width: 100%; min-height: 300px; height:100%;"></panel-contact-chat>
+                        <recent-chats ng-if="!module.current.contact.session_key"></recent-chats>
+                        <div class="clearfix"></div>
                     </div>
-                </div>
-                <!--                <div ng-if="module.global.layout == 3" class="cm-main-panel-section" id="cm-main-panel-tracker-3">
-                    <cm-main-panel-tracker-panel></cm-main-panel-tracker-panel>
-                </div>
-                <div ng-if="module.global.layout == 3 && isPageLoaded" class="cm-main-panel-section" style="background:rgba(255,255,255,0.4);">
-                    <directory-chat></directory-chat>
-                </div>
-                <div ng-if="module.global.layout == 3" class="cm-main-panel-section">
                     <chat-module-nav-panel></chat-module-nav-panel>
-                </div> -->
+                </div>
                 <div id="cm-main-panel-lower-panel">
                     <div ng-if="module.tab.current.index_position == 0" id="contacts">
                         <contacts></contacts>
@@ -50,27 +44,9 @@
                     <div ng-if="module.tab.current.index_position == 2" id="sm_tech_chat" style="position:relative; display: block; width: 100%; margin: 0; padding: 0; height:100%;">
                         <panel-contact-chat chat="module.chats.directory.chat.list.sm_tech_chat" ui="ui" ux="ux" profiles="module.contacts.profiles" engine="module.engine"></panel-contact-chat>
                     </div>
-
                     <div ng-if="module.tab.current.index_position == 3" style="position:relative; display: block; width: 100%; margin: 0; padding: 0; height:100%;">
-                        <panel-contact-chat chat="module.current.contact.chat" ng-if="module.current.contact.session_key"  ui="ui" ux="ux" profiles="module.contacts.profiles" engine="module.engine"></panel-contact-chat>
-                        <div ng-if="!module.current.contact.session_key" class="pointer">
-                            <legend style="margin-bottom: 0;">Recent Converstions</legend>
-                            <div class="min-scroll" style="position: relative; display:block; width: 100%; clear: both; min-height: 200px; max-height: 100%;">
-                                <div ng-repeat="chat in module.chats.contact.chat.list | toArray | orderBy: 'session.timestamp': true">
-                                    <div ng-click="ui.fx.setChatAsCurrent(chat.session.type, chat.session.session_key);" class="cm-main-panel-recent-contact">
-                                        <div ng-if="!chat.session.is_group_chat">
-                                            <img ng-src="{{chat.contact.profile.avatar_url}}" width=46 height=46/><span class="cm-main-panel-contact-name" ng-bind="chat.session.tag || chat.contact.profile.name | chars: 20"></span>
-                                            <span style="position: absolute; right: 50px; margin-top: 13px;" ng-bind="chat.session.timestamp | timeago"></span>
-                                            <div class="chat-status cm-main-panel-contact-status {{chat.contact.profile.state}}" style="position:relative; top:15px;"></div>
-                                        </div>
-                                        <div ng-if="chat.session.is_group_chat">
-                                            <i class="{{chat.ux.icon}} fa-3x" style="width: 46px; height: 46px;"/></i><span class="cm-main-panel-contact-name" ng-bind="chat.session.tag || chat.contacts.name_list || chat.description | chars: 20"></span>
-                                            <span style="position: absolute; right: 50px; margin-top: 13px;" ng-bind="chat.session.timestamp | timeago"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <panel-contact-chat chat="module.current.contact.chat" ng-if="module.global.layout == 1 && module.current.contact.session_key" ui="ui" ux="ux" profiles="module.contacts.profiles" engine="module.engine"></panel-contact-chat>
+                        <recent-chats ng-if="!module.current.contact.session_key || module.global.layout == 2 "></recent-chats>
                     </div>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-<div class="cm-chat-setting-menu" style="background: white; color:rgba({{chat.session.accent_color}},1); border:2px solid rgba({{chat.session.accent_color}},1);">
+<div class="cm-chat-setting-menu one-edge-shadow" style="background: white; color:rgba({{chat.session.accent_color}},1); border:2px solid rgba({{chat.session.accent_color}},1);">
     <!-- Pop up of list of Option for User -->
     <div ng-show="chat.menu.options == true">
         <div ng-if="!chat.session.is_directory_chat">
@@ -47,22 +47,22 @@
         </div>
         <div ng-if="!chat.session.is_directory_chat && !chat.session.tag" class="pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'tag', true);">
             <!-- Option to tag the name of the chat box -->
-            <span href="#" class=" glyphicon glyphicon-tag"></span>
+            <span href="#" class="fa fa-tag"></span>
             <span class="cm-chat-user-option">Add Tag</span>
         </div>
         <div ng-if="!chat.session.is_directory_chat && chat.session.tag" class="pointer" ng-click="ui.fx.removeChatTag(chat.session.type, chat.session.session_key);">
             <!-- Option to tag the name of the chat box -->
-            <span href="#" class=" glyphicon glyphicon-tag"></span>
+            <span href="#" class="fa fa-tag"></span>
             <span class="cm-chat-user-option">Remove Tag</span>
         </div>
         <div ng-if="(!chat.session.admin || ux.fx.hasTopicRights(chat.session.session_key)) && !chat.session.topic.length" class="pointer" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'topic', true);">
             <!-- Option to add topic to chat -->
-            <span href="#" class="glyphicon glyphicon-star"></span>
+            <span href="#" class="fa fa-thumb-tack"></span>
             <span class="cm-chat-user-option">Add Topic</span>
         </div>
         <div ng-if="(!chat.session.admin || ux.fx.hasTopicRights(chat.session.session_key)) && chat.session.topic.length" class="pointer" ng-click="ui.fx.removeChatTopic(chat.session.type, chat.session.session_key);">
             <!-- Option to add topic to chat -->
-            <span href="#" class="glyphicon glyphicon-star"></span>
+            <span href="#" class="fa fa-thumb-tack"></span>
             <span class="cm-chat-user-option">Remove Topic</span>
         </div>
         <!--
@@ -81,7 +81,7 @@
             <i href="#" class="fa fa-paint-brush"></i>
             <span class="cm-chat-user-option">Color</span>
         </div>
-        <div class="pointer" ng-click="ui.fx.leaveChat(chat.session.type, chat.session.session_key);">
+        <div ng-if="chat.session.is_group_chat && !chat.session.is_directory_chat" class="pointer" ng-click="ui.fx.leaveChat(chat.session.type, chat.session.session_key);">
             <!-- Option to tag the name of the chat box -->
             <i href="#" class="fa fa-times-circle"></i>
             <span class="cm-chat-user-option">Leave Chat</span>

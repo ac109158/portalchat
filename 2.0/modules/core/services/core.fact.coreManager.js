@@ -33,7 +33,7 @@ angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', 
                 ChatModuleManager.clearBrowserNotificationList();
             },
             'evaluate-chat-module-layout': function() {
-                ChatModuleManager.evaluateChatModuleLayout();
+                UxManager.ux.fx.evaluateChatModuleLayout();
             },
             'register-contact-chat-session': function() {
                 ChatModuleManager.registerContactChatSession();
