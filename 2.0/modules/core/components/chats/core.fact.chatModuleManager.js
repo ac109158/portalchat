@@ -124,6 +124,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                     $timeout(function() {
                         that.evaluateChatModuleLayout();
                         that.addUnloadListener();
+                        that.module.attr.is_page_loaded = true;
                     }, 1000);
                 });
             });
@@ -742,12 +743,12 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
     this.toggleMainPanelMenu = function(menu, value) {
         if (that.module.menu && angular.isDefined(that.module.menu[menu])) {
-            if (that.module.current.contact.chat.menu) {
+            if (that.module.current.contact.chat && that.module.current.contact.chat.menu) {
                 angular.forEach(that.module.current.contact.chat.menu, function(value, key) {
                     that.module.current.contact.chat.menu[key] = false;
                 });
             }
-            if (that.module.current.directory.chat.menu) {
+            if (that.module.current.directory.chat && that.module.current.directory.chat.menu) {
                 angular.forEach(that.module.current.directory.chat.menu, function(value, key) {
                     that.module.current.directory.chat.menu[key] = false;
                 });
@@ -845,6 +846,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
         });
     };
 
+
     this.evaluateChatModuleLayout = function() {
         console.log('layout', SettingsManager.global.layout)
         if (SettingsManager.global.last_panel_tab && that.module.tab.current.index_position != SettingsManager.global.last_panel_tab) {
@@ -872,7 +874,8 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     }
 
     this.setModuleLayout = function(value) {
-        if (angular.isNumber(value)) {
+        if (angular.isNumber(value) && SettingsManager.global.layout != value) {
+            that.toggleMainPanelMenu('settings', false);
             SettingsManager.updateGlobalSetting('layout', value, true);
             $timeout(function() {
                 that.evaluateChatModuleLayout();
@@ -1011,7 +1014,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
     this.setChatAsCurrent = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            if (type === 'directory') {
+            if (type === 'directory' && that.module.current.directory.session_key != session_key) {
                 if (false && ChatStorage[type].chat.list[session_key].messages.list.length > CoreConfig.module.setting.max_message_count) {
                     var i = 0;
                     ChatStorage[type].chat.list[session_key].messages.list = ChatStorage[type].chat.list[session_key].messages.list.slice(-(CoreConfig.module.setting.max_message_count));
@@ -1025,18 +1028,27 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                 if (that.module.current.directory.session_key) {
                     ChatStorage.directory.chat.list[that.module.current.directory.session_key].attr.is_active = false;
                 }
+                UxManager.ux.fx.setMessagesInit(type, session_key);
                 that.module.current.directory.session_key = session_key;
                 that.module.current.directory.stored_session_key = session_key;
                 ChatStorage.directory.chat.list[session_key].attr.is_active = true;
+                ChatStorage.directory.chat.list[session_key].ux.unread = 0;
                 that.module.current.directory.chat = ChatStorage.directory.chat.list[session_key];
+                ChatManager.resetCommonDefaultSettings(type, session_key);
+                $timeout(function() {
+                    UxManager.ux.fx.evaluateChatModuleLayout();
+                    ChatManager.scrollChatToBottom(type, session_key);
+                }, 250);
             }
-            if (type === 'contact') {
+            if (type === 'contact' && that.module.current.contact.session_key != session_key) {
                 if (that.module.current.contact.session_key) {
                     ChatStorage.contact.chat.list[that.module.current.contact.session_key].attr.is_active = false;
                 }
+                UxManager.ux.fx.setMessagesInit(type, session_key);
                 that.module.current.contact.session_key = session_key;
                 that.module.current.contact.stored_session_key = session_key;
                 ChatStorage[type].chat.list[session_key].attr.is_active = true;
+                ChatStorage[type].chat.list[session_key].ux.unread = 0;
                 ChatStorage[type].chat.list[session_key].session.last_read_priority = ChatStorage[type].chat.list[session_key].priority.next - 1;
                 that.module.current.contact.chat = ChatStorage[type].chat.list[session_key];
                 console.log(that.module.current.contact)
@@ -1046,12 +1058,13 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
                     ChatStorage[type].chat.list[session_key].session.active = true;
                     SessionsManager.setContactChatOrderMap();
                 }
+                $timeout(function() {
+                    UxManager.ux.fx.evaluateChatModuleLayout();
+                    ChatManager.scrollChatToBottom(type, session_key);
+                }, 250);
             }
-            ChatManager.resetCommonDefaultSettings(type, session_key);
-            $timeout(function() {
-                UxManager.ux.fx.evaluateChatModuleLayout();
-                ChatManager.scrollChatToBottom(type, session_key);
-            }, 250);
+
+
         }
     };
 

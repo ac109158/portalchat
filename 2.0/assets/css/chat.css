@@ -1,8 +1,8 @@
 .fade-in {
-    -webkit-animation: fadeIn .5s;
-    -moz-animation: fadeIn .5s;
-    -ms-animation: fadeIn .5s;
-    animation: fadeIn .5s;
+    -webkit-animation: slideInRight .5s;
+    -moz-animation: slideInRight .5s;
+    -ms-animation: slideInRight .5s;
+    animation: slideInRight .5s;
     -vendor-animation-iteration-count: 1;
 }
 .search-field input {
@@ -32,6 +32,10 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.top-divider {
+    border-top: 2px solid black;
 }
 
 .no-select {
@@ -275,7 +279,6 @@ ul.nav.nav-tabs a:hover {
 }
 
 #cm-main-panel-nav {
-    margin-top:2px;
     position: relative;
     padding-bottom: 5px;
     background: rgba(255, 255, 255, 0.2);
@@ -401,6 +404,15 @@ ul.nav.nav-tabs a:hover {
     min-height: 50px;
     z-index: 9;
     color:black;
+    border: 1px solid grey;
+    background: #eeeeee; /* Old browsers */
+    background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eeeeee), color-stop(100%,#cccccc)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* IE10+ */
+    background: linear-gradient(to bottom, #eeeeee 0%,#cccccc 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 ); /* IE6-9 */
 }
 
 .cm-chat-setting-menu {
@@ -464,6 +476,7 @@ ul.nav.nav-tabs a:hover {
     padding: 0;
     margin: 0;
     display: block;
+    resize: vertical;
 }
 
 #cm-main-panel-lower-panel {
@@ -647,6 +660,17 @@ ul.nav.nav-tabs a:hover {
     margin: 0;
     padding: 0;
     width: 100%;
+}
+
+#cm-main-panel-recent-list {
+    background: #eeeeee; /* Old browsers */
+    background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eeeeee), color-stop(100%,#cccccc)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* IE10+ */
+    background: linear-gradient(to bottom, #eeeeee 0%,#cccccc 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 ); /* IE6-9 */
 }
 
 #cm-main-panel-contacts-list {
@@ -834,6 +858,8 @@ ul.nav.nav-tabs a:hover {
     bottom: 0px;
     width: 100%;
     padding: 0;
+    min-height: 150px;
+    height:auto;
     padding-top: 37px;
     background: #f4f4f4;
     overflow-y: scroll;
@@ -984,8 +1010,6 @@ ul.nav.nav-tabs a:hover {
     position: relative;
     float: left;
     margin: 0;
-    width: auto;
-    max-width: 230px;
     padding: 0px 0px 5px 0px;
     min-height: 40px;
     margin-left: 40px;
@@ -997,8 +1021,6 @@ ul.nav.nav-tabs a:hover {
 .cm-chat-message-user-content-wrapper-ext {
     position: relative;
     float: left;
-    width: auto;
-    max-width: 230px;
     margin: 0;
     padding: 0;
     min-height: 20px;
@@ -1011,8 +1033,6 @@ ul.nav.nav-tabs a:hover {
     position: relative;
     float: right;
     margin: 0;
-    width: auto;
-    max-width: 230px;
     padding: 0px 0px 5px 0px;
     min-height: 40px;
     margin-right: 40px;
@@ -1024,7 +1044,6 @@ ul.nav.nav-tabs a:hover {
     position: relative;
     float: right;
     width: auto;
-    max-width: 230px;
     margin: 0;
     padding: 0;
     min-height: 20px;

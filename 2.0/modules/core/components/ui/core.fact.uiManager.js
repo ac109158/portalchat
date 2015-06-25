@@ -182,42 +182,6 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         }
     };
 
-    this.ui.fx.switchChatModuleLayout = function(layout) {
-        if (layout === 3 && ChatModuleManager.chat.contact.list.length === 0 || layout === SettingsManager.global.layout) {
-            return false;
-        }
-        $rootScope.$evalAsync(function() {
-            that.ux.module.state.is_setting_layout = true;
-            SettingsManager.updateGlobalSetting('layout', layout);
-            if (layout === 2) {
-                $timeout(function() {
-                    if (ChatModuleManager.directory.chat.marker.index != "contacts") {
-                        $document.getElementById(ChatModuleManager.directory.chat.marker.index + '_link').click();
-                    }
-                    that.ui.fx.setModuleLayout();
-                    that.ux.module.state.is_setting_layout = false;
-                }, 500);
-            } else if (layout === 3) {
-                $timeout(function() {
-                    if (!ChatModuleManager.module.current.chat) {
-                        ChatModuleManager.setDirectoryChat(ChatModuleManager.directory.chat.marker.stored_index || 0, true);
-                    }
-                    $document.getElementById(ChatModuleManager.directory.chat.marker.index + '_link').click();
-                    that.ux.module.state.is_setting_layout = false;
-                }, 500);
-            } else if (layout === 1) {
-                $timeout(function() {
-                    if (ChatModuleManager.directory.chat.marker.stored_index === 'contacts') {
-                        ChatModuleManager.setContactsFocus();
-                    } else {
-                        ChatModuleManager.setDirectoryChatFocus(ChatModuleManager.directory.chat.marker.stored_index);
-                    }
-                    that.ux.module.state.is_setting_layout = false;
-                }, 250);
-            }
-        });
-    };
-
     this.ui.fx.resetDirectoryChatListMarkers = function() {
         ChatModuleManager.resetDirectoryChatListMarkers();
     };

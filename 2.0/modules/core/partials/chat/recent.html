@@ -1,14 +1,10 @@
-<div style="position:absolute; margin: 0; padding: 0; left: 0; right: 0; top:0; bottom: 20px; pointer-events:all;">
+<div style="position:absolute; width: 100%; margin: 0; padding: 0; top: 0; bottom: 0; pointer-events:all;">
     <div class="cm-main-label-decal one-edge-shadow">
         <div ng-class="{'cm-label-decal-description': ux.platform.browser  == 'Firefox','cm-label-decal-description-inset': ux.platform.browser  != 'Firefox'}">
             <h4>Recent Converstions</h4>
         </div>
-        <div style="position:absolute; top: 0; right: 0; width: 12px; height: 12px; z-index: 1;">
-            <div ng-if="module.global.layout == 1 && module.chats.contact.chat.count" ng-click="ui.fx.setModuleLayout(2)" class="fa fa-expand pointer"></div>
-            <div ng-if="module.global.layout == 2" ng-click="ui.fx.setModuleLayout(1)" class="fa fa-compress pointer"></div>
-        </div>
     </div>
-    <div style="position:relative; display: block; max-height: 96%; height: 96%; overflow-y: auto; overflow-x: hidden;">
+    <div id="cm-main-panel-recent-list" style="position:absolute; top:45px; left: 0; right: 0; bottom: 5px; overflow-y: auto; overflow-x: hidden;">
         <div ng-repeat="chat in module.chats.contact.chat.list | toArray | orderBy: 'session.timestamp': true">
             <div ng-click="ui.fx.setChatAsCurrent(chat.session.type, chat.session.session_key);" class="cm-main-panel-recent-contact">
                 <div ng-if="!chat.session.is_group_chat">

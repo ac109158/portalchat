@@ -3,7 +3,7 @@
         <!--        <div directory-item-scroll="isLastUnread($index) || isDirectoryItem($index)" ng-repeat="chat in activeChats track by $index"> -->
         <div ng-repeat="contact_chat in module.chats.contact.chat.list | orderObjectBy: 'session.order'">
             <div ng-if="contact_chat.session.active" class="cm-main-panel-tracker-chat">
-                <div ng-click="ui.fx.setChatAsCurrent(contact_chat.session.type, contact_chat.session.session_key)" class="cm-main-panel-tracker-chat-content" ng-class="{'cm-main-panel-tracker-active-chat': contact_chat.attr.is_active, 'cm-main-panel-tracker-new-chat': contact_chat.ux.unread}">
+                <div ng-click="contact_chat.attr.is_init = false; ui.fx.setChatAsCurrent(contact_chat.session.type, contact_chat.session.session_key); contact_chat.attr.is_init = true;" class="cm-main-panel-tracker-chat-content" ng-class="{'cm-main-panel-tracker-active-chat': contact_chat.attr.is_active, 'cm-main-panel-tracker-new-chat': contact_chat.ux.unread}">
                     <i ng-if="!contact_chat.session.is_group_chat" class=" cm-main-panel-tracker-icons fa fa-user"></i>
                     <i ng-if="contact_chat.session.is_group_chat" class=" cm-main-panel-tracker-icons fa fa-comments"></i>
                     <div ng-if="!contact_chat.session.is_group_chat"><i ng-show="contact_chat.signals.contact.is_typing" class="fa fa-spinner fa-1x fa-pulse cm-main-panel-tracker-typing"></i></div>

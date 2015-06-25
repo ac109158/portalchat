@@ -164,7 +164,7 @@
     <!-- End of Upper Chat header -->
     <div class="cm-contact-chat-panel one-edge-shadow min-scroll" ng-click="ui.fx.resetDefaultSettings(chat.session.type, chat.session.session_key);" style="border: 2px solid rgb({{chat.session.accent_color}});">
         <!-- Start of messages for an individual chat  -->
-        <div id="list:{{chat.session.session_key}}" class="cm-contact-message-list" scroll-to-bottom="chat.scroll.to_bottom" stick-to-bottom="chat.attr.is_bottom_lock" ng-class="{'fade-in': chat.attr.is_init}" ng-init="chat.attr.is_init = false; chat.attr.is_init = true;">
+        <div id="list:{{chat.session.session_key}}" class="cm-contact-message-list" scroll-to-bottom="chat.scroll.to_bottom" stick-to-bottom="chat.attr.is_bottom_lock" ng-class="{'fade-in': chat.attr.is_init}">
             <div ng-repeat="message in chat.messages.list track by $index" style="position:relative; display: block; width: 100%; clear:both;">
                 <div ng-init="message.html = ux.fx.getMessageHtml(chat.session.type, chat.session.session_key, message);" dynamic="message.html"></div>
                 <div class="clearfix"></div>

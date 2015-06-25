@@ -1,4 +1,4 @@
-<div class="cm-main-panel-content">
+<div class="cm-main-panel-content" ng-class="{'fade-in': module.contact_list.is_init}" ng-init="module.contact_list.is_init = false; module.contact_list.is_init = true;">
     <div class="cm-main-panel-label" style="top:-5px; padding:0px;">
         <div class="cm-main-label-decal one-edge-shadow">
             <div ng-class="{'cm-label-decal-description': ux.platform.browser == 'Firefox','cm-label-decal-description-inset': ux.platform.browser != 'Firefox'}" style="font-size:1.5em">
