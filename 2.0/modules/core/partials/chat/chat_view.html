@@ -8,13 +8,19 @@
                 <!-- <img style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/> -->
                 <img class="pointer" style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="{{module.contact_list.setting.default_avatar}}" width=35 height=35/>
                 <span style="margin-left:5px; line-height:20px;" ng-bind="module.user.profile.name"></span>
-                <span style="background:white; width:100px; border-radius:10px; margin-left:10px; padding:2px 5px; text-align:center; font-weight:bold; font-size:.8em;" ng-class="{'Busy' : module.user.profile.presence.state != 'Online' && module.user.profile.presence.state != 'Offline' && module.user.profile.online == true ,'Offline' : module.user.profile.online == false || module.user.profile.presence.state == 'Offline','Online' : module.user.profile.presence.state == 'Online' && module.user.profile.online == true}">{{module.user.profile.presence.state}}</span>
                 <div class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.closeChatModule();">
                     <center><span class="fa fa-times fa-1x"></span></center>
                 </div>
                 <div class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.toggleMainPanelMenu('setting');">
                     <center><span class="fa fa-cog"></span></center>
                 </div>
+            </div>
+            <div ng-if="module.user.profile.presence.state != 'Online'" style="position:relative; width: 100%; clear: both; height: 20px; margin-bottom: 2px;" class="one-edge-shadow">
+                <div style="position: absolute; top:2px; left: 2px; width:  width 40px;">
+                    <div ng-class="{'cm-label-decal-description': ux.platform.browser  == 'Firefox','cm-label-decal-description-inset': ux.platform.browser  != 'Firefox'}">{{module.user.profile.presence.state}}</div>
+                </div>
+                <!-- <span style="background:white; width:100px; border-radius:10px; margin-left:2px; padding:2px; text-align:center; font-weight:bold; font-size:.8em;" ng-class="{'Busy' : module.user.profile.presence.state != 'Online' && module.user.profile.presence.state != 'Offline' && module.user.profile.online == true ,'Offline' : module.user.profile.online == false || module.user.profile.presence.state == 'Offline','Online' : module.user.profile.presence.state == 'Online' && module.user.profile.online == true}">{{module.user.profile.presence.state}}</span> -->
+                <div style="position: absolute; top:2px; left: 45px; right: 5px; font-size: .9em; width: auto; text-align: center; color: red;"><span clas="pull-center" ng-bind="module.user.profile.presence.message"></span></div>
             </div>
             <div id="cm-main-panel-header-panel">
                 <div ng-show="module.menu.setting" style="position:absolute; right:0;">
@@ -32,6 +38,7 @@
                         <recent-chats ng-if="!module.current.contact.session_key"></recent-chats>
                         <div class="clearfix"></div>
                     </div>
+                    <cm-vertical-adust ng-if="module.global.layout == 2"></cm-vertical-adust>
                     <chat-module-nav-panel></chat-module-nav-panel>
                 </div>
                 <div id="cm-main-panel-lower-panel">

@@ -13,6 +13,8 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
 
     this.ux.main_panel = {};
 
+    this.ux.main_panel.split_height = (window.innerHeight / 2) - 125;
+
     this.ux.main_panel.header = {};
 
     this.ux.main_panel.content = {};
@@ -33,30 +35,25 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
 
     this.setChatModuleSectionHeights = function() {
         if (document.getElementById('cm-main-panel')) {
-            $timeout(function() {
+            $rootScope.$evalAsync(function() {
                 that.ux.main_panel.height = window.innerHeight;
                 that.ux.main_panel.width = parseInt(CoreConfig.module.setting.main_panel.width) + parseInt(SettingsManager.global.panel_width_adjust);
                 that.ux.main_panel.header.height = document.getElementById('cm-main-panel-header').offsetHeight;
                 that.ux.main_panel.content.wrapper.height = that.ux.main_panel.height - that.ux.main_panel.header.height;
-                that.ux.main_panel.split_height = (that.ux.main_panel.content.wrapper.height / 2) - (document.getElementById('cm-main-panel-tracker').offsetHeight) - 100;
                 that.ux.main_panel.content.wrapper.upper_panel.height = document.getElementById('cm-main-panel-upper-panel').offsetHeight;
                 that.ux.main_panel.content.wrapper.lower_panel.height = that.ux.main_panel.content.wrapper.height - that.ux.main_panel.content.wrapper.upper_panel.height;
-                $rootScope.$evalAsync(function() {
-                    document.getElementById('cm-main-panel').style.height = that.ux.main_panel.height + "px";
-                    document.getElementById('cm-main-panel-content-wrapper').style.height = that.ux.main_panel.content.wrapper.height + "px";
-                    document.getElementById('cm-main-panel-lower-panel').style.height = that.ux.main_panel.content.wrapper.lower_panel.height + "px";
+                
+                document.getElementById('cm-main-panel').style.height = that.ux.main_panel.height + "px";
+                document.getElementById('cm-main-panel-content-wrapper').style.height = that.ux.main_panel.content.wrapper.height + "px";
+                document.getElementById('cm-main-panel-lower-panel').style.height = that.ux.main_panel.content.wrapper.lower_panel.height + "px";
 
-                    if (document.getElementById("cm-main-panel-contacts-list")) {
-                        that.ux.main_panel.content.wrapper.lower_panel.contacts_list.top = document.getElementById("cm-main-panel-contacts-list").offsetTop;
-                        that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height = that.ux.main_panel.content.wrapper.lower_panel.height - that.ux.main_panel.content.wrapper.lower_panel.contacts_list.top - 8;
-                        document.getElementById("cm-main-panel-contacts-list").style.height = that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height + "px";
-                    }
-                });
-                if (SettingsManager.global.layout === 2 && document.getElementById("cm-main-panel-recent-list")) {
-                    document.getElementById("cm-main-panel-recent-list").style.height = '93.5%';
+                if (document.getElementById("cm-main-panel-contacts-list")) {
+                    that.ux.main_panel.content.wrapper.lower_panel.contacts_list.top = document.getElementById("cm-main-panel-contacts-list").offsetTop;
+                    that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height = that.ux.main_panel.content.wrapper.lower_panel.height - that.ux.main_panel.content.wrapper.lower_panel.contacts_list.top - 8;
+                    document.getElementById("cm-main-panel-contacts-list").style.height = that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height + "px";
                 }
-                if (SettingsManager.global.layout === 2 && document.getElementById("cm-main-panel-recent-list")) {
-                    document.getElementById("cm-main-panel-recent-list").style.height = that.ux.main_panel.split_height - 50 + "px";
+                if(SettingsManager.global.layout === 2){
+                    document.getElementById('cm-vertical-adjuster').style.top = document.getElementById('cm-main-panel-nav').offsetTop - 5 + 'px';
                 }
             });
         }
@@ -104,10 +101,10 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
 
     this.ux.fx.evaluateChatModuleLayout = function() {
         that.setChatModuleSectionHeights();
-        if(SettingsManager.global.layout === 1){
+        if (SettingsManager.global.layout === 1) {
             that.ux.main_panel.content.wrapper.upper_panel.nav.width = '25%';
         }
-        if(SettingsManager.global.layout === 2){
+        if (SettingsManager.global.layout === 2) {
             that.ux.main_panel.content.wrapper.upper_panel.nav.width = '33%';
         }
     };
@@ -225,13 +222,13 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             html += '</div>';
         }
         if (config.different_author || config.time_lapse) {
-            html += '<div class="cm-chat-message-user-content-wrapper-full cm-chat-message-author-break" style="background-color:rgba({{chat.session.primary_color}}, .4); color:rgba({{chat.session.primary_color}}, 1); border: 2px solid rgba({{chat.session.primary_color}}, 1); max-width:{{ux.main_panel.width-70}}px;">';
+            html += '<div class="cm-chat-message-user-content-wrapper-full cm-chat-message-author-break" style="background-color:rgba({{chat.session.primary_color}}, .4); color:rgba(0,0,0, .8); border: 2px solid rgba({{chat.session.primary_color}}, 1); max-width:{{ux.main_panel.width-70}}px;">';
             html += '<div class="cm-chat-message-user-header-bar" style="background-color:rgba({{chat.session.primary_color}}, 1);">';
             html += '<span style="margin-right: 20px;" class="pull-left" ng-bind="chat.user.self_name"></span>';
             html += '<span class="pull-right" ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
             html += '</div>';
         } else {
-            html += '<div class="cm-chat-message-user-content-wrapper-ext cm-chat-message-author-break" style="background-color:rgba({{chat.session.primary_color}}, .4); color:rgba({{chat.session.primary_color}}, 1); border: 2px solid rgba({{chat.session.primary_color}}, 1); max-width:{{ux.main_panel.width-70}}px;">';
+            html += '<div class="cm-chat-message-user-content-wrapper-ext cm-chat-message-author-break" style="background-color:rgba({{chat.session.primary_color}}, .4); color:rgba(0,0,0, .8);  border: 2px solid rgba({{chat.session.primary_color}}, 1); max-width:{{ux.main_panel.width-70}}px;">';
             if (config.minute_from_last) {
                 html += '<div class="no-select cm-contact-chat-extend-timestamp">';
                 html += '<span ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
@@ -273,13 +270,13 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             html += '</div>';
         }
         if (config.different_author || config.time_lapse) {
-            html += '<div class="cm-chat-message-contact-content-wrapper-full cm-chat-message-author-break"  style="background-color:rgba({{chat.session.other_color}}, .4); color:rgba({{chat.session.other_color}}, 1); border:2px solid rgba({{chat.session.other_color}}, 1); max-width:{{ux.main_panel.width-70}}px;">';
+            html += '<div class="cm-chat-message-contact-content-wrapper-full cm-chat-message-author-break"  style="background-color:rgba({{chat.session.other_color}}, .4); color:rgba(0,0,0, .8);  border:2px solid rgba({{chat.session.other_color}}, 1); max-width:{{ux.main_panel.width-70}}px;">';
             html += '<div class="cm-chat-message-contact-header-bar" style=" background-color:rgba({{chat.session.other_color}}, 1);">';
             html += '<span style="margin-right: 20px;" class="pull-left">' + config.contact.name + '</span>';
             html += '<span class="pull-right" ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
             html += '</div>';
         } else {
-            html += '<div class="cm-chat-message-contact-content-wrapper-ext cm-chat-message-author-break" style="background-color:rgba({{chat.session.other_color}}, .4); color:rgba({{chat.session.other_color}}, 1); border:2px solid rgba({{chat.session.other_color}}, 1); max-width:{{ux.main_panel.width-70}}px;">';
+            html += '<div class="cm-chat-message-contact-content-wrapper-ext cm-chat-message-author-break" style="background-color:rgba({{chat.session.other_color}}, .4); color:rgba(0,0,0, .8);  border:2px solid rgba({{chat.session.other_color}}, 1); max-width:{{ux.main_panel.width-70}}px;">';
             if (config.minute_from_last) {
                 html += '<div class="no-select cm-contact-chat-extend-timestamp">';
                 html += '<span ng-bind="message.timestamp | ' + config.message_time_format + '"></span>';
@@ -372,6 +369,22 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         message.author_is_self = false;
         return;
     };
+
+    this.setVerticalAdjust = function(vertical_adjust) {
+        if (vertical_adjust > 0) {
+            if (vertical_adjust < 600 && vertical_adjust > 300) {
+                $rootScope.$evalAsync(function() {
+                    that.ux.main_panel.split_height = vertical_adjust;
+                    document.getElementById('cm-vertical-adjuster').style.top = document.getElementById('cm-main-panel-nav').offsetTop - 5  + 'px';
+                });
+            }
+        }
+        that.setChatModuleSectionHeights();
+        return true;
+    }
+
+
+
     this.ux.colors = [
         '210, 77, 87',
         '242, 38, 19',

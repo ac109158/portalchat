@@ -1,100 +1,84 @@
-<div id="cm-user-profile" class="min-scroll" style="border:2px solid rgb({{chat.session.accent_color}}); background: rgba({{chat.session.accent_color}}, .4);">
+<div id="cm-user-profile" class="cm-main-gradient min-scroll" style="border:2px solid rgb({{chat.session.accent_color}});">
     <div style="position:relative; display: block; width: 100%; clear: both; height:25px; margin-bottom: 10px;">
-        <div ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'profile', false);" class="btn btn-default btn-xs slim" style="position: absolute; top: 2px; right: 2px;"><span class="glyphicon glyphicon-remove" style="color:red;"></span></div>
-        <legend>Contact Profile</legend>
+        <div style="position: absolute; top: 2px; right: 5px;" ng-click="ui.fx.toggleChatMenu(chat.session.type, chat.session.session_key, 'profile', false);"><span class="glyphicon glyphicon-remove pointer"></span></div>
+        <div class="cm-main-label-decal one-edge-shadow">
+            <div ng-class="{'cm-label-decal-description': ux.platform.browser  == 'Firefox','cm-label-decal-description-inset': ux.platform.browser  != 'Firefox'}">
+                <span style="font-weight: bold; font-size: 1.5em;">Profile</span>
+            </div>
+        </div>
     </div>
-    <div style="width:100%; display:block; min-height:20px;">
+    <div style="position:relative; width:100%; display:block; min-height:20px; padding-bottom: 5px; margin-bottom:" class="one-edge-shadow">
         <div style="width:40%; padding:2px; float:left">
-            <!-- <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="/components/com_callcenter/images/avatars/{{avatar}}-90.jpg" alt="..."> -->
-            <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px;" ng-src="{{chat.contact.profile.avatar_url}}" alt="...">
+            <img class="thumbnail one-edge-shadow" style="; clear:none; width:100%; height:100%; max-width:100%; max-height:100%; margin:0px; font-size: 1.2em" ng-src="{{chat.contact.profile.avatar_url}}" alt="...">
         </div>
-        <div <div style="width:60%; padding:4px; float:left">
-            <div class="well well-sm well-slim">
-                <span class="cm-profile-span pointer" ng-bind="chat.contact.profile.name"></span>
-                <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.role">{{chat.contact.additional_profile.role}}</span>
-                <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.pc" style="font-size:.8em;">PC: {{chat.contact.additional_profile.pc.name}}<br></span>
-                <span class="cm-profile-span pointer" ng-show="chat.contact.additional_profile.mc" style="font-size:.8em;">MC: {{chat.contact.additional_profile.mc.name}}<br></span>
+        <div style="position: relative; width:60%; padding:4px; float:left">
+            <div class="cm-label-decal-description" ng-bind="chat.contact.profile.name" style="font-size: 1.1em;"></div>
+            <div class="cm-label-decal-description" ng-bind="chat.contact.additional_profile.role"></div>
+            <div ng-show="chat.contact.additional_profile.pc" class="cm-label-decal-description" ng-bind="'PC: ' + chat.contact.additional_profile.pc.name"></div>
+            <div ng-show="chat.contact.additional_profile.mc" class="cm-label-decal-description" ng-bind="'MC: ' + chat.contact.additional_profile.mc.name"></div>
+        </div>
+        <div class="clearfix"></div>
+        <div ng-if="chat.contact.profile.presence.chat-presence != 'Online'" style="position:relative; width: 100%; clear: both; height: 20px; margin-bottom: 2px;">
+            <div style="position: absolute; top:2px; left: 2px; width:  width 40px;">
+                <div class="cm-label-decal-description">{{chat.contact.profile.presence.state}}</div>
             </div>
+            <div style="position: absolute; top:2px; left: 45px; right: 5px; font-size: .9em; width: auto; text-align: center; color: red;"><span clas="pull-center" ng-bind="chat.contact.profile.presence.message"></span></div>
         </div>
     </div>
-    <div style="width:100%; display:block; float:left; padding:2px; margin-top:2px;">
-        <div class="well well-sm well-slim">
-            <span class="cm-profile-span-label">Phone</span>
-            <span class="cm-profile-span pointer">{{chat.contact.additional_profile.phone}}</span>
-            <span class="cm-profile-span-label">Email</span>
-            <span class="cm-profile-span pointer">{{chat.contact.additional_profile.email}}</span>
+    <div style="width:100%; display:block; float:left; padding:2px; margin-top:2px; font-size: 1.1em;">
+        <div style="position:relative; width: 100%; clear: both; height: 20px; margin-bottom: 2px;">
+            <div style="position: absolute; top:2px; left: 2px; width:  width 40px;">
+                <div class="cm-label-decal-description">Phone</div>
+            </div>
+            <div style="position: absolute; top:2px; left: 45px; right: 5px;  width: auto; text-align: center; font-size: .9em;"><span  ng-bind="chat.contact.additional_profile.phone || ''"></span></div>
         </div>
-        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-            <div class="panel panel-default" ng-show="chat.contact.profile.online && chat.contact.additional_profile.city && chat.contact.additional_profile.state || chat.contact.profile.online && chat.contact.additional_profile.checkInTime">
-                <div class="panel-heading slim" role="tab" id="headingOne" style="margin: 0px; padding: 2px;">
-                    <h4 class="panel-title slim" style="margin: 0px; padding: 2px;">
-                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-controls="collapseOne" style="margin: 0px; padding: 2px;">
-                              Sign In
-                            </a>
-                          </h4>
-                </div>
-                <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne" style="margin: 0px; padding: 2px;">
-                    <div class="panel-body" style="margin: 0px; padding: 2px;">
-                        <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.city && chat.contact.additional_profile.state" class="cm-profile-span">{{chat.contact.additional_profile.city +', ' + chat.contact.additional_profile.state}}</span>
-                        <span ng-show="chat.contact.additional_profile.office" class="cm-profile-span">{{chat.contact.additional_profile.office}}</span>
-                        <span ng-show="chat.contact.additional_profile.checkInTime" ng-show="chat.contact.additional_profile.checkInTime" class="cm-profile-span">{{chat.contact.additional_profile.checkInTime | date:'MM/dd @ h:mma'}}</span>
-                    </div>
-                </div>
+        <div style="position:relative; width: 100%; clear: both; height: 20px; margin-bottom: 2px;">
+            <div style="position: absolute; top:2px; left: 2px; width:  width 40px;">
+                <div class="cm-label-decal-description">Email</div>
             </div>
-            <div class="panel panel-default" style="margin: 0px; padding: 2px;" ng-show="!chat.contact.profile.online && chat.contact.additional_profile.city && chat.contact.additional_profile.state || !chat.contact.profile.online && chat.contact.additional_profile.checkOutTime">
-                <div class="panel-heading" role="tab" id="headingTwo" style="margin: 0px; padding: 2px;">
-                    <h4 class="panel-title" style="margin: 0px; padding: 2px;">
-                                <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                  Sign Out
-                                </a>
-                              </h4>
-                </div>
-                <div id="collapseTwo" class="panel-collapse collapse" style="margin: 0px; padding: 2px;" role="tabpanel" aria-labelledby="headingTwo">
-                    <div class="panel-body" style="margin: 0px; padding: 2px;">
-                        <span ng-repeat="color in ux.colors track by $index" href="#" class="fa fa-square pointer" style="color:rgb({{color}});" ng-click="chat.session.primary_color = color"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="panel panel-default" ng-if="ux.fx.hasAdminRights()" style="margin: 0px; padding: 2px;">
-                <div class="panel-heading" style="margin: 0px; padding: 2px;" role="tab" id="headingThree">
-                    <h4 class="panel-title" style="margin: 0px; padding: 2px;">
-                                <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                  Platform
-                                </a>
-                              </h4>
-                </div>
-                <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
-                    <div class="panel-body" style="margin: 0px; padding: 2px;">
-                        <div ng-show="chat.contact.additional_profile.platform" class="well well-sm well-slim">
-                            <span class="cm-profile-span-label">Platform</span>
-                            <span class="cm-profile-span">Browser: {{chat.contact.additional_profile.platform.browser + ' | ' + chat.contact.additional_profile.platform.browserVersion}}</span>
-                            <span class="cm-profile-span">Operating System: {{chat.contact.additional_profile.platform.os + ' | ' +  chat.contact.additional_profile.platform.osVersion}}</span>
-                            <span class="cm-profile-span">Flash: {{chat.contact.additional_profile.platform.flashVersion == 'no check' ? 'N/A' : chat.contact.additional_profile.platform.flashVersion}}</span>
-                            <span class="cm-profile-span">Cookies: {{chat.contact.additional_profile.platform.cookies == true ? 'Enabled' : 'Disabled'}}</span>
-                            <span ng-if="!chat.contact.additional_profile.platform.mobile" class="cm-profile-span">Device: {{'Computer' + ' | ' + chat.contact.additional_profile.platform.screen}}</span>
-                            <span ng-if="chat.contact.additional_profile.platform.mobile" class="cm-profile-span">Device: {{'Mobile | ' + chat.contact.additional_profile.platform.screen}}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="panel panel-default" style="margin: 0px; padding: 2px;" ng-if="ux.fx.hasAdminRights()">
-                <div class="panel-heading" style="margin: 0px; padding: 2px;" role="tab" id="headingFive">
-                    <span class="panel-title" style="margin: 0px; padding: 2px;">
-                        <a class="collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
-                          ISP
-                        </a>
-                      </span>
-                </div>
-                <div id="collapseFive" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFive" style="margin: 0px; padding: 2px;">
-                    <div class="panel-body" style="margin: 0px; padding: 2px;">
-                        <span ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.isp" class="cm-profile-span">ISP: {{chat.contact.additional_profile.isp}}</span>
-                        <div ng-show="chat.contact.additional_profile.lng != null && chat.contact.additional_profile.lat != null" class="well well-sm well-slim">
-                            <img ng-src="https://maps.googleapis.com/maps/api/staticmap?center={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&markers={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&zoom=8&size=300x300&sensor=false" style="max-width:100%; max-height:100%;" alt="Aproximate location of your internet connection">
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div style="position: absolute; top:2px; left: 45px; right: 5px;  width: auto; text-align: center; font-size: .9em;"><span  ng-bind="chat.contact.additional_profile.email || ''"></span></div>
         </div>
+        <div ng-show="chat.contact.profile.online && chat.contact.additional_profile.city && chat.contact.additional_profile.state || chat.contact.profile.online && chat.contact.additional_profile.checkInTime" style="position:relative; display:block; width: 100%; clear: both; min-height: 20px; margin-bottom: 2px; padding-bottom: 3px;" class="one-edge-shadow">
+            <div style="position: relative; top:2px; left: 2px; width 40px; float: left;">
+                <div class="cm-label-decal-description">Sign In</div>
+            </div>
+            <div style="position:relative; display: block; float: right; top:2px; min-height:20px; width: 180px; margin: 0 auto; font-size: .9em;">
+                <div class="clearfix row" ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.city && chat.contact.additional_profile.state"><span style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-bind="chat.contact.additional_profile.city + ', ' + chat.contact.additional_profile.state"></span></div>
+                <div class="clearfix row" ng-show="chat.contact.additional_profile.office"><span style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-bind="chat.contact.additional_profile.office"></span></div>
+                <div class="clearfix row" ng-show="chat.contact.additional_profile.checkInTime"><span style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-bind="chat.contact.additional_profile.checkInTime | date:'MM/dd @ h:mma'"></span></div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+
+        <div ng-show="!chat.contact.profile.online && chat.contact.additional_profile.city && chat.contact.additional_profile.state || !chat.contact.profile.online && chat.contact.additional_profile.checkOutTime" style="position:relative; display:block; width: 100%; clear: both; min-height: 20px; margin-bottom: 2px; padding-bottom: 3px;" class="one-edge-shadow">
+            <div style="position: relative; top:2px; left: 2px; width 40px; float: left;">
+                <div class="cm-label-decal-description">Sign Out</div>
+            </div>
+            <div style="position:relative; display: block; float: right; top:2px; min-height:20px; width: 180px; margin: 0 auto; font-size: .9em;">
+                <div class="clearfix row" ng-show="!chat.contact.additional_profile.office && chat.contact.additional_profile.city && chat.contact.additional_profile.state"><span style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-bind="chat.contact.additional_profile.city + ', ' + chat.contact.additional_profile.state"></span></div>
+                <div class="clearfix row" ng-show="chat.contact.additional_profile.office"><span style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-bind="chat.contact.additional_profile.office"></span></div>
+                <div class="clearfix row" ng-show="chat.contact.additional_profile.checkOutTime"><span style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-bind="chat.contact.additional_profile.checkOutTime | date:'MM/dd @ h:mma'"></span></div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+
+        <div ng-if="ux.fx.hasAdminRights() && chat.contact.additional_profile.platform" style="position:relative; display:block; width: 100%; clear: both; min-height: 20px; margin-bottom: 2px; padding-bottom: 3px;" class="one-edge-shadow">
+        <span class="cm-label-decal-description">Platform</span>
+            <div style="position:relative; display: block; float: right; top:2px; min-height:20px; width: 100%; margin: 0 auto; font-size: .9em;">
+                <div class="clearfix row"><span class="truncated" style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-bind="'Browser: ' + chat.contact.additional_profile.platform.browser + ' | ' + chat.contact.additional_profile.platform.browserVersion"></span></div>
+                <div class="clearfix row"><span class="truncated" style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-bind="'Operating System: ' + chat.contact.additional_profile.platform.os + ' | ' +  chat.contact.additional_profile.platform.osVersion"></span></div>
+                <div class="clearfix row"><span class="truncated" style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-show="chat.contact.additional_profile.platform.flashVersion" ng-bind="'Flash: ' + chat.contact.additional_profile.platform.flashVersion"></span></div>
+                <div class="clearfix row"><span class="truncated" style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-show="!chat.contact.additional_profile.platform.mobile" ng-bind="'Cookies: ' + (chat.contact.additional_profile.platform.cookies == true ? 'Enabled' : 'Disabled')"></span></div>
+                <div class="clearfix row"><span class="truncated" style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-show="!chat.contact.additional_profile.platform.mobile" ng-bind="'Device: Computer' + ' | ' + chat.contact.additional_profile.platform.screen"></span></div>
+                <div class="clearfix row"><span class="truncated" style="position: relative; display: block; width: 100%; text-align: center; margin: 0px auto;" ng-show="chat.contact.additional_profile.platform.mobile" ng-bind="'Device: Mobile | ' + chat.contact.additional_profile.platform.screen"></span></div>
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <span ng-if="ux.fx.hasAdminRights() && !chat.contact.additional_profile.office && chat.contact.additional_profile.isp" class="cm-label-decal-description">ISP: {{chat.contact.additional_profile.isp}}</span>
+        <div ng-show="chat.contact.additional_profile.lng != null && chat.contact.additional_profile.lat != null" class="well well-sm well-slim">
+            <img ng-src="https://maps.googleapis.com/maps/api/staticmap?center={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&markers={{chat.contact.additional_profile.lat}},{{chat.contact.additional_profile.lng}}&zoom=8&size=300x300&sensor=false" style="max-width:100%; max-height:100%;" alt="Aproximate location of your internet connection">
+        </div>
+
     </div>
     <div class="clearfix"></div>
 </div>

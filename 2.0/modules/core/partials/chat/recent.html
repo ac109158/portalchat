@@ -4,18 +4,19 @@
             <h4>Recent Converstions</h4>
         </div>
     </div>
-    <div id="cm-main-panel-recent-list" style="position:absolute; top:45px; left: 0; right: 0; bottom: 5px; overflow-y: auto; overflow-x: hidden;">
-        <div ng-repeat="chat in module.chats.contact.chat.list | toArray | orderBy: 'session.timestamp': true">
+    <div id="cm-main-panel-recent-list" style="position:absolute; top:47px; left: 0; right: 0; bottom: 5px; overflow-y: auto; overflow-x: hidden; background: transparent;" ng-class="{'fade-in': module.contact_list.is_init}" ng-init="module.contact_list.is_init = false; module.contact_list.is_init = true;">
+        <div ng-repeat="chat in module.chats.contact.chat.list | toArray | orderBy: 'session.timestamp': true" style="margin-bottom: 1px; padding: 1px; background: rgba(0,0,0,.4);">
             <div ng-click="ui.fx.setChatAsCurrent(chat.session.type, chat.session.session_key);" class="cm-main-panel-recent-contact">
                 <div ng-if="!chat.session.is_group_chat">
-                    <img ng-src="{{chat.contact.profile.avatar_url}}" width=46 height=46/><span class="cm-main-panel-contact-name" ng-bind="chat.session.tag || chat.contact.profile.name | chars: 20"></span>
-                    <span style="position: absolute; right: 50px; margin-top: 13px;" ng-bind="chat.session.timestamp | timeago"></span>
-                    <span ng-show="chat.ux.unread" class="badge cm-main-panel-recent-unread" style="position: absolute; right: 110px; margin-top: 13px;" ng-bind="chat.ux.unread"></span>
+                    <img ng-src="{{chat.contact.profile.avatar_url}}" width=42 height=42/><span style="position: absolute; left: 55px; margin-top: 15px; right: 90px; width: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" ng-bind="chat.session.tag || chat.contact.profile.name | chars: 20"></span>
+                    <span style="position: absolute; right: 30px; margin-top: 13px;" ng-bind="chat.session.timestamp | timeago"></span>
+                    <span ng-show="chat.ux.unread" class="badge cm-main-panel-recent-unread" style="position: absolute; right: 90px; margin-top: 10px;" ng-bind="chat.ux.unread"></span>
                     <div class="chat-status cm-main-panel-contact-status {{chat.contact.profile.state}}" style="position:relative; top:15px;"></div>
                 </div>
                 <div ng-if="chat.session.is_group_chat">
-                    <i class="{{chat.ux.icon}} fa-3x" style="width: 46px; height: 46px;" /></i><span class="cm-main-panel-contact-name" ng-bind="chat.session.tag || chat.contacts.name_list || chat.description | chars: 20"></span>
-                    <span style="position: absolute; right: 50px; margin-top: 13px;" ng-bind="chat.session.timestamp | timeago"></span>
+                    <i class="{{chat.ux.icon}} fa-3x" style="width: 42px; height: 42px;" /></i><span style="position: absolute; margin-top: 15px; left: 55px; right: 90px; width: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" ng-bind="chat.session.tag || chat.contacts.name_list || chat.description"></span>
+                    <span style="position: absolute; right: 30px; margin-top: 13px;" ng-bind="chat.session.timestamp | timeago"></span>
+                    <div class="badge" style="position:absolute; margin-top:14px; padding: 1px; width: 15px; height: 15px;  right: 9px;"><center><span style="font-size: .8em;" ng-bind="chat.contacts.count || 'C'"></span></center></div>
                 </div>
             </div>
         </div>

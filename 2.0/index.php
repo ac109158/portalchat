@@ -24,6 +24,7 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
 
         applicationModuleCoreVendorDependenciesScripts: [ // list any js framework/tool that you are going to use in your app project here
             './vendor/jquery/jquery-2.1.3.min.js',
+            './vendor/jquery/jquery-ui.min.js',
             './vendor/angular/angular.js',
             './vendor/firebase/firebase.js',
         ],
@@ -232,6 +233,11 @@ var ApplicationConfiguration = (function() { // stores as a window global intent
             }
             return size;
         };
+
+        Date.prototype.addHours= function(h){
+            this.setHours(this.getHours()+h);
+            return this;
+        }
 
         //Then define the init function for starting up the application
 

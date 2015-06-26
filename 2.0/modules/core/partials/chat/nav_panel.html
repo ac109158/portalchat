@@ -1,4 +1,4 @@
-<div id="cm-main-panel-nav" class="one-edge-shadow" ng-class="{'top-divider': module.global.layout === 2}">
+<div id="cm-main-panel-nav" class="one-edge-shadow">
     <div class="cm-chat-spacer"></div>
     <ul class="nav nav-tabs nav-justified" style="width:98%; min-width: 250px; margin:0px auto; padding-left:0em;">
         <li ng-repeat="tab in module.tab.list" ng-hide="module.global.layout === 2 && tab.index_position === 3" style="width:{{ux.main_panel.content.wrapper.upper_panel.nav.width}};"><a ng-click="ui.fx.setMainPanelTab(tab.index_position);" id="{{tab.session_key}}_link"><div ng-show="tab.type == 'directory' && module.chats.directory.chat.list[tab.session_key].ux.unread > 0" class="badge cm-main-panel-nav-unread-count" ng-bind="module.chats.directory.chat.list[tab.session_key].ux.unread"></div><i class="cm-nav-icon {{tab.icon_class}}" ng-class="{'cm-active-tab': module.tab.current.index_position == tab.index_position}"></i></a></li>

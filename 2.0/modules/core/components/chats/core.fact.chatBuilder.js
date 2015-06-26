@@ -482,6 +482,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
         } else {
             ChatStorage[type].chat.list[session_key].priority.next++;
         }
+        ChatStorage[type].chat.list[session_key].session.priority = message.priority;
         ChatStorage[type].chat.list[session_key].messages.map[message.key] = ChatStorage[type].chat.list[session_key].messages.list.length;
         message.text = $sce.trustAsHtml(message.text);
         ChatStorage[type].chat.list[session_key].messages.list.push(message);
