@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$document', 'CoreConfig', '$firebaseObject', 'localStorageService', 'NotificationManager', 'UserManager', function($rootScope, $log, $timeout, $window, $document, CoreConfig, $firebaseObject, localStorageService, NotificationManager, UserManager) {
+service('SettingsManager', ['$rootScope', '$log', '$location', '$timeout', '$window', '$document', 'CoreConfig', '$firebaseObject', 'localStorageService', 'NotificationManager', 'UserManager', function($rootScope, $log, $location, $timeout, $window, $document, CoreConfig, $firebaseObject, localStorageService, NotificationManager, UserManager) {
     var that = this;
 
     this.setting = {};
@@ -150,15 +150,6 @@ service('SettingsManager', ['$rootScope', '$log', '$timeout', '$window', '$docum
 
     this.setExternalWindow = function() {
         var discard_init_load = true;
-        if (String(window.location.href).split('?')[1] === String(CoreConfig.url.external).split('?')[1]) {
-            that.global.is_open = true;
-            that.fb.location.settings.update({
-                'is_external_window': true
-            });
-            that.global.is_external_window = true;
-        } else {
-            that.global.is_external_window = false;
-        }
 
         that.fb.location.settings.child('is_external_window').on('value', function(snapshot) {
             if (discard_init_load) {

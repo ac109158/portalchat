@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'CoreConfig', 'UserManager', 'ContactsManager', 'SettingsManager', 'SessionsManager', 'NotificationManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'UxManager', 'BrowserService', 'localStorageService', function($rootScope, $log, $window, $timeout, CoreConfig, UserManager, ContactsManager, SettingsManager, SessionsManager, NotificationManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, UxManager, BrowserService, localStorageService) {
+service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$timeout', 'CoreConfig', 'UserManager', 'ContactsManager', 'SettingsManager', 'SessionsManager', 'NotificationManager', 'ChatStorage', 'ChatBuilder', 'ChatManager', 'GroupChatManager', 'DirectoryChatManager', 'UtilityManager', 'UxManager', 'BrowserService', 'localStorageService', function($rootScope, $log, $location, $window, $timeout, CoreConfig, UserManager, ContactsManager, SettingsManager, SessionsManager, NotificationManager, ChatStorage, ChatBuilder, ChatManager, GroupChatManager, DirectoryChatManager, UtilityManager, UxManager, BrowserService, localStorageService) {
     var that = this;
     this.fb = {};
     this.fb.chat = {};
@@ -157,6 +157,13 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
 
     this.establishUserChat = function() { //  Step 1 this function will initialize the that variables and set the user chat presence.
         if (CoreConfig.user && UserManager.user.profile.id) {
+            console.log("$location.search()['external']", $location.search()['external']);
+            if( $location.search()['external'] && $location.search()['external'].split('=') ){
+                that.module.setting.is_external_window_instance = true;
+                UxManager.setModuleFullScreen();
+            } else{
+                that.module.setting.is_external_window_instance = false;
+            }
             NotificationManager.mute();
             ChatStorage.contact.session.list = [];
             ChatStorage.contact.session.map = {};
@@ -617,47 +624,29 @@ service('ChatModuleManager', ['$rootScope', '$log', '$window', '$timeout', 'Core
     };
 
     this.openChatModuleInExternalWindow = function() {
-        $scope.switchLayout(1);
-        if (UserManager._user_settings_location) {
-            UserManager._user_settings_location.update({
-                'is-external-window': false
-            });
-        }
+        // $scope.switchLayout(1);
+        SettingsManager.updateGlobalSetting('is_external_window', true, true);
         $timeout(function() {
-            that.module.asset.external_window_instance = window.open(CoreConfig.url.external, "PlusOnePortalChat", "left=1600,resizable=false, scrollbars=no, status=no, location=no,top=0");
+            that.module.asset.external_window_instance = window.open(CoreConfig.url.external, "PlusOnePortalChat", "right=0,resizable=false, scrollbars=no, status=no, location=no,top=0");
+            // that.module.asset.external_window_instance = window.open(CoreConfig.url.external, "PlusOnePortalChat", "left=1600,resizable=false, scrollbars=no, status=no, location=no,top=0");
             if (that.module.asset.external_window_instance) {
                 // that.module.asset.external_window_instance.resizeTo(350, window.innerHeight + 50);
                 $timeout(function() {
                     $rootScope.$evalAsync(function() {
-                        that.module.attr.is_external_window = true;
-                        that.module.attr.isExternalWindow = true;
                         that.module.asset.external_window_instance.focus();
                         NotificationManager.mute();
-
-
                         /*                  UtilityManager.setFirebaseOffline(); */
 
                         that.module.asset.external_window_listener = $(that.module.asset.external_window_instance).bind("beforeunload", function() {
                             SettingsManager.updateGlobalSetting('is_external_window', false, true);
                         });
 
-                        that.module.asset.external_window_listener = $scope.$watch('externalWindowObject.closed', function(newValue) {
-                            if (newValue) {
-                                UserManager._user_settings_location.update({
-                                    'is-external-window': false
-                                });
-                                localStorageService.remove('is_external_window');
-                                $scope.isExternalWindow = false;
-                            }
-                        });
                         that.module.asset.external_window_instance.addEventListener('DOMContentLoaded', resizeExternalWindowInstance, true);
 
                         function resizeExternalWindowInstance() {
                             $timeout(function() {
                                 that.module.asset.external_window_instance.document.documentElement.style.overflow = 'hidden'; // firefox, chrome
                                 that.module.asset.external_window_instance.document.body.scroll = "no"; // ie only
-
-                                localStorageService.add('isExternalWindow', true);
                             }, 2000);
                         }
                     });

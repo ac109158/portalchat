@@ -14,6 +14,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.ux.main_panel = {};
 
     this.ux.main_panel.split_height = (window.innerHeight / 2) - 125;
+    this.ux.main_panel.width = parseInt(CoreConfig.module.setting.main_panel.width) + parseInt(SettingsManager.global.panel_width_adjust);
 
     this.ux.main_panel.header = {};
 
@@ -31,13 +32,14 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.ux.main_panel.content.wrapper.lower_panel.message_section = {};
 
 
+
     this.ux.fx = {};
 
     this.setChatModuleSectionHeights = function() {
         if (document.getElementById('cm-main-panel')) {
             $rootScope.$evalAsync(function() {
                 that.ux.main_panel.height = window.innerHeight;
-                that.ux.main_panel.width = parseInt(CoreConfig.module.setting.main_panel.width) + parseInt(SettingsManager.global.panel_width_adjust);
+               
                 that.ux.main_panel.header.height = document.getElementById('cm-main-panel-header').offsetHeight;
                 that.ux.main_panel.content.wrapper.height = that.ux.main_panel.height - that.ux.main_panel.header.height;
                 that.ux.main_panel.content.wrapper.upper_panel.height = document.getElementById('cm-main-panel-upper-panel').offsetHeight;
@@ -381,6 +383,9 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         }
         that.setChatModuleSectionHeights();
         return true;
+    }
+    this.setModuleFullScreen = function(vertical_adjust) {
+        that.ux.main_panel.width = window.innerWidth;
     }
 
 

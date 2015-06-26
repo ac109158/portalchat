@@ -15,6 +15,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     this.url = {};
     this.url.firebase_database = 'https://portalchattest.firebaseio.com/';
     this.url.external = 'index.php?option=com_content&view=article&id=100&Itemid=1111';
+    this.url.external = 'http://chat.app?external=true';
     this.url.default_avatar = '/assets/img/icon-user-default.png';
     this.url.avatar_path = '/components/com_callcenter/images/avatars/';
 
@@ -152,16 +153,9 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     this.module.setting.dom_window = {};
     this.module.setting.dom_window.hidden = "hidden";
     this.module.setting.dom_window.status = 'visible';
-    this.module.setting.dom_window.default_window_title = angular.copy(window.title);
+    this.module.setting.dom_window.default_window_title = angular.copy($window.title);
     this.module.setting.dom_window.innerHeight = angular.copy($window.innerHeight);
     this.module.setting.dom_window.unread = 0;
-    if (String($window.location.href).split('?')[1] == that.url.external) {
-        this.module.setting.dom_window.show_backdrop = true;
-        this.module.setting.is_external_window_instance = true;
-    } else {
-        this.module.setting.dom_window.show_backdrop = false;
-        this.module.setting.is_external_window_instance = false;
-    }
 
     this.module.setting.queue = {};
     this.module.setting.queue.width = 110;
