@@ -159,11 +159,12 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
         if (CoreConfig.user && UserManager.user.profile.id) {
             console.log("$location.search()['external']", $location.search()['external']);
             if( $location.search()['external'] && $location.search()['external'].split('=') ){
-                that.module.setting.is_external_window_instance = true;
+                CoreConfig.module.setting.is_external_window_instance = true;
                 UxManager.setModuleFullScreen();
             } else{
-                that.module.setting.is_external_window_instance = false;
+                CoreConfig.module.setting.is_external_window_instance = false;
             }
+            SettingsManager.updateGlobalSetting('is_external_window', CoreConfig.module.setting.is_external_window_instance, true);
             NotificationManager.mute();
             ChatStorage.contact.session.list = [];
             ChatStorage.contact.session.map = {};
@@ -625,13 +626,14 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
 
     this.openChatModuleInExternalWindow = function() {
         // $scope.switchLayout(1);
-        SettingsManager.updateGlobalSetting('is_external_window', true, true);
         $timeout(function() {
             that.module.asset.external_window_instance = window.open(CoreConfig.url.external, "PlusOnePortalChat", "right=0,resizable=false, scrollbars=no, status=no, location=no,top=0");
             // that.module.asset.external_window_instance = window.open(CoreConfig.url.external, "PlusOnePortalChat", "left=1600,resizable=false, scrollbars=no, status=no, location=no,top=0");
             if (that.module.asset.external_window_instance) {
                 // that.module.asset.external_window_instance.resizeTo(350, window.innerHeight + 50);
                 $timeout(function() {
+                    SettingsManager.updateGlobalSetting('is_external_window', true, true);
+                    that.closeChatModule();
                     $rootScope.$evalAsync(function() {
                         that.module.asset.external_window_instance.focus();
                         NotificationManager.mute();
@@ -841,7 +843,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
             that.module.state.is_open = false;
             that.module.state.is_closing = false;
         }, 1000);
-        SettingsManager.updateGlobalSetting('is_open', false, true);
+        SettingsManager.updateGlobalSetting('is_open', false);
     };
 
     this.openChatModule = function() {

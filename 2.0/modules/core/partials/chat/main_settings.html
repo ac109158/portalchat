@@ -6,7 +6,7 @@
             <button type="button" class="btn btn-xs btn-default pointer" ng-class="{'active': module.global.layout === 2}" ng-click="ui.fx.setModuleLayout(2);">2</button>
         </div>
     </div>
-    <div style="position:relative; width: 100%; height:30px; padding: 0px; clear:both; margin-bottom:2px;">
+    <div ng-hide="module.setting.is_external_window_instance" style="position:relative; width: 100%; height:30px; padding: 0px; clear:both; margin-bottom:2px;">
         <label title="Pop Out" class="pull-left" style="position: relative; margin:0px 5px; font-weight: bold;  top:5px; width: 100px;">Pop Out</label>
         <div class="btn-group btn-toggle pull-right" style="position: relative; top:5px; margin-right:7px;">
             <button ng-click="ui.fx.openChatModuleInExternalWindow();" class="btn btn-xs btn-default pointer"><i class="fa fa-external-link"></i></button>
@@ -25,7 +25,7 @@
             <input class="pointer" style="position:relative; width:50px;" type="range" min="0" max="10" value="{{module.global.sound_level}}" step="1" ng-model="module.global.sound_level" ng-mouseup="ui.fx.updateSoundLevel(module.global.sound_level)" />
         </div>
     </div>
-    <div style="position:relative; width: 100%; height:30px; padding: 0px; clear:both; margin-bottom:10px;">
+    <div ng-hide="module.setting.is_external_window_instance"  style="position:relative; width: 100%; height:30px; padding: 0px; clear:both; margin-bottom:10px;">
         <label title="Volume Control" class="pull-left" style="position: relative; margin:0px 5px; font-weight: bold;  top:5px; width: 100px;">Panel Width</label>
         <div class="pull-right" style="position: relative; top:5px; margin-right:7px;">
             <input class="pointer" style="position:relative; width:50px;" type="range" min="-50" max="100" value="{{module.global.panel_width_adjust}}" step="1" ng-model="module.global.panel_width_adjust" ng-change="ux.fx.updatePanelWidth(module.global.panel_width_adjust)" />

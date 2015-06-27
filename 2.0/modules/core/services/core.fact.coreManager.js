@@ -34,7 +34,9 @@ angular.module('portalchat.core').factory('CoreManager', ['$rootScope', '$log', 
             },
             'evaluate-chat-module-layout': function() {
                 UxManager.ux.fx.evaluateChatModuleLayout();
+                UxManager.setChatModuleSectionWidths();
                 $timeout(function() {
+                    UxManager.setChatModuleSectionWidths();
                     UxManager.ux.fx.evaluateChatModuleLayout();
                 }, 500)
             },

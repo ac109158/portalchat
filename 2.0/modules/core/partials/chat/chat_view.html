@@ -8,7 +8,7 @@
                 <!-- <img style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/> -->
                 <img class="pointer" style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="{{module.contact_list.setting.default_avatar}}" width=35 height=35/>
                 <span style="margin-left:5px; line-height:20px;" ng-bind="module.user.profile.name"></span>
-                <div class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.closeChatModule();">
+                <div ng-hide="module.setting.is_external_window_instance" class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.closeChatModule();">
                     <center><span class="fa fa-times fa-1x"></span></center>
                 </div>
                 <div class="pull-right btn btn-xs btn-default pointer" ng-click="ui.fx.toggleMainPanelMenu('setting');">

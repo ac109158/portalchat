@@ -35,11 +35,19 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
 
     this.ux.fx = {};
 
+    this.setChatModuleSectionWidths = function() {
+        if(CoreConfig.module.setting.is_external_window_instance){
+            that.ux.main_panel.width = window.innerWidth;
+        } else{
+            that.ux.main_panel.width = parseInt(CoreConfig.module.setting.main_panel.width) + parseInt(SettingsManager.global.panel_width_adjust);
+        }
+        console.log('that.ux.main_panel.width', that.ux.main_panel.width);
+    };
+
     this.setChatModuleSectionHeights = function() {
         if (document.getElementById('cm-main-panel')) {
             $rootScope.$evalAsync(function() {
                 that.ux.main_panel.height = window.innerHeight;
-               
                 that.ux.main_panel.header.height = document.getElementById('cm-main-panel-header').offsetHeight;
                 that.ux.main_panel.content.wrapper.height = that.ux.main_panel.height - that.ux.main_panel.header.height;
                 that.ux.main_panel.content.wrapper.upper_panel.height = document.getElementById('cm-main-panel-upper-panel').offsetHeight;

@@ -57,8 +57,8 @@ directive('panelContactChat', function() {
             chat: '=',
             ux: '=',
             ui: '=',
-            profiles:'=',
-            engine:'='
+            profiles: '=',
+            engine: '='
         },
         replace: true,
         templateUrl: './modules/core/partials/chat/panel_contact_chat.html',
@@ -187,16 +187,20 @@ directive('windowResize', function($rootScope, $window, $timeout) {
         //scope: true,   // optionally create a child scope
         link: function(scope, elem, attrs) {
             angular.element($window).on('resize', function() {
-                if (scope.module.interval && scope.module.interval.window_resize) {
-                    $timeout.cancel(scope.module.interval.window_resize);
-                }
-                scope.module.interval.window_resize = $timeout(function() {
-                    $rootScope.$broadcast('core-task-assignment', {
-                        id: 'evaluate-chat-module-layout',
-                        param: null
-                    });
-                    $timeout.cancel(scope.module.interval.window_resize);
-                }, 500);
+                // if (scope.module.interval && scope.module.interval.window_resize) {
+                //     $timeout.cancel(scope.module.interval.window_resize);
+                // }
+                // scope.module.interval.window_resize = $timeout(function() {
+                //     $rootScope.$broadcast('core-task-assignment', {
+                //         id: 'evaluate-chat-module-layout',
+                //         param: null
+                //     });
+                //     $timeout.cancel(scope.module.interval.window_resize);
+                // }, 500);
+                $rootScope.$broadcast('core-task-assignment', {
+                    id: 'evaluate-chat-module-layout',
+                    param: null
+                });
             });
         }
     };
@@ -280,7 +284,7 @@ directive('stickToBottom', function($timeout, $parse) {
 directive('cmVerticalAdust', ['$timeout', 'UxManager', function($timeout, UxManager) {
     return {
         restrict: 'E',
-        template: '<div id="cm-vertical-adjuster" class="cm-main-gradient" data-drag="true" data-jqyoui-options="{helper: vertialAdjustHelper, cursor: '+ "'ns-resize'" + ', cursorAt: {left: 5, top: 5}, containment: ' + "'#cm-main-panel-content-wrapper'" + ', axis: y,scroll:false}" jqyoui-draggable="verticalResizerDraggableOptions" style="position: absolute;  cursor:ns-resize; margin:0px; padding: 0px; pointer-events: all; width: 100%; height: 10px; z-index: 8;"></div>',
+        template: '<div id="cm-vertical-adjuster" class="cm-main-gradient" data-drag="true" data-jqyoui-options="{helper: vertialAdjustHelper, cursor: ' + "'ns-resize'" + ', cursorAt: {left: 5, top: 5}, containment: ' + "'#cm-main-panel-content-wrapper'" + ', axis: y,scroll:false}" jqyoui-draggable="verticalResizerDraggableOptions" style="position: absolute;  cursor:ns-resize; margin:0px; padding: 0px; pointer-events: all; width: 100%; height: 10px; z-index: 8;"></div>',
         scope: true,
         link: function(scope, element, attrs) {
             scope.verticalResizerDraggableOptions = {
@@ -288,17 +292,17 @@ directive('cmVerticalAdust', ['$timeout', 'UxManager', function($timeout, UxMana
                 onStop: 'vertialAdjustStop()'
             };
 
-            scope.vertialAdjustHelper = function(event, ui){
+            scope.vertialAdjustHelper = function(event, ui) {
                 return '<div style="cursor: ns-resize; font-size:1em;" class="glyphicon glyphicon-resize-vertical"></div>';
             }
-            scope.vertialAdjustStop = function(){
-                $timeout(function(){
+            scope.vertialAdjustStop = function() {
+                $timeout(function() {
                     UxManager.setChatModuleSectionHeights();
                 }, 250);
-                
+
             }
 
-            scope.vertialAdjustDrag = function(event, ui){
+            scope.vertialAdjustDrag = function(event, ui) {
                 UxManager.setVerticalAdjust(ui.position.top);
             }
         }

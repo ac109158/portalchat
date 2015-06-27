@@ -149,6 +149,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     // this.module.setting.store_time = 172800000; // 48 hours how long to store  messages in each users query
     this.module.setting.store_time = 1209600000; // 2 weeks how long to store  messages in each users query
     this.module.setting.command_key = ';';
+    this.module.setting.is_external_window_instance = undefined;
 
     this.module.setting.dom_window = {};
     this.module.setting.dom_window.hidden = "hidden";

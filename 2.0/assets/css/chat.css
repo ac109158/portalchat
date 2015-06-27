@@ -437,6 +437,7 @@ ul.nav.nav-tabs a:hover {
     min-height: 50px;
     z-index: 9;
     color:black;
+    pointer-events:all;
     border: 1px solid grey;
     background: #eeeeee; /* Old browsers */
     background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%); /* FF3.6+ */
