@@ -356,9 +356,8 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
         if (!CoreConfig.module.setting.is_external_window_instance) {
             SettingsManager.fb.location.settings.child('/is_external_window_instance_focus/').on('value', function(snapshot) {
                 if (snapshot.val()) {
-                    if(!that.module.asset.external_window_instance){
-                       that.module.asset.external_window_instance = window.open('', "PlusOnePortalChat"); 
-                    }
+                    that.module.asset.external_window_instance = window.open('', "PlusOnePortalChat"); 
+                    console.log('that.module.asset.external_window_instance', that.module.asset.external_window_instance)
                     if(that.module.asset.external_window_instance){
                         $rootScope.$evalAsync(function() {
                             that.module.asset.external_window_instance.focus();

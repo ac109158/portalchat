@@ -158,7 +158,7 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         ChatModuleManager.openChatModuleInExternalWindow();
     };
     this.ui.fx.focusExternalWindowInstance = function() {
-        ChatModuleManager.focusExternalWindowInstance();
+        SettingsManager.focusExternalWindowInstance();
     };
 
     this.ui.fx.closeChatModule = function() {
