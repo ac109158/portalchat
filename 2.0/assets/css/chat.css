@@ -432,21 +432,12 @@ ul.nav.nav-tabs a:hover {
     right: 0;
     display: block;
     width: 100%;
-    background: white;
     clear: both;
     min-height: 50px;
     z-index: 9;
     color:black;
     pointer-events:all;
     border: 1px solid grey;
-    background: #eeeeee; /* Old browsers */
-    background: -moz-linear-gradient(top, #eeeeee 0%, #cccccc 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#eeeeee), color-stop(100%,#cccccc)); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, #eeeeee 0%,#cccccc 100%); /* IE10+ */
-    background: linear-gradient(to bottom, #eeeeee 0%,#cccccc 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#eeeeee', endColorstr='#cccccc',GradientType=0 ); /* IE6-9 */
 }
 
 .cm-chat-setting-menu {

@@ -1,6 +1,10 @@
 <div id="chat-module" window-resize class="cm-fixed-wrapper" style="font-size:{{module.global.font_size}}px; min-width: 250px; width:{{ux.main_panel.width}}px; height:100%;" ng-class="{'full-width': module.setting.is_external_window_instance}">
     <div ng-if="module.state.is_loaded">
-        <div ng-if="module.setting.is_external_window_instance == false" style="position:fixed; right:50px; bottom:50px; width:40px; height:40px; background:transparent; text-decoration:none;">
+        <div ng-if="module.state.idle && module.global.is_window_visible" style="position:fixed; right:5px; bottom:5px; width:340px; height:100px; background:rgba(0,0,0,.2); text-decoration:none;">
+            <div style="position:absolute; bottom:5px; left:5px; right: 65px; min-height: 90px; background: white; ">
+            </div>
+        </div>
+        <div ng-if="module.setting.is_external_window_instance == false" style="position:fixed; right:25px; bottom:25px; width:40px; height:40px; background:transparent; text-decoration:none;">
             <i ng-show="!module.global.is_open || module.state.idle" ng-click="ui.fx.openChatModule();" class="cm-open-icon fa fa-comment fa-4x pointer" ng-class="{'Busy':alertToOpen == true}"></i>
         </div>
         <div id="cm-main-panel" ng-if="module.global.is_open && !module.state.idle">
@@ -27,7 +31,7 @@
                     <cm-main-settings class="cm-menu-panel"></cm-main-settings>
                 </div>
                 <div ng-show="module.menu.profile" style="position:absolute; pointer-events:all;">
-                    <cm-profile class="cm-menu-panel"></cm-profile>
+                    <cm-profile class="cm-menu-panel cm-main-gradient"></cm-profile>
                 </div>
             </div>
             <div id="cm-main-panel-content-wrapper">

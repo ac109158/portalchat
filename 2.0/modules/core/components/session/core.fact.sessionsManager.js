@@ -81,7 +81,11 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
     this.sendChatExitSignal = function(type, session_key, contact_id) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key] && ChatStorage[type].chat.list[session_key].contacts && ChatStorage[type].chat.list[session_key].contacts.active && angular.isDefined(ChatStorage[type].chat.list[session_key].contacts.active[contact_id])) {
             ChatStorage[type].session.list[session_key].fb.group.location.contacts.child(contact_id).remove();
-            that.fb.location.signals.child('contact').child(contact_id).child(session_key).update({type: 'group', session_key: session_key, exit: true});
+            that.fb.location.signals.child('contact').child(contact_id).child(session_key).update({
+                type: 'group',
+                session_key: session_key,
+                exit: true
+            });
         }
     };
 
@@ -243,20 +247,30 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
         }
     };
 
-    this.closeFireBaseConnections = function(type, session_key){
+    this.closeFireBaseConnections = function(type, session_key) {
+        that.closeFirebaseConnection(that.fb.location.signals.child('contact').child(UserManager.user.profile.id));
         angular.forEach(ChatStorage[type].session.list[session_key].fb, function(location_type) {
             angular.forEach(location_type.location, function(fb_location) {
-                fb_location.off('value');
-                fb_location.off('child_added');
-                fb_location.off('child_removed');
-                fb_location.off('child_changed');
-                fb_location = null;
+                that.closeFirebaseConnection(fb_location, true);
             });
         });
     }
 
+    this.closeFirebaseConnection = function(fb_location, remove) {
+        if (fb_location) {
+            fb_location.off('value');
+            fb_location.off('child_added');
+            fb_location.off('child_removed');
+            fb_location.off('child_changed');
+            if(remove){
+                fb_location = null;
+            }
+            
+        }
+    }
+
     this.removeContactChatSession = function(session) {
-        if(session && session.session_key && session.session_key.split(':')[1]){
+        if (session && session.session_key && session.session_key.split(':')[1]) {
             that.fb.location.sessions.child(UserManager.user.profile.id).child(session.session_key.split(':')[1]).remove();
         }
     }

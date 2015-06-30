@@ -152,10 +152,58 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
         return true;
     };
 
+    this.establishChatSignalIdler = function() {
+        SessionsManager.closeFirebaseConnection(SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id));
+        var discard_last_child = true;
+        var last_child;
+        $timeout(function() {
+            SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).once("value", function(snap) {
+                var signals = snap.val();
+                var keys = Object.keys(signals || {});
+                angular.forEach(signals, function(signal, key) {
+                    SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).child(key).child('priority').on('value', function(snapshot) {
+                        console.log('idler priority change', snapshot.ref().parent().key() ,snapshot.val());
+                    })
+                });
+                last_child = keys[keys.length - 1];
+                if (angular.isUndefined(last_child)) {
+                    discard_last_child = false;
+                }
+
+                SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).startAt(null, last_child).on("child_added", function(snapshot) {
+                    var location_id = snapshot.ref().key();
+                    var signal = snapshot.val();
+                    if (signal) {
+                        if (discard_last_child) {
+                            discard_last_child = false;
+                        } else {
+                            if (signal && signal.type) {
+                                if (signal.type === 'contact') {
+                                    SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).child(location_id).child('priority').on('value', function(snapshot) {
+                                        console.log('idler contact priority change', snapshot.ref().parent().key(), snapshot.val());
+                                    })
+                                } else if (signal.type === 'group' && signal.session_key) {
+                                    if (signal.type === 'group') {
+                                        if (signal.exit) {} else {
+                                            SessionsManager.fb.location.signals.child('group').child(location_id).child('priority').on('value', function(snapshot) {
+                                                console.log('idler group priority change', snapshot.ref().parent().key(), snapshot.val());
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        }, 500)
+    }
+
     this.establishUserChat = function() { //  Step 1 this function will initialize the that variables and set the user chat presence.
         if (CoreConfig.user && UserManager.user.profile.id) {
-            if ((localStorageService.get('session_id') === CoreConfig.module.setting.session_id && !(localStorageService.get('is_external_window')) ) || CoreConfig.module.setting.is_external_window_instance) {
-                if(!CoreConfig.module.setting.is_external_window_instance){
+            if ((localStorageService.get('session_id') === CoreConfig.module.setting.session_id && !(localStorageService.get('is_external_window'))) || CoreConfig.module.setting.is_external_window_instance) {
+                SessionsManager.closeFirebaseConnection(SessionsManager.fb.location.sessions.child(UserManager.user.profile.id), false);
+                if (!CoreConfig.module.setting.is_external_window_instance) {
                     SettingsManager.updateGlobalSetting('is_external_window', false, true);
                 }
                 NotificationManager.mute();
@@ -203,9 +251,10 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
                             SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).on("child_changed", function(snapshot) {
                                 var key = snapshot.key();
                                 var signals = snapshot.val();
+                                console.log('actvity')
                                 var session_key = UserManager.user.profile.id + ':' + key;
-                                if (ChatStorage[signals.type].chat.list[session_key].session.active && signals && signals.type) {
-                                    if (ChatStorage[signals.type] && ChatStorage[signals.type].chat.list[session_key]) {
+                                if (!that.module.state.idle && ChatStorage[signals.type].chat.list[session_key].session.active && signals && signals.type) {
+                                    if (ChatStorage[signals.type].chat.list[session_key]) {
                                         $rootScope.$evalAsync(function() {
                                             ChatStorage[signals.type].chat.list[session_key].signals.contact = signals;
                                             if (signals.topic != ChatStorage[signals.type].chat.list[session_key].session.topic) {
@@ -226,6 +275,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
                                         discard_last_child = false;
                                     } else {
                                         if (signal && signal.type) {
+                                            console.log('actvity')
                                             if (signal.type === 'contact') {
                                                 var contact_tag = CoreConfig.common.reference.user_prefix + location_id;
                                                 if (angular.isDefined(ContactsManager.contacts.profiles.map[contact_tag]) && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]]) {
@@ -292,7 +342,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
                     });
                 });
                 $timeout(function() {
-                    if(!CoreConfig.module.setting.is_external_window_instance){
+                    if (!CoreConfig.module.setting.is_external_window_instance) {
                         SettingsManager.updateGlobalSetting('session_id', CoreConfig.module.setting.session_id, true);
                     }
                     NotificationManager.unmute();
@@ -326,8 +376,8 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
                 discard_init_load = false;
             } else {
                 var status = snapshot.val();
-                if (status){
-                    if(!CoreConfig.module.setting.is_external_window_instance) {
+                if (status) {
+                    if (!CoreConfig.module.setting.is_external_window_instance) {
                         SettingsManager.updateGlobalSetting('is_external_window', true, false);
                         that.idleChatInstance();
                     }
@@ -344,23 +394,26 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
 
         SettingsManager.fb.location.settings.child('session_id').on('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
             if (snapshot.val() != CoreConfig.module.setting.session_id) {
-                if(CoreConfig.module.setting.is_external_window_instance){
+                if (CoreConfig.module.setting.is_external_window_instance) {
                     console.log('session.id has changed', snapshot.val())
                 } else {
                     that.idleChatInstance();
                 }
-                
+
             }
         });
 
         if (!CoreConfig.module.setting.is_external_window_instance) {
             SettingsManager.fb.location.settings.child('/is_external_window_instance_focus/').on('value', function(snapshot) {
                 if (snapshot.val()) {
-                    that.module.asset.external_window_instance = window.open('', "PlusOnePortalChat"); 
-                    console.log('that.module.asset.external_window_instance', that.module.asset.external_window_instance)
-                    if(that.module.asset.external_window_instance){
+                    that.module.asset.external_window_instance = window.open('', "PlusOnePortalChat");
+                    if (that.module.asset.external_window_instance) {
                         $rootScope.$evalAsync(function() {
                             that.module.asset.external_window_instance.focus();
+                            console.log('name', that.module.asset.external_window_instance)
+                            if (!that.module.asset.external_window_instance.name) {
+                                that.module.asset.external_window_instance.close();
+                            }
                         });
                     }
 
@@ -887,6 +940,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
             that.module.state.is_closing = false;
         }, 1000);
         SettingsManager.updateGlobalSetting('is_open', false);
+        that.idleChatInstance();
     };
 
     this.openChatModule = function() {
@@ -964,12 +1018,16 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
             ChatStorage.contact.chat.count = 0;
             ChatStorage.contact.chat.map = {};
 
+            that.module.asset.external_window_instance = undefined;
+
             that.module.current.directory.chat = {};
             that.module.current.directory.stored_session_key = null;
             that.module.current.directory.session_key = undefined;
 
             that.module.current.contact.session_key = undefined;
             that.module.current.contact.stored_session_key = undefined;
+
+            that.establishChatSignalIdler();
         });
     };
 
