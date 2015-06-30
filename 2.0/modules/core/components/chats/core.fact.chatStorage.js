@@ -1,5 +1,5 @@
 angular.module('portalchat.core').
-service('ChatStorage', ['$log', '$timeout','CoreConfig',function($log, $timeout, CoreConfig) {
+service('ChatStorage', ['$log', '$timeout', 'CoreConfig', function($log, $timeout, CoreConfig) {
     var that = this;
 
     this.directory = {};
@@ -27,4 +27,3 @@ service('ChatStorage', ['$log', '$timeout','CoreConfig',function($log, $timeout,
 
     return this;
 }]);
-

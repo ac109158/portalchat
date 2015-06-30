@@ -1,9 +1,9 @@
 <div id="chat-module" window-resize class="cm-fixed-wrapper" style="font-size:{{module.global.font_size}}px; min-width: 250px; width:{{ux.main_panel.width}}px; height:100%;" ng-class="{'full-width': module.setting.is_external_window_instance}">
-    <div ng-if="module.state.is_ready">
-        <div ng-if="!module.global.is_open && module.setting.is_external_window_instance == false" style="position:fixed; right:50px; bottom:50px; width:40px; height:40px; background:transparent; text-decoration:none;">
-            <i ng-click="ui.fx.openChatModule();" class="cm-open-icon fa fa-comment fa-4x pointer" ng-class="{'Busy':alertToOpen == true}"></i>
+    <div ng-if="module.state.is_loaded">
+        <div ng-if="module.setting.is_external_window_instance == false" style="position:fixed; right:50px; bottom:50px; width:40px; height:40px; background:transparent; text-decoration:none;">
+            <i ng-show="!module.global.is_open || module.state.idle" ng-click="ui.fx.openChatModule();" class="cm-open-icon fa fa-comment fa-4x pointer" ng-class="{'Busy':alertToOpen == true}"></i>
         </div>
-        <div id="cm-main-panel" ng-if="module.global.is_open && module.attr.is_page_loaded">
+        <div id="cm-main-panel" ng-if="module.global.is_open && !module.state.idle">
             <div id="cm-main-panel-header" class="one-edge-shadow">
                 <!-- <img style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="/components/com_callcenter/images/avatars/{{user_profile.avatar}}-90.jpg" width=20 height=20/> -->
                 <img class="pointer" style="pointer-events:all;" ng-click="ui.fx.toggleMainPanelMenu('profile');" ng-src="{{module.contact_list.setting.default_avatar}}" width=35 height=35/>

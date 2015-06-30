@@ -3,6 +3,7 @@ service('SettingsManager', ['$rootScope', '$log', '$location', '$timeout', '$win
     var that = this;
 
     this.setting = {};
+    this.setting.session_id = undefined;
     this.state = {};
     this.state.is_vertical_increase = false;
     this.state.is_vertical_decrease = false;
@@ -19,7 +20,6 @@ service('SettingsManager', ['$rootScope', '$log', '$location', '$timeout', '$win
     this.global.layout = CoreConfig.inital.layout;
     this.global.font_size = CoreConfig.inital.font_size;
     this.global.show_external_notifications = false;
-    this.global.is_global_sound = CoreConfig.inital.is_global_sound;
     this.global.sound_level = CoreConfig.inital.sound_level;
     this.global.last_contact_chat = false;
     this.global.last_panel_tab = 1;
@@ -36,12 +36,10 @@ service('SettingsManager', ['$rootScope', '$log', '$location', '$timeout', '$win
 
     this.load = function() {
         if (UserManager.user.profile.id) {
-            that.initSessionVar();
             that.addVisiblityListener();
             that.setFirebaseLocations();
             that.setFirebaseTargets();
             $timeout(function() {
-                that.setExternalWindow();
                 that.setFirebaseSettings();
             });
 
@@ -50,29 +48,17 @@ service('SettingsManager', ['$rootScope', '$log', '$location', '$timeout', '$win
         return false;
     };
 
-    this.initSessionVar = function() {
-        if (localStorageService.get('is_existing_chat')) {
-            $log.debug('is_existing_chat: ', localStorageService.get('is_existing_chat'));
-            // var current = window.open('','_self');
-
-            // $timeout(function(){
-            //     current.close();
-            //     self.close(); 
-            //     window.close();
-            // }, 500)
-
-        } else {
-            localStorageService.add('is_existing_chat', (Math.random() + 1).toString(36).substring(7));
-            that.global.session_id = localStorageService.get('isExistingChat');
-            $log.debug(' that.global.session.id set to ' + that.global.session_id);
-        }
-    };
-
     this.unload = function() {
-        if (that.global.session_id === localStorageService.get('is_existing_chat')) {
-            localStorageService.remove('is_existing_chat');
+        if (CoreConfig.module.setting.is_external_window_instance) {
+            that.updateGlobalSetting('is_external_window', false, true);
+            localStorageService.remove('is_external_window');
         }
-        that.fb.location.settings.update(that.global);
+        if (!CoreConfig.module.setting.is_external_window_instance) {
+            if (CoreConfig.module.setting.session_id === localStorageService.get('session_id')) {
+                localStorageService.remove('session_id');
+            }
+        }
+        // that.fb.location.settings.update(that.global);
     };
 
     this.addVisiblityListener = function() {
@@ -93,33 +79,35 @@ service('SettingsManager', ['$rootScope', '$log', '$location', '$timeout', '$win
             $window.onpageshow = $window.onpagehide = $window.onfocus = $window.onblur = onchange;
 
         function onchange(evt) {
-            var v = 'visible',
-                h = 'hidden',
-                evtMap = {
-                    focus: v,
-                    focusin: v,
-                    pageshow: v,
-                    blur: h,
-                    focusout: h,
-                    pagehide: h
-                };
+            $rootScope.$evalAsync(function() {
+                var v = 'visible',
+                    h = 'hidden',
+                    evtMap = {
+                        focus: v,
+                        focusin: v,
+                        pageshow: v,
+                        blur: h,
+                        focusout: h,
+                        pagehide: h
+                    };
 
-            evt = evt || $window.event;
-            if (evt.type in evtMap) {
-                CoreConfig.module.setting.dom_window.status = evtMap[evt.type];
-            } else {
-                CoreConfig.module.setting.dom_window.status = this[CoreConfig.module.setting.dom_window.hidden] ? "hidden" : "visible";
-            }
-            if (CoreConfig.module.setting.dom_window.status === 'visible') {
-                that.global.is_window_visible = true;
-                CoreConfig.module.setting.dom_window.unread = 0;
-                $document.title = CoreConfig.module.setting.dom_window.default_window_title;
-            } else {
-                that.global.is_window_visible = false;
-            }
-            $rootScope.$apply();
-            that.fb.location.settings.update({
-                'is_window_visible': that.global.is_window_visible
+                evt = evt || $window.event;
+                if (evt.type in evtMap) {
+                    CoreConfig.module.setting.dom_window.status = evtMap[evt.type];
+                } else {
+                    CoreConfig.module.setting.dom_window.status = this[CoreConfig.module.setting.dom_window.hidden] ? "hidden" : "visible";
+                }
+                if (CoreConfig.module.setting.dom_window.status === 'visible') {
+                    that.global.is_window_visible = true;
+                    CoreConfig.module.setting.dom_window.unread = 0;
+                    $document.title = CoreConfig.module.setting.dom_window.default_window_title;
+                } else {
+                    that.global.is_window_visible = false;
+                }
+
+                that.fb.location.settings.update({
+                    'is_window_visible': that.global.is_window_visible
+                });
             });
         }
     };
@@ -133,7 +121,7 @@ service('SettingsManager', ['$rootScope', '$log', '$location', '$timeout', '$win
     this.setFirebaseTargets = function() {
         if (UserManager.user.profile.id) {
             // that.fb.target.is_external_window = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.profile.id + '/is-external-window/'));
-            that.fb.target.is_module_open = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.profile.id + '/module-open/'));
+            // that.fb.target.is_module_open = $firebaseObject(new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.settings_reference + UserManager.user.profile.id + '/module-open/'));
             return true;
         }
         return false;
@@ -146,65 +134,6 @@ service('SettingsManager', ['$rootScope', '$log', '$location', '$timeout', '$win
             });
 
         });
-    };
-
-    this.setExternalWindow = function() {
-        var discard_init_load = true;
-
-        that.fb.location.settings.child('is_external_window').on('value', function(snapshot) {
-            if (discard_init_load) {
-                discard_init_load = false;
-            } else {
-                if (snapshot.val()) {
-                    that.global.is_external_window = true;
-                    $rootScope.$broadcast('setting-change', {
-                        is_external_window: true
-                    });
-                    if (status && CoreConfig.module.setting.is_external_window_instance) {
-                        CoreConfig.module.setting.main_panel.width = angular.copy($window.innerWidth);
-                    } else {
-                        CoreConfig.module.setting.main_panel.width = CoreConfig.module.setting.main_panel.default_width;
-                    }
-                } else {
-                    that.global.is_external_window = false;
-                    $rootScope.$broadcast('core-task-assignment', {
-                        id: 'close-external-window-instance',
-                        param: null
-                    });
-                    $rootScope.$broadcast('setting-change', {
-                        is_external_window: false
-                    });
-                    console.log('we need to restablish the chat for the main browser window ');
-                }
-            }
-
-        });
-
-
-        if (that.global.is_external_window) {
-            localStorageService.add('is_external_window', that.global.session_id);
-            that.fb.location.settings.onDisconnect().update({
-                'is_external_window': false
-            });
-
-        }
-
-        that.fb.location.settings.child('/is_external_window_instance_focus/').on('value', function(snapshot) {
-            if (snapshot.val()) {
-                if (that.global.is_external_window === true && CoreConfig.module.setting.is_external_window_instance === true) {
-                    $timeout(function() {
-                        self.focus();
-                    });
-                    $timeout(function() {
-                        that.fb.location.settings.update({
-                            'is_external_window_instance_focus': false
-                        });
-                    }, 3000);
-                }
-            }
-
-        });
-        $log.debug(String(window.location.href).split('?')[1] + '  : ' + String(CoreConfig.url.external).split('?')[1]);
     };
 
     this.focusExternalWindowInstance = function() {

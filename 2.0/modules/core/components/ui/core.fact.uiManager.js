@@ -1,6 +1,6 @@
 'use strict'; /* Factories */
 angular.module('portalchat.core').
-service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'ChatModuleManager', 'PermissionsManager', 'NotificationManager', function($rootScope, $interval, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, UtilityManager, SettingsManager, ChatModuleManager, PermissionsManager, NotificationManager) {
+service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '$sce', '$window', '$document', '$timeout', 'CoreConfig', 'UserManager', 'UtilityManager', 'SettingsManager', 'ChatModuleManager', 'PermissionsManager', 'NotificationManager','localStorageService',  function($rootScope, $interval, $firebase, $log, $http, $sce, $window, $document, $timeout, CoreConfig, UserManager, UtilityManager, SettingsManager, ChatModuleManager, PermissionsManager, NotificationManager, localStorageService) {
     var that = this;
 
     this.ui = {};
@@ -167,7 +167,11 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
     };
 
     this.ui.fx.openChatModule = function() {
-        ChatModuleManager.openChatModule();
+        if(SettingsManager.global.is_external_window && localStorageService.get('is_external_window')){
+            SettingsManager.focusExternalWindowInstance();
+        } else{
+            ChatModuleManager.openChatModule();
+        }
     };
 
     this.ui.fx.addReferenceToChatMessage = function(type, session_key, message) {

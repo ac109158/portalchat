@@ -255,7 +255,7 @@ factory("ContactsManager", ['$rootScope', '$log', '$http', '$timeout', '$window'
                 var profile_snapshot = child_snapshot.val();
                 var contact_tag = CoreConfig.common.reference.user_prefix + child_snapshot.key();
                 if (angular.isDefined(that.contacts.profiles.map[contact_tag]) && that.contacts.profiles.list[that.contacts.profiles.map[contact_tag]]) {
-                    angular.forEach(profile_snapshot, function(value, key){
+                    angular.forEach(profile_snapshot, function(value, key) {
                         that.contacts.profiles.list[that.contacts.profiles.map[contact_tag]][key] = value;
                     });
                 }

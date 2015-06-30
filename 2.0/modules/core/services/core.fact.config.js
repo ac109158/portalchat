@@ -1,5 +1,5 @@
 'use strict';
-angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '$window', function($rootScope, $log, $window) {
+angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '$window','$location','localStorageService', function($rootScope, $log, $window, $location, localStorageService) {
     var that = this;
 
     //Global Settings
@@ -131,6 +131,7 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
         'contact': 3
     };
     this.module.setting = {};
+
     this.module.setting.allow_ping_host = true;
     this.module.setting.allow_group_chats = true;
     this.module.setting.presence_states = [{value:'Online', title:'Available'}, {value:'Away', title:'Away'}, {value:'Busy', title:'Busy'},{value:'At Lunch', title:'At Lunch'},{value:'On Break', title:'On Break'},{value:'Training', title:'Training'}]; // optional chat stattes
@@ -149,7 +150,18 @@ angular.module('portalchat.core').factory('CoreConfig', ['$rootScope', '$log', '
     // this.module.setting.store_time = 172800000; // 48 hours how long to store  messages in each users query
     this.module.setting.store_time = 1209600000; // 2 weeks how long to store  messages in each users query
     this.module.setting.command_key = ';';
-    this.module.setting.is_external_window_instance = undefined;
+
+    this.module.setting.is_external_window_instance = false;
+
+    if ($location.search()['external'] && $location.search()['external'].split('=')) {
+        this.module.setting.is_external_window_instance = true;
+    }
+
+    this.module.setting.session_id = (Math.random() + 1).toString(36).substring(7);
+    
+    if(!localStorageService.get('session_id')){
+        localStorageService.add('session_id', this.module.setting.session_id) ;
+    }
 
     this.module.setting.dom_window = {};
     this.module.setting.dom_window.hidden = "hidden";

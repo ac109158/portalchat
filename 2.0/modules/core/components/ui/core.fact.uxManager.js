@@ -127,9 +127,11 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             }
             if (ChatStorage[type].chat.list[session_key].attr.is_active) {
                 ChatStorage[type].chat.list[session_key].ux.unread = 0;
+                ChatStorage[type].chat.list[session_key].session.priority = message.priority;
                 ChatStorage[type].chat.list[session_key].session.last_read_priority = message.priority;
             } else {
                 ChatStorage[type].chat.list[session_key].ux.unread++;
+                ChatStorage[type].chat.list[session_key].session.priority = message.priority;
             }
         }
     };

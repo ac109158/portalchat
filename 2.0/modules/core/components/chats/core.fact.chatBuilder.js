@@ -18,7 +18,10 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
     this.fb.location = {};
 
     this.load = function() {
-        that.fb.location.additonal_profiles = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.additional_profile_reference);
+        if(!that.fb.location.additonal_profiles){
+            that.fb.location.additonal_profiles = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.additional_profile_reference);
+        }
+        return true;
     };
 
 
@@ -289,7 +292,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
 
     this.setContactAdditionalProfile = function(type, session_key, contact_id) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
-            that.fb.location.additonal_profiles.child(contact_id).once('value', function(snapshot) {
+            that.fb.location.additonal_profiles.child(contact_id).on('value', function(snapshot) {
                 var additional_profile = snapshot.val();
                 if (additional_profile) {
                     if (additional_profile.mc && additional_profile.mc.name) {
