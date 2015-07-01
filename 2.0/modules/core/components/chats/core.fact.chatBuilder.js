@@ -18,7 +18,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
     this.fb.location = {};
 
     this.load = function() {
-        if(!that.fb.location.additonal_profiles){
+        if (!that.fb.location.additonal_profiles) {
             that.fb.location.additonal_profiles = new Firebase(CoreConfig.url.firebase_database + CoreConfig.contacts.reference + CoreConfig.contacts.additional_profile_reference);
         }
         return true;
@@ -298,9 +298,9 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                     if (additional_profile.mc && additional_profile.mc.name) {
                         additional_profile.mc.name = additional_profile.mc.name.replace('*', '');
                     }
-                    if (PermissionsManager.hasSupervisorRights()) {
+                    if (PermissionsManager.hasSupervisorRights() && ChatStorage[type].chat.list[session_key]) {
                         ChatStorage[type].chat.list[session_key].contact.additional_profile = additional_profile;
-                    } else {
+                    } else if(ChatStorage[type].chat.list[session_key]){
                         delete additional_profile.platform;
                         ChatStorage[type].chat.list[session_key].contact.additional_profile = additional_profile;
                     }
@@ -426,7 +426,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                     });
                     if (ChatStorage[session.type].chat.list[session.session_key].messages.list && ChatStorage[session.type].chat.list[session.session_key].messages.list.length) {
                         last_priority = ChatStorage[session.type].chat.list[session.session_key].messages.list[ChatStorage[session.type].chat.list[session.session_key].messages.list.length - 1].priority;
-                        if(session.type === 'contact'){
+                        if (session.type === 'contact') {
                             ChatStorage[session.type].chat.list[session.session_key].ux.unread = last_priority - session.last_read_priority;
                         }
                     } else {
@@ -441,7 +441,7 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
     };
 
     this.setNewChatMessages = function(session, fb_ref_type, last_priority) {
-        $timeout(function() {
+        if (ChatStorage[session.type] && ChatStorage[session.type].session.list[session.session_key]) {
             ChatStorage[session.type].session.list[session.session_key].fb[fb_ref_type].location.messages.orderByPriority().startAt(last_priority).on('child_added', function(snapshot) { // detects a ref_location.push(Json) made to the reference location
                 if (ChatStorage[session.type] && ChatStorage[session.type].chat.list[session.session_key]) {
                     if (last_priority) {
@@ -466,7 +466,8 @@ service('ChatBuilder', ['$rootScope', '$log', '$sce', '$compile', '$http', '$doc
                     return;
                 }
             });
-        }, 500);
+        }
+
     }
 
 

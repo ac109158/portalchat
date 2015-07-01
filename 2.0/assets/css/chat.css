@@ -1,8 +1,22 @@
-.fade-in {
+.slide-in {
     -webkit-animation: slideInRight .5s;
     -moz-animation: slideInRight .5s;
     -ms-animation: slideInRight .5s;
     animation: slideInRight .5s;
+    -vendor-animation-iteration-count: 1;
+}
+.fade-in {
+    -webkit-animation: fadeIn 1s;
+    -moz-animation: fadeIn 1s;
+    -ms-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+    -vendor-animation-iteration-count: 1;
+}
+.fade-out {
+    -webkit-animation: fadeOut .75s;
+    -moz-animation: fadeOut .75s;
+    -ms-animation: fadeOut .75s;
+    animation: fadeOut .75s;
     -vendor-animation-iteration-count: 1;
 }
 .search-field input {
@@ -921,7 +935,7 @@ ul.nav.nav-tabs a:hover {
 
 .cm-contact-chat-reference-text {
     position: absolute;
-    bottom: 10px;
+    bottom: 2px;
     left: 6px;
     right: 46px;
     background-color: rgba(98, 162, 189, 1);
@@ -938,15 +952,82 @@ ul.nav.nav-tabs a:hover {
     overflow: hidden;
     text-overflow: ellipsis;
     z-index: 2;
-    height: 28px;
+    height: 26px;
 }
 /*********************     Chat  *************************/
+
+.cm-chat-message-wrapper-idler {
+    margin-top: 2px;
+    position: relative;
+    background: #ccc;
+    padding: 0;
+    min-height: 70px;
+    word-break: break-word;
+    word-wrap: break-word;
+    clear: both;
+    background: transparent;
+    min-width: 100px;
+}
+
+.cm-chat-user-idler-text {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    text-decoration: none;
+    color: black;
+    text-align: right;
+}
+.cm-chat-message-idler-avatar-wrapper {
+    position: relative;
+    display:block;
+    float: left;
+    margin: 0;
+    padding: 0;
+    height: 43px;
+    width: 43px;
+    z-index: 1;
+    clear: none;
+}
+
+.cm-chat-message-avatar-idler {
+    margin: auto;
+    max-width: 41px;
+    max-height: 41px;
+}
+.cm-chat-message-idler-content-wrapper {
+    position: relative;
+    display:block;
+    float: left;
+    margin-left:5px;
+    clear:none;
+    padding: 0;
+    padding-bottom: 73px;
+    width: 230px;
+    min-height: 45px;
+    color: white;
+}
+.cm-chat-message-idler-header-bar {
+    position: relative;
+    display: block;
+    width: auto;
+    margin: 0;
+    padding: 2px 0px;
+    min-height: 20px;
+    clear: both;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: white;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    line-height: 10px;
+    pointer-events: none;
+}
 
 .cm-chat-message-wrapper-full {
     margin-top: 2px;
     position: relative;
     background: white;
-    padding: 0;
+    margin: 0 5px;
     min-height: 35px;
     word-break: break-word;
     word-wrap: break-word;
@@ -1030,10 +1111,12 @@ ul.nav.nav-tabs a:hover {
     padding: 0;
     min-width: 100px;
     min-height: 12px;
-    margin-left: 35px;
+    margin-left: 40px;
     border-radius: 5px;
     margin-bottom:2px;
 }
+
+
 
 .cm-chat-message-contact-content-wrapper-full {
     position: relative;
@@ -1055,7 +1138,7 @@ ul.nav.nav-tabs a:hover {
     padding: 0;
     min-width: 100px;
     min-height: 12px;
-    margin-right: 35px;
+    margin-right: 40px;
     border-radius: 5px;
     margin-bottom:2px;
 }

@@ -1,7 +1,33 @@
 <div id="chat-module" window-resize class="cm-fixed-wrapper" style="font-size:{{module.global.font_size}}px; min-width: 250px; width:{{ux.main_panel.width}}px; height:100%;" ng-class="{'full-width': module.setting.is_external_window_instance}">
     <div ng-if="module.state.is_loaded">
-        <div ng-if="module.state.idle && module.global.is_window_visible" style="position:fixed; right:5px; bottom:5px; width:340px; height:100px; background:rgba(0,0,0,.2); text-decoration:none;">
-            <div style="position:absolute; bottom:5px; left:5px; right: 65px; min-height: 90px; background: white; ">
+        <div ng-if="module.state.idle" style="position:fixed; right:75px; bottom:5px; width:300px; min-height:90px; background:transparent; pointer-events: none; text-decoration:none;">
+            <div style="position:absolute; bottom:0px; left:5px; right: 0; min-height: 100%;">
+                <div ng-repeat="notification in module.idler.notification.list | toArray | limitTo:-8 | orderBy:'timestamp':true" style="position:relative; display: block; margin:0; padding: 2px; margin-bottom: 1px; width: 100%; clear:both;">
+                    <div ng-init="notification.is_init = true" class="cm-chat-message-wrapper-idler" style="background-color:rgba(0,0,0, .5); margin: 0px; padding: 5px; border-radius: 5px;" ng-class="{'slide-in': notification.is_init, 'fade-out': notification.remove}">
+                        <div class="cm-chat-message-idler-avatar-wrapper">
+                            <img class="cm-chat-message-avatar-idler img-circle" ng-src="{{notification.contact.avatar_url}}" alt="...">
+                        </div>
+                        <div class="cm-chat-message-idler-content-wrapper">
+                            <div class="cm-chat-message-idler-header-bar" style="background-color:rgba(0,0,0, .5);">
+                                <span style="margin-left: 5px; margin-right: 30px;" class="pull-left" ng-bind="notification.contact.name"></span>
+                                <span style="margin-right: 5px;" class="pull-right glyphicon glyphicon-remove pointer" ng-click="ui.fx.removeIdlerNotification(notification)"></span>
+                                <span style="margin-right: 5px;" class="pull-right" ng-bind="notification.timestamp | timeago"></span>
+                            </div>
+                            <div ng-repeat="message in notification.messages | limitTo:-5" style="position: relative; display: block; min-height: 12px; clear: both; width: 100%; margin:; padding: 0;">
+                                <div ng-init="message.html = ux.fx.returnIdlerMessageHtml('contact', message);" dynamic="message.html" ng-class="{'fade-in': message.is_init}"></div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div style="position:absolute; bottom:0px; left: 0px; right: 12px; z-index:2; pointer-events:all;">
+                            <div emoji-form-idler chat="notification" ui="ui">
+                                <textarea id="{{notification.session_key}}_messageInput" ng-model="notification.message.text"></textarea>
+                                <button  class="pointer" style="position: absolute; bottom:11px; right:-5px;" id="emojibtn">
+                                    <i class="icon icon-emoji"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div ng-if="module.setting.is_external_window_instance == false" style="position:fixed; right:25px; bottom:25px; width:40px; height:40px; background:transparent; text-decoration:none;">
@@ -28,7 +54,7 @@
             </div>
             <div id="cm-main-panel-header-panel">
                 <div ng-show="module.menu.setting" style="position:absolute; right:0;">
-                    <cm-main-settings class="cm-menu-panel"></cm-main-settings>
+                    <cm-main-settings class="cm-menu-panel cm-main-gradient"></cm-main-settings>
                 </div>
                 <div ng-show="module.menu.profile" style="position:absolute; pointer-events:all;">
                     <cm-profile class="cm-menu-panel cm-main-gradient"></cm-profile>

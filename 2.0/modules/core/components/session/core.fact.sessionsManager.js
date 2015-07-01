@@ -103,6 +103,19 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
         return false;
     };
 
+    this.updateIdlerLastRead = function(type, session_key, last_read) {
+        if (type && session_key && parseInt(last_read) > -1) {
+            if (session_key.split(':')[1]) {
+                that.fb.location.sessions.child(session_key.split(':')[0]).child(session_key.split(':')[1]).update({'last_read_priority': last_read, timestamp: Firebase.ServerValue.TIMESTAMP});
+            } else {
+                that.fb.location.sessions.child(UserManager.user.profile.id).child(session_key).update({'last_read_priority': last_read, timestamp: Firebase.ServerValue.TIMESTAMP});
+            }
+
+            return true;
+        }
+        return false;
+    };
+
     this.updateChatSignals = function(type, session_key) {
         if (ChatStorage[type] && ChatStorage[type].session.list[session_key]) {
             if (session_key.split(':')[1]) {
@@ -146,7 +159,7 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
                     priority: priority
                 });
             } else {
-                if (type === 'contact' && ChatStorage[type] && ChatStorage[type].chat.list[session_key].session.is_group_chat) {
+                if (type === 'contact' && ChatStorage[type] && ChatStorage[type].chat.list[session_key] && ChatStorage[type].chat.list[session_key].session.is_group_chat) {
                     that.fb.location.signals.child('group').child(session_key).update({
                         priority: priority
                     });
@@ -159,6 +172,8 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
         }
 
     };
+
+
     this.updateChatSignalTopic = function(type, session_key, topic) {
         if (ChatStorage[type] && ChatStorage[type].chat.list[session_key]) {
             if (session_key.split(':')[1]) {
@@ -249,11 +264,13 @@ service('SessionsManager', ['$rootScope', '$window', '$log', 'CoreConfig', '$fir
 
     this.closeFireBaseConnections = function(type, session_key) {
         that.closeFirebaseConnection(that.fb.location.signals.child('contact').child(UserManager.user.profile.id));
-        angular.forEach(ChatStorage[type].session.list[session_key].fb, function(location_type) {
-            angular.forEach(location_type.location, function(fb_location) {
-                that.closeFirebaseConnection(fb_location, true);
+        if(ChatStorage[type] && ChatStorage[type].session.list[session_key]){
+            angular.forEach(ChatStorage[type].session.list[session_key].fb, function(location_type) {
+                angular.forEach(location_type.location, function(fb_location) {
+                    that.closeFirebaseConnection(fb_location, true);
+                });
             });
-        });
+        }
     }
 
     this.closeFirebaseConnection = function(fb_location, remove) {
