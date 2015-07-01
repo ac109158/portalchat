@@ -100,14 +100,6 @@ service('UiManager', ['$rootScope', '$interval', '$firebase', '$log', '$http', '
         ChatModuleManager.removeContactFromChat(type, session_key, contact_id);
     };
 
-    this.ui.fx.removeIdlerNotification = function(notification){
-        ChatModuleManager.removeIdlerNotification(notification);
-    };
-
-    this.ui.fx.sendIdlerResponse = function(notification){
-        ChatModuleManager.sendIdlerResponse(notification);
-    };
-
     
     this.ui.fx.updateSoundLevel = function(level) {
         if (parseInt(level) && level > -1 && level <= CoreConfig.max.sound_level) {

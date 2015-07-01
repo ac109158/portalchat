@@ -4,7 +4,7 @@
             <h4>Recent Converstions</h4>
         </div>
     </div>
-    <div id="cm-main-panel-recent-list" style="position:absolute; top:47px; left: 0; right: 0; bottom: 5px; overflow-y: auto; overflow-x: hidden; background: transparent;" ng-class="{'slide-in': module.contact_list.is_init}" ng-init="module.contact_list.is_init = false; module.contact_list.is_init = true;">
+    <div id="cm-main-panel-recent-list" style="position:absolute; top:47px; left: 0; right: 0; bottom: 5px; overflow-y: auto; overflow-x: hidden; background: transparent;" ng-class="{'fade-in': module.contact_list.is_init}" ng-init="module.contact_list.is_init = false; module.contact_list.is_init = true;">
         <div ng-repeat="chat in module.chats.contact.chat.list | toArray | orderBy: 'session.timestamp': true" style="margin-bottom: 1px; padding: 1px; background: rgba(0,0,0,.4);">
             <div ng-click="ui.fx.setChatAsCurrent(chat.session.type, chat.session.session_key);" class="cm-main-panel-recent-contact">
                 <div ng-if="!chat.session.is_group_chat">

@@ -404,8 +404,8 @@ service('ChatManager', ['$rootScope', '$log', '$http', '$timeout', '$sce', 'Core
                     // ChatStorage[type].chat.list[session_key].signals.user.active = true;
                     // SessionsManager.updateChatSignals(type, session_key);
                     $rootScope.$evalAsync(function() {
-                        // console.log(document.getElementById(session_key + '_messageInput').innerHTML);
-                        // console.log(document.getElementById(session_key + '_messageInput').nextSibling.innerHTML);
+                        console.log(document.getElementById(session_key + '_messageInput').innerHTML);
+                        console.log(document.getElementById(session_key + '_messageInput').nextSibling.innerHTML);
                         document.getElementById(session_key + '_messageInput').innerHTML = '';
                         document.getElementById(session_key + '_messageInput').nextSibling.innerHTML = '';
                         ChatStorage[type].chat.list[session_key].message.text = '';

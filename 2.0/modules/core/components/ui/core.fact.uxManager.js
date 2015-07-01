@@ -36,9 +36,9 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     this.ux.fx = {};
 
     this.setChatModuleSectionWidths = function() {
-        if (CoreConfig.module.setting.is_external_window_instance) {
+        if(CoreConfig.module.setting.is_external_window_instance){
             that.ux.main_panel.width = window.innerWidth;
-        } else {
+        } else{
             that.ux.main_panel.width = parseInt(CoreConfig.module.setting.main_panel.width) + parseInt(SettingsManager.global.panel_width_adjust);
         }
         console.log('that.ux.main_panel.width', that.ux.main_panel.width);
@@ -52,7 +52,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
                 that.ux.main_panel.content.wrapper.height = that.ux.main_panel.height - that.ux.main_panel.header.height;
                 that.ux.main_panel.content.wrapper.upper_panel.height = document.getElementById('cm-main-panel-upper-panel').offsetHeight;
                 that.ux.main_panel.content.wrapper.lower_panel.height = that.ux.main_panel.content.wrapper.height - that.ux.main_panel.content.wrapper.upper_panel.height;
-
+                
                 document.getElementById('cm-main-panel').style.height = that.ux.main_panel.height + "px";
                 document.getElementById('cm-main-panel-content-wrapper').style.height = that.ux.main_panel.content.wrapper.height + "px";
                 document.getElementById('cm-main-panel-lower-panel').style.height = that.ux.main_panel.content.wrapper.lower_panel.height + "px";
@@ -62,7 +62,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
                     that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height = that.ux.main_panel.content.wrapper.lower_panel.height - that.ux.main_panel.content.wrapper.lower_panel.contacts_list.top - 8;
                     document.getElementById("cm-main-panel-contacts-list").style.height = that.ux.main_panel.content.wrapper.lower_panel.contacts_list.height + "px";
                 }
-                if (SettingsManager.global.layout === 2) {
+                if(SettingsManager.global.layout === 2){
                     document.getElementById('cm-vertical-adjuster').style.top = document.getElementById('cm-main-panel-nav').offsetTop - 5 + 'px';
                 }
             });
@@ -189,28 +189,8 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
     // };
 
 
-    this.ux.fx.returnIdlerMessageHtml = function(type, message) {
-        var config = {};
-        var html = '';
-        if (message.author !== UserManager.user.profile.id) {
-            html += '<span class="cm-chat-message-text pointer"  ng-bind-html="message.text | parseUrl | colonToSmiley"></span>';
-            if (message.reference && message.reference.key) {
-                html += '<div class="clearfix"></div>';
-                html += '<div class="cm-chat-message-text-ref" style="background: rgba(0, 0, 0,.6);">';
-                html += '<span ng-bind="' + "'@'" + ' + message.reference.name"></span><span ng-bind-html="' + "' : '" + ' + message.reference.text | colonToSmiley"></span>';
-                html += '</div>';
-            }
-        } else{
-            html += '<span class="cm-chat-user-idler-text pointer" style="text-align: right;"  ng-bind-html="message.text | parseUrl | colonToSmiley"></span>';
-        }
-
-        console.log(html);
-        return html;
-    };
-
     this.returnMessageHtml = function(type, session_key, message) {
         var config = {};
-        message.is_init = false;
         config.is_user_author = that.isMessageFromUser(message);
         if (!config.is_user_author) {
             config.contact = ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + message.author]];
@@ -230,8 +210,6 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
         }
         html += that.getMessageTemplate(type, session_key, message, config);
         html += '</div>';
-        message.is_init = true;
-
         return html;
     };
 
@@ -409,7 +387,7 @@ service('UxManager', ['$rootScope', '$firebase', '$log', '$http', '$sce', '$wind
             if (vertical_adjust < 600 && vertical_adjust > 300) {
                 $rootScope.$evalAsync(function() {
                     that.ux.main_panel.split_height = vertical_adjust;
-                    document.getElementById('cm-vertical-adjuster').style.top = document.getElementById('cm-main-panel-nav').offsetTop - 5 + 'px';
+                    document.getElementById('cm-vertical-adjuster').style.top = document.getElementById('cm-main-panel-nav').offsetTop - 5  + 'px';
                 });
             }
         }

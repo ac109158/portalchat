@@ -1717,7 +1717,7 @@ angular.module('pop.toolkit').filter("timeago", function() {
         if (raw === true) {
             return span;
         }
-        return span;
+        return (time <= local) ? span : 'in ' + span;
     };
 });
 

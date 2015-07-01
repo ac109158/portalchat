@@ -21,21 +21,6 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
     this.module.asset = {};
     this.module.asset.external_window_instance = undefined;
 
-    this.module.idler = {};
-    this.module.idler.notification = {};
-    this.module.idler.notification.list = {};
-    this.module.idler.notification.count = 0;
-    this.module.idler.fb = {};
-    this.module.idler.fb.user = {};
-    this.module.idler.fb.user.message_ref = undefined;
-    this.module.idler.fb.user.message_location = {};
-    this.module.idler.fb.contact = {};
-    this.module.idler.fb.contact.message_location = {};
-    this.module.idler.fb.group = {};
-    this.module.idler.fb.group.message_location = {};
-
-
-
 
 
     this.module.state = {};
@@ -167,190 +152,57 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
         return true;
     };
 
-    this.cleanUpIdlerConnections = function() {
-        if (that.module.idler.fb.user.message_ref) {
-            SessionsManager.closeFirebaseConnection(that.module.idler.fb.user.message_ref, true)
-        }
-        angular.forEach(that.module.idler.fb.user.message_location, function(fb_location) {
-            SessionsManager.closeFirebaseConnection(fb_location)
-        });
-        angular.forEach(that.module.idler.fb.contact.message_location, function(fb_location) {
-            SessionsManager.closeFirebaseConnection(fb_location)
-        });
-        angular.forEach(that.module.idler.fb.group.message_location, function(fb_location) {
-            SessionsManager.closeFirebaseConnection(fb_location)
-        });
-        that.module.idler.notification.list = {};
-        that.module.idler.notification.count = 0;
-        that.module.idler.fb.user.message_ref = undefined;
-        that.module.idler.fb.user.message_location = {};
-    };
-
     this.establishChatSignalIdler = function() {
-        var last_node, discard_first, key;
-        SessionsManager.closeFirebaseConnection(SessionsManager.fb.location.sessions.child(UserManager.user.profile.id), false);
-        that.module.idler.fb.user.message_ref = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + UserManager.user.profile.id + '/');
-        that.module.idler.fb.user.message_ref.once("value", function(snapshot) {
-            var keys = Object.keys(snapshot.val() || {});
-            var n = Firebase.ServerValue.TIMESTAMP;
-            var now = new Date().getTime();
-            angular.forEach(keys, function(key) {
-                that.module.idler.fb.user.message_location[key] = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + UserManager.user.profile.id + '/' + key);
-                that.module.idler.fb.contact.message_location[key] = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + key + '/' + UserManager.user.profile.id);
-                that.module.idler.fb.user.message_location[key].orderByChild('timestamp').startAt(now).on('child_added', function(snapshot) {
-                    that.sendIdlerMessageNotification('contact',  snapshot.ref().parent().key(), snapshot.val());
-                })
-            });
-            that.module.idler.fb.user.message_ref.startAt(null).on("child_added", function(snapshot) {
-                key = snapshot.key();
-                if (!that.module.idler.fb.user.message_location[key]) {
-                    that.module.idler.fb.user.message_location[key] = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + UserManager.user.profile.id + '/' + key);
-                    that.module.idler.fb.contact.message_location[key] = new Firebase(CoreConfig.chat.url_root + CoreConfig.chat.message_storage_reference + key + '/' + UserManager.user.profile.id);
-                    that.module.idler.fb.user.message_location[key].orderByChild('timestamp').startAt(now).on('child_added', function(snapshot) {
-                        that.sendIdlerMessageNotification('contact', snapshot.ref().parent().key(), snapshot.val());
+        SessionsManager.closeFirebaseConnection(SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id));
+        var discard_last_child = true;
+        var last_child;
+        $timeout(function() {
+            SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).once("value", function(snap) {
+                var signals = snap.val();
+                var keys = Object.keys(signals || {});
+                angular.forEach(signals, function(signal, key) {
+                    SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).child(key).child('priority').on('value', function(snapshot) {
+                        console.log('idler priority change', snapshot.ref().parent().key() ,snapshot.val());
                     })
+                });
+                last_child = keys[keys.length - 1];
+                if (angular.isUndefined(last_child)) {
+                    discard_last_child = false;
                 }
-            });
-        });
-    }
 
-    this.sendIdlerMessageNotification = function(type, key, message) {
-        if (type && key && message && message.author) {
-            $rootScope.$evalAsync(function() {
-                if (!that.module.idler.notification.list[key]) {
-                    that.module.idler.notification.list[key] = {};
-                    if (type === 'contact') {
-                        that.module.idler.notification.list[key].session_key = UserManager.user.profile.id + ':' + key;
+                SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).startAt(null, last_child).on("child_added", function(snapshot) {
+                    var location_id = snapshot.ref().key();
+                    var signal = snapshot.val();
+                    if (signal) {
+                        if (discard_last_child) {
+                            discard_last_child = false;
+                        } else {
+                            if (signal && signal.type) {
+                                if (signal.type === 'contact') {
+                                    SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).child(location_id).child('priority').on('value', function(snapshot) {
+                                        console.log('idler contact priority change', snapshot.ref().parent().key(), snapshot.val());
+                                    })
+                                } else if (signal.type === 'group' && signal.session_key) {
+                                    if (signal.type === 'group') {
+                                        if (signal.exit) {} else {
+                                            SessionsManager.fb.location.signals.child('group').child(location_id).child('priority').on('value', function(snapshot) {
+                                                console.log('idler group priority change', snapshot.ref().parent().key(), snapshot.val());
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
-                    that.module.idler.notification.list[key].key = key;
-                    that.module.idler.notification.list[key].next_priority = 1;
-                    that.module.idler.notification.list[key].type = type;
-                    that.module.idler.notification.list[key].timestamp = message.timestamp;
-                    that.module.idler.notification.list[key].messages = [];
-                    that.module.idler.notification.list[key].message = {};
-                    that.module.idler.notification.list[key].message.text = '';
-                    that.module.idler.notification.list[key].contact = ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[CoreConfig.common.reference.user_prefix + key]];
-                }
-                that.module.idler.notification.list[key].messages.push(message);
-                that.module.idler.notification.list[key].next_priority = parseInt(message.priority) + 1;
-                $timeout(function() {
-                    message.is_init = true;
-                    $timeout(function() {
-                        message.is_init = false;
-                    }, 500)
-                })
+                });
             });
-        }
-
+        }, 500)
     }
-    this.sendIdlerResponse = function(notification) {
-        if (notification && notification.message && notification.message.text && notification.message.text.length < 1000) {
-            var message_text = String(notification.message.text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); // sanitze the string
-            notification.message.text = '';
-            if (UserManager.user.profile.encryption === true) {
-                session_key = sjcl.encrypt(CoreConfig.encrypt_pass, notification.session_key);
-                message_text = sjcl.encrypt(session_key, message_text);
-            }
-            var message = {
-                author: UserManager.user.profile.id,
-                text: message_text,
-                encryption: UserManager.user.profile.encryption || null,
-                reference: null,
-                timestamp: Firebase.ServerValue.TIMESTAMP,
-                priority: notification.next_priority
-            };
-            SessionsManager.updateChatSignalPriority(notification.type, notification.session_key, notification.next_priority);
-            if (notification.type === 'contact') {
-                message.session_key = notification.session_key.split(':')[1] + ':' + notification.session_key.split(':')[0];
-                message.offline = !(notification.contact.online) || null;
-                var contactFbKey = that.module.idler.fb.contact.message_location[notification.contact.user_id].push(message); // messages have to be written in both spots with an individual chat, storage is the reason for doing this
-                that.module.idler.fb.contact.message_location[notification.contact.user_id].child(contactFbKey.key()).setPriority(notification.next_priority);
-
-                message.session_key = notification.session_key;
-                var selfFireKey = that.module.idler.fb.user.message_location[notification.contact.user_id].push(message); // assign this task after sending to the to_user location !important
-                that.module.idler.fb.user.message_location[notification.contact.user_id].child(selfFireKey.key()).setPriority(notification.next_priority);
-            } else {
-                message.session_key = notification.session_key;
-                var fireKey = that.module.idler.fb.contact.message_location[notification.session_key].push(message); // assign this task after sending to the to_user location !important
-                that.module.idler.fb.contact.message_location[notification.session_key].child(fireKey.key()).setPriority(notification.next_priority);
-            }
-
-            $timeout(function() {
-                $rootScope.$evalAsync(function() {
-                    SessionsManager.updateIdlerLastRead(notification.type, notification.session_key, notification.next_priority -1);
-                    notification.message.text = '';
-                    document.getElementById(notification.session_key + '_messageInput').innerHTML = '';
-                    document.getElementById(notification.session_key + '_messageInput').nextSibling.innerHTML = '';
-                    notification.message.text = '';
-                    notification.message.rawhtml = '';
-                })
-
-            });
-        }
-    };
-    this.removeIdlerNotification = function(notification) {
-        if (notification && notification.key) {
-            notification.remove = true;
-            $timeout(function() {
-                SessionsManager.updateIdlerLastRead(notification.type, notification.session_key, notification.next_priority -1);
-                delete that.module.idler.notification.list[notification.key];
-            }, 500);
-        }
-    };
-
-    // this.establishChatSignalIdler = function() {
-    //     SessionsManager.closeFirebaseConnection(SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id));
-    //     var discard_last_child = true;
-    //     var last_child;
-    //     $timeout(function() {
-    //         SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).once("value", function(snap) {
-    //             var signals = snap.val();
-    //             var keys = Object.keys(signals || {});
-    //             angular.forEach(signals, function(signal, key) {
-    //                 SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).child(key).child('priority').on('value', function(snapshot) {
-    //                     console.log('idler priority change', snapshot.ref().parent().key() ,snapshot.val());
-    //                 })
-    //             });
-    //             last_child = keys[keys.length - 1];
-    //             if (angular.isUndefined(last_child)) {
-    //                 discard_last_child = false;
-    //             }
-
-    //             SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).startAt(null, last_child).on("child_added", function(snapshot) {
-    //                 var location_id = snapshot.ref().key();
-    //                 var signal = snapshot.val();
-    //                 if (signal) {
-    //                     if (discard_last_child) {
-    //                         discard_last_child = false;
-    //                     } else {
-    //                         if (signal && signal.type) {
-    //                             if (signal.type === 'contact') {
-    //                                 SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).child(location_id).child('priority').on('value', function(snapshot) {
-    //                                     console.log('idler contact priority change', snapshot.ref().parent().key(), snapshot.val());
-    //                                 })
-    //                             } else if (signal.type === 'group' && signal.session_key) {
-    //                                 if (signal.type === 'group') {
-    //                                     if (signal.exit) {} else {
-    //                                         SessionsManager.fb.location.signals.child('group').child(location_id).child('priority').on('value', function(snapshot) {
-    //                                             console.log('idler group priority change', snapshot.ref().parent().key(), snapshot.val());
-    //                                         })
-    //                                     }
-    //                                 }
-    //                             }
-    //                         }
-    //                     }
-    //                 }
-    //             });
-    //         });
-    //     }, 500)
-    // }
-
 
     this.establishUserChat = function() { //  Step 1 this function will initialize the that variables and set the user chat presence.
         if (CoreConfig.user && UserManager.user.profile.id) {
             if ((localStorageService.get('session_id') === CoreConfig.module.setting.session_id && !(localStorageService.get('is_external_window'))) || CoreConfig.module.setting.is_external_window_instance) {
                 SessionsManager.closeFirebaseConnection(SessionsManager.fb.location.sessions.child(UserManager.user.profile.id), false);
-                that.cleanUpIdlerConnections();
                 if (!CoreConfig.module.setting.is_external_window_instance) {
                     SettingsManager.updateGlobalSetting('is_external_window', false, true);
                 }
@@ -399,6 +251,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
                             SessionsManager.fb.location.signals.child('contact').child(UserManager.user.profile.id).on("child_changed", function(snapshot) {
                                 var key = snapshot.key();
                                 var signals = snapshot.val();
+                                console.log('actvity')
                                 var session_key = UserManager.user.profile.id + ':' + key;
                                 if (!that.module.state.idle && ChatStorage[signals.type].chat.list[session_key].session.active && signals && signals.type) {
                                     if (ChatStorage[signals.type].chat.list[session_key]) {
@@ -422,6 +275,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
                                         discard_last_child = false;
                                     } else {
                                         if (signal && signal.type) {
+                                            console.log('actvity')
                                             if (signal.type === 'contact') {
                                                 var contact_tag = CoreConfig.common.reference.user_prefix + location_id;
                                                 if (angular.isDefined(ContactsManager.contacts.profiles.map[contact_tag]) && ContactsManager.contacts.profiles.list[ContactsManager.contacts.profiles.map[contact_tag]]) {
@@ -510,8 +364,14 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
             localStorageService.add('is_external_window', CoreConfig.module.setting.session_id);
             UxManager.setModuleFullScreen();
             SettingsManager.updateGlobalSetting('is_external_window', true, true);
+        } else {
+            // if (localStorageService.get('session_id') && localStorageService.get('session_id') != CoreConfig.module.setting.session_id) {
+            //     console.log(localStorageService.get('session_id'), '===', CoreConfig.module.setting.session_id)
+            //     that.idleChatInstance();
+            // }
         }
         SettingsManager.fb.location.settings.child('is_external_window').on('value', function(snapshot) {
+            console.log('is_external_window', snapshot.val());
             if (discard_init_load) {
                 discard_init_load = false;
             } else {
@@ -535,6 +395,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
         SettingsManager.fb.location.settings.child('session_id').on('value', function(snapshot) { // snapshot is an encrypted object from firebase, use snapshot.val() to get its value
             if (snapshot.val() != CoreConfig.module.setting.session_id) {
                 if (CoreConfig.module.setting.is_external_window_instance) {
+                    console.log('session.id has changed', snapshot.val())
                 } else {
                     that.idleChatInstance();
                 }
@@ -549,6 +410,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
                     if (that.module.asset.external_window_instance) {
                         $rootScope.$evalAsync(function() {
                             that.module.asset.external_window_instance.focus();
+                            console.log('name', that.module.asset.external_window_instance)
                             if (!that.module.asset.external_window_instance.name) {
                                 that.module.asset.external_window_instance.close();
                             }
@@ -796,7 +658,7 @@ service('ChatModuleManager', ['$rootScope', '$log', '$location', '$window', '$ti
                             ChatStorage.directory.chat.list[config.session_key].ux.icon = config.icon_class;
                             SessionsManager.fb.location.signals.child('directory').child(config.session_key).on("value", function(snapshot) {
                                 var signals = snapshot.val();
-                                if (ChatStorage.directory.chat.list[config.session_key] && ChatStorage.directory.chat.list[config.session_key].session.active && signals) {
+                                if (ChatStorage.directory.chat.list[config.session_key].session.active && signals) {
                                     if (ChatStorage.directory && ChatStorage.directory.chat.list[config.session_key]) {
                                         $rootScope.$evalAsync(function() {
                                             if (signals.is_typing) {
